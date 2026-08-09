@@ -1,0 +1,27 @@
+MENU DE MINI GAMES — Projeto Primata Games em 2026
+
+Abra menu_minigames.html para acessar todos os jogos.
+Cada jogo continua em um único arquivo HTML autocontido.
+Estatísticas e recordes são armazenados localmente no navegador via localStorage.
+
+ATUALIZAÇÃO V11 — 08/08/2026
+- Kombo Blocks integrado ao Menu de Mini Games como HTML único autocontido.
+- Kombo Blocks inclui i18n completo em 11 idiomas, SFX/BGM procedural, rankings locais, tema claro/escuro, Sobre e retorno ao menu.
+- Estatísticas de uso do Kombo Blocks integradas ao hub: partidas, tempo e sequência de dias.
+- Logo Turtle Lab e Dice Lab permanecem removidos do catálogo oficial.
+
+
+ATUALIZAÇÃO V12 — 08/08/2026
+- DROPWORKS integrado como o 20º jogo oficial.
+- 40 fases: 20 de esteira ponta-a-ponta + 20 de roda/orbita completa.
+- Obstáculos estáticos removidos: o desafio vem do timing contra recipientes em movimento.
+- Cinco materiais físicos, SFX/BGM via Web Audio API, progresso local, tema claro/escuro, Sobre e preview ?preview=1.
+- Estatísticas de uso integradas ao hub pelo id local "dropworks".
+
+ATUALIZAÇÃO V13 — 08/08/2026
+- DROPWORKS atualizado para a build Conveyor Motion V5.
+- Recipientes usam movimento explícito de esteira/rotação com hitbox acompanhando a posição visual.
+- Reserva finita de material por fase preservada, com mostrador visual grande: percentual, barra, restante, usado e total.
+- Fase 20 mantém a correção de vitória: desperdício afeta estrelas, mas não bloqueia a conclusão ao atingir a meta.
+- Pacote permanece com 20 jogos oficiais e todos os jogos em HTML autocontido.
+
