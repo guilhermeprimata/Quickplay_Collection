@@ -1,0 +1,108 @@
+name: Finalize Quickplay V13
+
+on:
+  push:
+    paths:
+      - '.github/workflows/import-v13-fallback.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: quickplay-v13-finalize
+  cancel-in-progress: false
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    env:
+      QPV13_TOPIC: quickplay-v13-20260808-4f9a7c2e1d6b83a05f7c
+      QPV13_PASS: QPV13_9a6f2e4b7c1d8f03e5a912cb6d74f820
+      QPV13_BASE: 6b9029e2e2a5b56e3f9989b1d2154a8a002b72ce
+    steps:
+      - name: Checkout current repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Retrieve encrypted V13 payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f /tmp/quickplay-v13.enc /tmp/quickplay-v13.zip
+          for attempt in $(seq 1 30); do
+            attachment_url="$(curl -fsSL "https://ntfy.sh/${QPV13_TOPIC}/json?poll=1&since=1h" \
+              | jq -r 'select(.attachment.url != null) | .attachment.url' \
+              | tail -n 1 || true)"
+            if [[ -n "${attachment_url}" && "${attachment_url}" != "null" ]]; then
+              if curl -fsSL "${attachment_url}" -o /tmp/quickplay-v13.enc; then
+                break
+              fi
+            fi
+            sleep 2
+          done
+          test -s /tmp/quickplay-v13.enc
+          openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 \
+            -in /tmp/quickplay-v13.enc \
+            -out /tmp/quickplay-v13.zip \
+            -pass pass:"${QPV13_PASS}"
+          unzip -t /tmp/quickplay-v13.zip
+
+      - name: Validate exact V13 package
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/quickplay-v13
+          mkdir -p /tmp/quickplay-v13
+          unzip -q /tmp/quickplay-v13.zip -d /tmp/quickplay-v13
+          ROOT=/tmp/quickplay-v13/minigames_revisados
+          test -d "${ROOT}"
+          test "$(find "${ROOT}" -maxdepth 1 -type f | wc -l)" -eq 22
+          expected=(
+            memory_genius.html foguetinho.html tron.html pong.html corrida_de_cavalos.html
+            pixel_bomberman.html salve_os_gatinhos.html click_speed.html the_worm.html sudoku.html
+            idle_trader.html jogo_da_velha.html campo_minado.html jogo_da_forca.html dropworks.html
+            kombo_blocks.html advinhe_o_numero.html bow_and_arrow.html torre_de_hanoi.html
+            leaping_into_life.html menu_minigames.html LEIA-ME.txt
+          )
+          for file in "${expected[@]}"; do
+            test -s "${ROOT}/${file}"
+          done
+          games=(
+            memory_genius.html foguetinho.html tron.html pong.html corrida_de_cavalos.html
+            pixel_bomberman.html salve_os_gatinhos.html click_speed.html the_worm.html sudoku.html
+            idle_trader.html jogo_da_velha.html campo_minado.html jogo_da_forca.html dropworks.html
+            kombo_blocks.html advinhe_o_numero.html bow_and_arrow.html torre_de_hanoi.html
+            leaping_into_life.html
+          )
+          for game in "${games[@]}"; do
+            grep -Fq "${game}" "${ROOT}/menu_minigames.html"
+          done
+
+      - name: Build clean two-commit history
+        shell: bash
+        run: |
+          set -euo pipefail
+          git cat-file -e "${QPV13_BASE}^{commit}"
+          git checkout --detach "${QPV13_BASE}"
+          git clean -fdx
+          cp -a /tmp/quickplay-v13/minigames_revisados/. ./
+          test "$(find . -maxdepth 1 -type f | wc -l)" -eq 22
+          test ! -e import-v13
+          test ! -e .github
+          git config user.name 'Projeto Primata Games'
+          git config user.email 'guilhermesteiglederdias@gmail.com'
+          git add -A
+          git commit -m 'Import Quickplay Collection V13'
+          git push --force origin HEAD:main
+
+      - name: Verify published tree locally
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-list --count HEAD)" -eq 2
+          test "$(find . -maxdepth 1 -type f | wc -l)" -eq 22
+          test -f menu_minigames.html
+          test -f dropworks.html
+          test -f kombo_blocks.html
+          test -f LEIA-ME.txt
