@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/import-v13.yml'
       - 'import-v13/repair17-2'
+      - 'import-v13/repair02-2'
 
 permissions:
   contents: write
@@ -39,6 +40,9 @@ jobs:
           97050e12455cab69006851b4218d0bb9dc45e7ff2f608247d809284853f98d63  import-v13/part-007
           f36d3921499efacd9b6420f87c6701f274bc5b44a81e2d7438409cf1d7781a92  import-v13/fix008-00
           f0ca92e57e3f94bf306688f0c0de18966200c4385873bdc614a22504a63b7248  import-v13/fix008-01
+          ff6387bf479b6cc5c170b6b010af2d657882ce0bfd59099ff962d898570ba45f  import-v13/repair02-0
+          24269a0156765591fa7bad135d61a5ced1c60fa8bf36e996d4071d39696e58f0  import-v13/repair02-1
+          cebf7e03f6b07121d6ff11102a7f080e6887c89253fc505d7371a939da03f94a  import-v13/repair02-2
           3bd5b0e965d0b76e1c520188daa5eb41b35a520b13ce6a5d259b5272dd04086c  import-v13/fix008-03
           2bbdbc96b1234a6a4a0c89c0afac26e3eb2ed3c7ec674ca3e1bfc987cf122680  import-v13/fix008-04
           5fbaf5ca1fdac5bb418d7b4e49a7ee91c01336fc0e48d5769a7662c10d57faa9  import-v13/fix008-05
@@ -81,6 +85,7 @@ jobs:
             cat import-v13/part-003 import-v13/part-004 import-v13/part-005 import-v13/part-006 import-v13/part-007
             for n in $(seq -w 0 26); do
               case "$n" in
+                02) cat import-v13/repair02-* ;;
                 12) cat import-v13/repair12-* ;;
                 13) cat import-v13/repair13-* ;;
                 17) cat import-v13/repair17-* ;;
