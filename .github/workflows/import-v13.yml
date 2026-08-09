@@ -3,7 +3,7 @@ name: Publish Quickplay V13
 on:
   push:
     paths:
-      - 'import-v13/part-030'
+      - 'import-v13/fix008-26'
 
 permissions:
   contents: write
@@ -25,7 +25,19 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cat import-v13/part-* | base64 --decode > /tmp/quickplay-v13.zip
+          {
+            cat import-v13/part-000
+            cat import-v13/part-001
+            cat import-v13/test-9500
+            cat import-v13/fix002-01
+            cat import-v13/fix002-02
+            cat import-v13/part-003
+            cat import-v13/part-004
+            cat import-v13/part-005
+            cat import-v13/part-006
+            cat import-v13/part-007
+            cat import-v13/fix008-*
+          } | base64 --decode > /tmp/quickplay-v13.zip
           echo 'cb52610191c033261b9fe8249f9a0b2249e627bf6990b5e6aab3f2163762bf42  /tmp/quickplay-v13.zip' | sha256sum -c -
           unzip -t /tmp/quickplay-v13.zip
           rm -rf /tmp/quickplay-v13
