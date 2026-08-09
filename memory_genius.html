@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pulso Genius</title>
+<style>
+        :root {
+            --pulse-gold: #FFC857;
+            --pulse-violet: #7457FF;
+            --pulse-light: #CCCCCC;
+            --pulse-muted: #666666;
+            --text-color: #333333;
+            --bg-color: #FFFFFF;
+            --panel-bg: #F5F5F5;
+        }
+
+        .dark-mode {
+            --text-color: #E0E0E0;
+            --bg-color: #121212;
+            --panel-bg: #1E1E1E;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .logo {
+            height: 60px;
+            margin-right: 20px;
+        }
+
+        h1 {
+            color: var(--pulse-violet);
+            font-size: 2.5rem;
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 15px;
+            width: 100%;
+            max-width: 300px;
+            aspect-ratio: 1/1;
+            margin-bottom: 20px;
+        }
+
+        .color-button {
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+            border: 4px solid transparent;
+        }
+
+        .color-button::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.3); /* Efeito de overlay um pouco mais sutil */
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .color-button.active {
+            border-color: white;
+            transform: scale(0.95);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.7); /* Sombra do flash um pouco mais sutil */
+        }
+
+        .color-button.active::after {
+            opacity: 1;
+        }
+
+        .color-button:disabled {
+            opacity: 0.75; /* Botões desabilitados um pouco menos transparentes */
+            cursor: not-allowed;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background-color: var(--pulse-violet);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #5037C7;
+        }
+
+        button:disabled {
+            background-color: var(--pulse-light);
+            cursor: not-allowed;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 20px;
+            background-color: var(--panel-bg);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-box {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--pulse-violet);
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--panel-bg);
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .modal h2 {
+            color: var(--pulse-violet);
+            margin-top: 0;
+        }
+
+        .modal input {
+            width: 80%;
+            padding: 10px;
+            margin: 15px 0;
+            border: 2px solid var(--pulse-light);
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .ranking {
+            width: 100%;
+            max-width: 500px;
+            margin-top: 20px;
+            background-color: var(--panel-bg);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .ranking h2 {
+            color: var(--pulse-violet);
+            text-align: center;
+            margin-top: 0;
+            text-transform: uppercase;
+        }
+
+        .ranking-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .ranking-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--pulse-light);
+        }
+
+        .ranking-item:last-child {
+            border-bottom: none;
+        }
+
+        .ranking-position {
+            font-weight: bold;
+            color: var(--pulse-violet);
+        }
+
+        .credits {
+            font-style: italic;
+            margin-top: 30px;
+            text-align: center;
+            color: var(--pulse-muted);
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .logo {
+                height: 50px;
+                margin-right: 15px;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            button {
+                padding: 8px 12px;
+                font-size: 0.9rem;
+            }
+            
+            .controls {
+                gap: 8px;
+            }
+        }
+    </style>
+<script id="ppg-tone-shim">
+(function(){
+  if(window.Tone) return;
+  let ac=null;
+  const get=()=>ac||(ac=new (window.AudioContext||window.webkitAudioContext)());
+  const noteFreq=n=>{if(typeof n==='number')return n;const m=String(n).match(/^([A-G])([#b]?)(-?\d)$/);if(!m)return 440;const semi={C:0,D:2,E:4,F:5,G:7,A:9,B:11}[m[1]]+(m[2]==='#'?1:m[2]==='b'?-1:0);return 440*Math.pow(2,((+m[3]-4)*12+semi-9)/12)};
+  const durSec=d=>{if(typeof d==='number')return d; if(/^\d+(\.\d+)?$/.test(String(d)))return +d; return ({'1n':2,'2n':1,'4n':.5,'8n':.25,'16n':.125,'32n':.0625})[d]||.2};
+  class Synth{constructor(opts={}){this.opts=opts;this.volume={value:0}}toDestination(){return this}triggerAttackRelease(note,dur='8n',when){const A=get(),t=typeof when==='number'?when:A.currentTime,notes=Array.isArray(note)?note:[note];notes.forEach((n,i)=>{const o=A.createOscillator(),g=A.createGain(),d=durSec(dur),v=Math.pow(10,(this.volume.value||0)/20)*.10;o.type=this.opts.oscillator?.type||'sine';o.frequency.setValueAtTime(noteFreq(n),t);g.gain.setValueAtTime(v/Math.max(1,notes.length),t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(A.destination);o.start(t+i*.002);o.stop(t+d+.01)})}}
+  class PolySynth extends Synth{constructor(_Type,opts={}){super(opts)}}
+  class NoiseSynth extends Synth{triggerAttackRelease(dur='8n',when){const A=get(),t=typeof when==='number'?when:A.currentTime,d=durSec(dur),buf=A.createBuffer(1,Math.max(1,A.sampleRate*d),A.sampleRate),data=buf.getChannelData(0);for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*(1-i/data.length);const src=A.createBufferSource(),g=A.createGain();src.buffer=buf;g.gain.value=Math.pow(10,(this.volume.value||0)/20)*.12;src.connect(g).connect(A.destination);src.start(t)}}
+  window.Tone={Synth,PolySynth,NoiseSynth,start:async()=>{const A=get();if(A.state==='suspended')await A.resume()},now:()=>get().currentTime,get context(){return get()}};
+})();
+</script>
+<style id="ppg-viewport-fit">
+:root{--fitbar:var(--ppg-bar-h,48px)}html,body{height:100%;overflow:hidden}body{height:100dvh!important;min-height:0!important;padding:calc(var(--fitbar) + 5px) 8px 5px!important}.header{margin-bottom:5px!important}.header h1{font-size:clamp(21px,4.5vh,34px)!important}.stats{padding:6px!important;margin-bottom:6px!important}.stat-label{font-size:11px!important}.stat-value{font-size:15px!important}.game-board{width:min(300px,calc(100vw - 20px),calc(100dvh - var(--fitbar) - 260px))!important;margin-bottom:6px!important;gap:8px!important}.controls{margin-bottom:5px!important}.ranking{margin-top:5px!important;padding:6px!important;max-height:95px;overflow:auto}.ranking h2{font-size:15px;margin:2px}.ranking-item{padding:3px 0!important;font-size:12px}.credits{display:none}
+@media(max-height:580px){.ranking{display:none}.game-board{width:min(300px,calc(100vw - 20px),calc(100dvh - var(--fitbar) - 165px))!important}.stats{flex-direction:row!important;gap:4px!important}}
+</style>
+</head>
+<body>
+    <div class="header">
+        
+        <h1>PULSO GENIUS</h1>
+    </div>
+
+    <div class="stats">
+        <div class="stat-box">
+            <div class="stat-label">Nível</div>
+            <div class="stat-value" id="level">1</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Pontos</div>
+            <div class="stat-value" id="score">0</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Tempo</div>
+            <div class="stat-value" id="timer">00:00</div>
+        </div>
+    </div>
+
+    <div class="game-board">
+        <button class="color-button" id="green" style="background-color: #00A651;"></button>
+        <button class="color-button" id="red" style="background-color: #E31937;"></button>
+        <button class="color-button" id="yellow" style="background-color: var(--pulse-gold);"></button>
+        <button class="color-button" id="blue" style="background-color: var(--pulse-violet);"></button>
+    </div>
+
+    <div class="controls">
+        <button id="startBtn">Iniciar</button>
+        <button id="soundBtn">Som: ON</button>
+        <button id="resetBtn">Resetar Tudo</button>
+        <button id="darkModeBtn">Modo Escuro</button>
+        <button id="backBtn">Voltar</button>
+    </div>
+
+    <div class="ranking">
+        <h2>TOP 5</h2>
+        <ul class="ranking-list" id="rankingList">
+            </ul>
+    </div>
+
+    <div class="credits">PULSO GENIUS · Projeto Primata Games · 2026</div>
+
+    <div class="modal" id="gameOverModal">
+        <div class="modal-content">
+            <h2>Fim de Jogo!</h2>
+            <p id="finalScoreText">Você alcançou o nível <span id="finalLevel">1</span> com <span id="finalScore">0</span> pontos em <span id="finalTime">00:00</span>.</p>
+            <input type="text" id="playerName" placeholder="Digite seu nome" maxlength="20">
+            <div class="modal-buttons">
+                <button id="saveScoreBtn">Salvar Pontuação</button>
+                <button id="cancelBtn">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="resetModal">
+        <div class="modal-content">
+            <h2>Resetar Tudo</h2>
+            <p>Tem certeza que deseja resetar todas as pontuações salvas?</p>
+            <p>Esta ação não pode ser desfeita.</p>
+            <div class="modal-buttons">
+                <button id="confirmResetBtn">Confirmar</button>
+                <button id="cancelResetBtn">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Elementos do DOM
+        const greenButton = document.getElementById('green');
+        const redButton = document.getElementById('red');
+        const yellowButton = document.getElementById('yellow');
+        const blueButton = document.getElementById('blue');
+        const startBtn = document.getElementById('startBtn');
+        const soundBtn = document.getElementById('soundBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const darkModeBtn = document.getElementById('darkModeBtn');
+        const backBtn = document.getElementById('backBtn');
+        const levelDisplay = document.getElementById('level');
+        const scoreDisplay = document.getElementById('score');
+        const timerDisplay = document.getElementById('timer');
+        const gameOverModal = document.getElementById('gameOverModal');
+        const resetModal = document.getElementById('resetModal');
+        const finalLevelDisplay = document.getElementById('finalLevel');
+        const finalScoreDisplay = document.getElementById('finalScore');
+        const finalTimeDisplay = document.getElementById('finalTime');
+        const playerNameInput = document.getElementById('playerName');
+        const saveScoreBtn = document.getElementById('saveScoreBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const confirmResetBtn = document.getElementById('confirmResetBtn');
+        const cancelResetBtn = document.getElementById('cancelResetBtn');
+        const rankingList = document.getElementById('rankingList');
+
+        // Variáveis do jogo
+        let gameActive = false;
+        let sequence = [];
+        let playerSequence = [];
+        let level = 1;
+        let score = 0;
+        let startTime = 0;
+        let timerInterval = null;
+        let canClick = false;
+        let colors = ['green', 'red', 'yellow', 'blue'];
+        let ranking = JSON.parse(localStorage.getItem('bbGeniusRanking')) || [];
+        let darkMode = false;
+        let soundEnabled = true;
+        let life = 100;
+        let lastLifeHit = 0;
+        
+        let synth;
+        try {
+            if (typeof Tone !== 'undefined') {
+                 synth = new Tone.Synth().toDestination();
+            } else {
+                console.warn("Tone.js não carregado. O som usará a API Web Audio como fallback ou ficará silencioso se não implementado.");
+            }
+        } catch (e) {
+            console.error("Erro ao inicializar o synth do Tone.js:", e);
+            synth = null;
+        }
+
+        function init() {
+            setupEventListeners();
+            loadRanking();
+            checkDarkModePreference();
+            checkSoundPreference();
+            disableColorButtons();
+            
+            if (/Mobi|Android/i.test(navigator.userAgent)) {
+                setTimeout(() => {
+                    // Considere solicitar ao usuário para iniciar no celular em vez de iniciar automaticamente
+                    // startGame(); 
+                }, 1000);
+            }
+        }
+
+        function setupEventListeners() {
+            greenButton.addEventListener('click', () => handleColorClick('green'));
+            redButton.addEventListener('click', () => handleColorClick('red'));
+            yellowButton.addEventListener('click', () => handleColorClick('yellow'));
+            blueButton.addEventListener('click', () => handleColorClick('blue'));
+            
+            startBtn.addEventListener('click', () => {
+                if (typeof Tone !== 'undefined' && Tone.context.state !== 'running') {
+                    Tone.start().then(startGame).catch(e => {
+                        console.error("Erro ao iniciar Tone.js:", e);
+                        startGame(); // Tenta iniciar o jogo mesmo se Tone.start falhar
+                    });
+                } else {
+                    startGame();
+                }
+            });
+            soundBtn.addEventListener('click', toggleSound);
+            resetBtn.addEventListener('click', showResetModal);
+            darkModeBtn.addEventListener('click', toggleDarkMode);
+            backBtn.addEventListener('click', goBack);
+            saveScoreBtn.addEventListener('click', saveScore);
+            cancelBtn.addEventListener('click', hideGameOverModal);
+            confirmResetBtn.addEventListener('click', resetAll);
+            cancelResetBtn.addEventListener('click', hideResetModal);
+        }
+
+        function disableColorButtons() {
+            canClick = false;
+            colors.forEach(color => {
+                document.getElementById(color).disabled = true;
+            });
+        }
+
+        function enableColorButtons() {
+            canClick = true;
+            colors.forEach(color => {
+                document.getElementById(color).disabled = false;
+            });
+        }
+
+        function flashButton(color) {
+            const button = document.getElementById(color);
+            button.classList.add('active');
+            
+            if (soundEnabled) {
+                playTone(getFrequencyForColor(color));
+            }
+            
+            setTimeout(() => {
+                button.classList.remove('active');
+            }, 300); 
+        }
+
+        function playTone(noteOrFreq) {
+            if (synth && typeof Tone !== 'undefined' && Tone.context.state === 'running') {
+                try {
+                    synth.triggerAttackRelease(noteOrFreq, "8n", Tone.now()); // "8n" é a duração de uma colcheia
+                } catch (e) {
+                    console.error('Erro ao tocar tom com Tone.js:', e);
+                    playFallbackTone(getNumericFrequencyForColor(noteOrFreq)); // Fallback para o método antigo se Tone.js falhar
+                }
+            } else {
+                playFallbackTone(getNumericFrequencyForColor(noteOrFreq));
+            }
+        }
+        
+        function playFallbackTone(frequency) {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (!audioCtx) return; // Não pode reproduzir som
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime); // Usar setValueAtTime
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.3);
+            } catch (e) {
+                console.log('Erro ao reproduzir som de fallback:', e);
+            }
+        }
+
+        // Retorna notas musicais para Tone.js
+        function getFrequencyForColor(color) {
+            switch(color) {
+                case 'green': return "C4"; 
+                case 'red': return "E4";   
+                case 'yellow': return "G4"; 
+                case 'blue': return "A4";  // ou "C5" para um tom mais alto
+                default: return "C4";
+            }
+        }
+
+        // Retorna frequências numéricas para o fallback
+        function getNumericFrequencyForColor(colorOrNote) {
+            // Se já for um número (frequência), retorna. Senão, converte a nota de cor.
+            if (typeof colorOrNote === 'number') return colorOrNote;
+            switch(colorOrNote) { // Assume que colorOrNote é uma string de cor aqui
+                case 'green': return 329.63; // E3 (exemplo, ajuste conforme necessário)
+                case 'red':   return 392.00; // G3
+                case 'yellow':return 440.00; // A3
+                case 'blue':  return 523.25; // C4
+                default: return 440; // Frequência padrão
+            }
+        }
+
+
+        function startGame() {
+            if (gameActive) return;
+            
+            gameActive = true;
+            sequence = [];
+            playerSequence = [];
+            level = 1;
+            score = 0;
+            life = 100; lastLifeHit = 0;
+            levelDisplay.textContent = level;
+            scoreDisplay.textContent = score;
+            startBtn.disabled = true;
+            
+            startTime = 0;
+            if (timerInterval) clearInterval(timerInterval);
+            timerDisplay.textContent = '00:00';
+            
+            nextLevel();
+        }
+
+        function nextLevel() {
+            disableColorButtons();
+            
+            const randomIndex = Math.floor(Math.random() * colors.length);
+            sequence.push(colors[randomIndex]);
+            
+            showSequence(0);
+        }
+
+        function showSequence(index) {
+            if (index < sequence.length) {
+                const color = sequence[index];
+                flashButton(color);
+                
+                setTimeout(() => {
+                    showSequence(index + 1);
+                }, 500); // Velocidade da sequência, ajuste conforme necessário (era 600)
+            } else {
+                setTimeout(() => {
+                    enableColorButtons();
+                    if (startTime === 0 && sequence.length > 0) { 
+                        startTime = Date.now();
+                        timerInterval = setInterval(updateTimer, 1000);
+                    }
+                }, 250); // Atraso reduzido para entrada do jogador (era 500)
+            }
+        }
+
+        function updateTimer() {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            if (gameActive && life < 100 && Date.now() - lastLifeHit > 5000) life = Math.min(100, life + 1);
+            const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+            const seconds = (elapsed % 60).toString().padStart(2, '0');
+            timerDisplay.textContent = `${minutes}:${seconds}`;
+        }
+
+        function handleColorClick(color) {
+            if (!canClick || !gameActive) return;
+            
+            flashButton(color);
+            playerSequence.push(color);
+            
+            for (let i = 0; i < playerSequence.length; i++) {
+                if (playerSequence[i] !== sequence[i]) {
+                    life = Math.max(0, life - 34); lastLifeHit = Date.now();
+                    score = Math.max(0, score - Math.max(2, level * 2)); scoreDisplay.textContent = score;
+                    playerSequence = []; disableColorButtons();
+                    if (life <= 0) { gameOver(); return; }
+                    setTimeout(() => showSequence(0), 650);
+                    return;
+                }
+            }
+            
+            if (playerSequence.length === sequence.length) {
+                score += level * 10;
+                if(level % 5 === 0) life = Math.min(100, life + 12);
+                scoreDisplay.textContent = score;
+                playerSequence = [];
+                level++;
+                levelDisplay.textContent = level;
+                
+                if (level > 20) { // Nível de vitória
+                    gameOver(true);
+                } else {
+                    setTimeout(() => {
+                        nextLevel();
+                    }, 800); // Pequeno atraso antes do próximo nível (era 1000)
+                }
+            }
+        }
+
+        function gameOver(win = false) {
+            gameActive = false;
+            canClick = false;
+            clearInterval(timerInterval);
+            startBtn.disabled = false;
+            disableColorButtons(); 
+            
+            const elapsed = startTime > 0 ? Math.floor((Date.now() - startTime) / 1000) : 0;
+            const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+            const seconds = (elapsed % 60).toString().padStart(2, '0');
+            const timeString = `${minutes}:${seconds}`;
+            
+            const finalLevelVal = level > 1 ? level -1 : (sequence.length > 0 ? 1: 0) ; // Se perdeu no nível 1, mostra 1, ou 0 se não começou
+            finalLevelDisplay.textContent = finalLevelVal;
+            finalScoreDisplay.textContent = score;
+            finalTimeDisplay.textContent = timeString;
+            
+            if (win) {
+                 document.getElementById('finalScoreText').innerHTML = 
+                    `Parabéns! Você venceu alcançando o nível <span id="finalLevel">${finalLevelVal}</span> com <span id="finalScore">${score}</span> pontos em <span id="finalTime">${timeString}</span>.`;
+            } else {
+                 document.getElementById('finalScoreText').innerHTML = 
+                    `Você alcançou o nível <span id="finalLevel">${finalLevelVal}</span> com <span id="finalScore">${score}</span> pontos em <span id="finalTime">${timeString}</span>.`;
+            }
+            
+            showGameOverModal();
+        }
+
+        function showGameOverModal() {
+            playerNameInput.value = ''; // Limpa o nome do jogador anterior
+            gameOverModal.style.display = 'flex';
+            playerNameInput.focus();
+        }
+
+        function hideGameOverModal() {
+            gameOverModal.style.display = 'none';
+        }
+
+        function saveScore() {
+            const name = playerNameInput.value.trim() || 'Anônimo';
+            const currentLevel = level > 1 ? level -1 : (sequence.length > 0 ? 1: 0) ;
+            const playerScore = {
+                name: name.substring(0, 20),
+                level: currentLevel,
+                score: score,
+                time: finalTimeDisplay.textContent, // Usa o tempo final calculado
+                date: new Date().toLocaleDateString()
+            };
+            
+            ranking = JSON.parse(localStorage.getItem('bbGeniusRanking')) || [];
+            ranking.push(playerScore);
+            ranking.sort((a, b) => b.score - a.score || b.level - a.level); 
+            ranking = ranking.slice(0, 5);
+            localStorage.setItem('bbGeniusRanking', JSON.stringify(ranking));
+            
+            loadRanking();
+            hideGameOverModal();
+        }
+
+        function loadRanking() {
+            ranking = JSON.parse(localStorage.getItem('bbGeniusRanking')) || [];
+            rankingList.innerHTML = '';
+            
+            if (ranking.length === 0) {
+                const item = document.createElement('li');
+                item.className = 'ranking-item';
+                item.innerHTML = '<span>Nenhuma pontuação registrada ainda</span>';
+                rankingList.appendChild(item);
+            } else {
+                ranking.forEach((entry, index) => {
+                    const item = document.createElement('li');
+                    item.className = 'ranking-item';
+                    item.innerHTML = `
+                        <span class="ranking-position">${index + 1}.</span>
+                        <span>${entry.name}</span>
+                        <span>Nível ${entry.level}</span>
+                        <span>${entry.score} pts</span>
+                    `;
+                    rankingList.appendChild(item);
+                });
+            }
+        }
+
+        function showResetModal() {
+            resetModal.style.display = 'flex';
+        }
+
+        function hideResetModal() {
+            resetModal.style.display = 'none';
+        }
+
+        function resetAll() {
+            localStorage.removeItem('bbGeniusRanking');
+            ranking = [];
+            loadRanking();
+            hideResetModal();
+            // Opcional: resetar o estado do jogo também
+            // level = 1; score = 0;
+            // levelDisplay.textContent = level;
+            // scoreDisplay.textContent = score;
+            // timerDisplay.textContent = '00:00';
+            // if (timerInterval) clearInterval(timerInterval);
+            // sequence = []; playerSequence = [];
+            // gameActive = false; startBtn.disabled = false;
+            // disableColorButtons();
+        }
+
+        function toggleDarkMode() {
+            darkMode = !darkMode;
+            document.body.classList.toggle('dark-mode', darkMode);
+            darkModeBtn.textContent = darkMode ? 'Modo Claro' : 'Modo Escuro';
+            localStorage.setItem('bbGeniusDarkMode', darkMode);
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            soundBtn.textContent = soundEnabled ? 'Som: ON' : 'Som: OFF';
+            localStorage.setItem('bbGeniusSoundEnabled', soundEnabled);
+        }
+
+        function checkDarkModePreference() {
+            const savedMode = localStorage.getItem('bbGeniusDarkMode');
+            if (savedMode !== null) {
+                darkMode = savedMode === 'true';
+                document.body.classList.toggle('dark-mode', darkMode);
+                darkModeBtn.textContent = darkMode ? 'Modo Claro' : 'Modo Escuro';
+            }
+        }
+
+        function checkSoundPreference() {
+            const savedSound = localStorage.getItem('bbGeniusSoundEnabled');
+            soundEnabled = savedSound !== null ? savedSound === 'true' : true; 
+            soundBtn.textContent = soundEnabled ? 'Som: ON' : 'Som: OFF';
+            // Não precisa salvar aqui, pois só estamos lendo a preferência inicial
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+        window.addEventListener('load', init);
+    </script>
+<style id="ppg-platform-style">
+:root{--ppg-bar-h:48px;--ppg-ui-bg:#0b0d1d;--ppg-ui-fg:#f7f5ff;--ppg-ui-line:rgba(255,255,255,.14);--ppg-ui-accent:#a875ff;--ppg-ui-accent2:#35e6ca}
+html{scroll-padding-top:var(--ppg-bar-h)}body{box-sizing:border-box!important;padding-top:var(--ppg-bar-h)!important}
+#ppg-toolbar{position:fixed;z-index:2147483000;inset:0 0 auto 0;height:var(--ppg-bar-h);display:flex;align-items:center;gap:6px;padding:6px max(8px,env(safe-area-inset-right)) 6px max(8px,env(safe-area-inset-left));overflow-x:auto;overflow-y:hidden;white-space:nowrap;background:linear-gradient(90deg,rgba(9,10,25,.97),rgba(20,16,45,.96));border-bottom:1px solid var(--ppg-ui-line);box-shadow:0 7px 24px rgba(0,0,0,.30);font-family:Inter,"Segoe UI",system-ui,sans-serif!important;scrollbar-width:none}
+#ppg-toolbar::-webkit-scrollbar{display:none}#ppg-toolbar .ppg-brand{display:flex;align-items:center;gap:6px;margin-right:auto;padding-right:7px;color:#cfc4ff;font:900 11px/1 Inter,"Segoe UI",system-ui,sans-serif!important;letter-spacing:.08em;text-transform:uppercase}
+#ppg-toolbar button,#ppg-toolbar a{flex:0 0 auto;min-height:34px!important;padding:7px 10px!important;margin:0!important;border:1px solid var(--ppg-ui-line)!important;border-radius:9px!important;background:#15182dcc!important;color:var(--ppg-ui-fg)!important;font:700 12px/1 Inter,"Segoe UI",system-ui,sans-serif!important;text-decoration:none!important;text-transform:none!important;letter-spacing:0!important;box-shadow:none!important;cursor:pointer!important;transform:none!important}
+#ppg-toolbar button:hover,#ppg-toolbar a:hover{border-color:var(--ppg-ui-accent2)!important;filter:brightness(1.13)!important}.ppg-life{flex:0 0 116px;display:none;align-items:center;gap:6px;padding:5px 8px;border:1px solid #ffffff18;border-radius:9px;background:#15182dcc;color:#fff;font:800 10px/1 Inter,system-ui}.ppg-life.show{display:flex}.ppg-life-track{width:68px;height:7px;border-radius:9px;overflow:hidden;background:#ffffff16}.ppg-life-fill{height:100%;width:100%;background:linear-gradient(90deg,#ff4c78,#ffd166,#5ff0c0);transition:width .18s ease}
+.ppg-modal{position:fixed;z-index:2147483640;inset:var(--ppg-bar-h) 0 0;display:none;place-items:center;padding:18px;background:rgba(2,3,12,.78);backdrop-filter:blur(8px);font-family:Inter,"Segoe UI",system-ui,sans-serif!important}.ppg-modal.open{display:grid}.ppg-card{width:min(610px,96vw);max-height:min(80vh,720px);overflow:auto;padding:22px;border:1px solid rgba(255,255,255,.16);border-radius:20px;background:linear-gradient(145deg,#14162b,#0a0d1b);color:#f8f7ff;text-align:left;box-shadow:0 30px 90px #0009}.ppg-card h2{margin:0 0 8px!important;color:#d9c7ff!important;font:800 clamp(22px,4vw,30px)/1.1 Inter,"Segoe UI",system-ui,sans-serif!important}.ppg-card h3{margin:17px 0 6px!important;color:#63ecd6!important;font:800 14px/1.2 Inter,"Segoe UI",system-ui,sans-serif!important;text-transform:uppercase;letter-spacing:.08em}.ppg-card p,.ppg-card li{color:#d7d9e7!important;font:400 14px/1.55 Inter,"Segoe UI",system-ui,sans-serif!important}.ppg-card .ppg-credit{margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.12);font-weight:800;color:#fff!important}.ppg-close{float:right;border:0!important;background:#282c48!important;color:white!important;border-radius:9px!important;padding:7px 10px!important;cursor:pointer!important}.ppg-diff-section{margin:13px 0 20px}.ppg-diff-title{display:flex;align-items:center;gap:8px;margin:0 0 8px;color:#74efdb;font-weight:900}.ppg-record-list{display:grid;gap:7px}.ppg-record{display:grid;grid-template-columns:34px 1fr auto;gap:8px;padding:9px;border-radius:11px;background:#ffffff0b;border:1px solid #ffffff10;align-items:center}.ppg-record small{color:#989db7}.ppg-empty{padding:14px;border:1px dashed #ffffff2a;border-radius:12px;color:#aeb3c8}
+body.ppg-light{color-scheme:light;background-color:#edf1f8!important;color:#182038!important}body.ppg-light :is(.menu-card,.card,.panel,.toolbar,.stats,.help,.bet-panel,.track-card,.game-container){filter:brightness(1.07) saturate(.93)}body.ppg-dark{color-scheme:dark}
+.ppg-fixed-shift{max-height:calc(100dvh - var(--ppg-bar-h))!important}.ppg-tall-root{height:calc(100dvh - var(--ppg-bar-h))!important;max-height:calc(100dvh - var(--ppg-bar-h))!important}
+@media(max-width:700px){:root{--ppg-bar-h:46px}#ppg-toolbar{gap:4px;padding-inline:5px}#ppg-toolbar .ppg-brand{display:none}#ppg-toolbar button,#ppg-toolbar a{padding:6px 8px!important;font-size:11px!important}.ppg-life{flex-basis:98px}.ppg-life-track{width:52px}.ppg-card{padding:17px}}
+</style><script id="ppg-platform-script">
+(()=>{'use strict';
+const CFG={"id": "pulso_genius", "name": "Pulso Genius", "emoji": "🧠", "desc": "Memória sequencial de cores com pontuação e ranking local.", "how": "Observe a sequência de cores e repita-a clicando nos botões na mesma ordem. Cada nível acrescenta um novo passo.", "tip": "Agrupe a sequência em blocos de 3 ou 4 cores e transforme-os mentalmente em “palavras”. Memória adora compactação.", "metric": "Pontuação", "unit": " pts", "mode": "max"};
+const STATS_KEY='ppg_minigames_stats_v1',PREF_KEY='ppg_platform_prefs_v2',REC_KEY='ppg_records_v2_'+CFG.id;
+const $=s=>document.querySelector(s),num=v=>{const m=String(v??'').replace(/\s/g,'').replace(/\.(?=\d{3}(\D|$))/g,'').replace(',','.').match(/-?\d+(?:\.\d+)?/);return m?+m[0]:null};
+const money=v=>{const s=String(v??'').replace(/R\$|◈|Créditos?|Banca:|💰/gi,'').trim();let m=s.match(/(-?[\d.,]+)\s*(K|M|B|T|Qa|Qi|Sx|Sp|Oc|No|Dc)?/i);if(!m)return null;let n=num(m[1]);const u=(m[2]||'').toLowerCase(),map={k:1e3,m:1e6,b:1e9,t:1e12,qa:1e15,qi:1e18,sx:1e21,sp:1e24,oc:1e27,no:1e30,dc:1e33};return n*(map[u]||1)};window.__ppgHelpers={num,money};
+function readJSON(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}}function writeJSON(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
+function dayKey(d=new Date()){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}function dayDiff(a,b){const A=new Date(a+'T12:00:00'),B=new Date(b+'T12:00:00');return Math.round((B-A)/86400000)}
+let all=readJSON(STATS_KEY,{}),st=all[CFG.id]||{starts:0,totalSeconds:0,longestStreak:0,currentStreak:0,lastDay:null};const today=dayKey();st.starts=(st.starts||0)+1;if(st.lastDay!==today){const dd=st.lastDay?dayDiff(st.lastDay,today):99;st.currentStreak=dd===1?(st.currentStreak||0)+1:1;st.longestStreak=Math.max(st.longestStreak||0,st.currentStreak);st.lastDay=today}st.lastStarted=Date.now();all[CFG.id]=st;writeJSON(STATS_KEY,all);
+let lastTick=performance.now();function flushTime(){const now=performance.now(),d=Math.max(0,(now-lastTick)/1000);lastTick=now;all=readJSON(STATS_KEY,{});const x=all[CFG.id]||st;x.totalSeconds=(x.totalSeconds||0)+d;x.lastPlayed=Date.now();all[CFG.id]=x;writeJSON(STATS_KEY,all)}setInterval(flushTime,5000);addEventListener('pagehide',flushTime);document.addEventListener('visibilitychange',()=>{if(document.hidden)flushTime();else lastTick=performance.now()});
+let prefs=readJSON(PREF_KEY,readJSON('ppg_platform_prefs_v1',{theme:'dark',sound:true}));writeJSON(PREF_KEY,prefs);document.body.classList.toggle('ppg-light',prefs.theme==='light');document.body.classList.toggle('ppg-dark',prefs.theme!=='light');
+const toolbar=document.createElement('nav');toolbar.id='ppg-toolbar';toolbar.setAttribute('aria-label','Controles comuns do Projeto Primata Games');toolbar.innerHTML=`<span class="ppg-brand">🦧 PPG</span><span class="ppg-life" id="ppg-life"><span>♥</span><span class="ppg-life-track"><span class="ppg-life-fill" id="ppg-life-fill"></span></span><span id="ppg-life-num">100</span></span><button id="ppg-theme">${prefs.theme==='light'?'🌙 Escuro':'☀️ Claro'}</button><button id="ppg-sound">${prefs.sound?'🔊 Som ON':'🔇 Som OFF'}</button><button id="ppg-records">🏆 Placares</button><button id="ppg-about">ⓘ Sobre</button><a href="menu_minigames.html" id="ppg-menu">↩ Mini Games</a>`;document.body.prepend(toolbar);
+const modal=document.createElement('div');modal.className='ppg-modal';modal.id='ppg-modal';modal.innerHTML=`<div class="ppg-card"><button class="ppg-close" aria-label="Fechar">✕</button><div id="ppg-modal-body"></div></div>`;document.body.appendChild(modal);const modalBody=$('#ppg-modal-body');function open(html){modalBody.innerHTML=html;modal.classList.add('open')}function close(){modal.classList.remove('open')}modal.addEventListener('click',e=>{if(e.target===modal||e.target.closest('.ppg-close'))close()});addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+// Reserva uma faixa real para a barra comum. Elementos fixed que começavam em y=0 são deslocados,
+// e raízes full-viewport estáticas são encurtadas. Assim a barra não cobre HUD/canvas/menus do jogo.
+function protectLayout(){const bar=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ppg-bar-h'))||48;[...document.body.querySelectorAll('*')].forEach(el=>{if(el.closest('#ppg-toolbar,.ppg-modal')||['SCRIPT','STYLE'].includes(el.tagName))return;const cs=getComputedStyle(el);if(cs.position==='fixed'){const r=el.getBoundingClientRect();if(r.top<bar-2&&r.bottom>0&&!el.dataset.ppgShifted){const top=cs.top==='auto'?'0px':cs.top;el.style.setProperty('top',`calc(${top} + var(--ppg-bar-h))`,'important');el.classList.add('ppg-fixed-shift');el.dataset.ppgShifted='1'}}});[...document.body.children].forEach(el=>{if(el===toolbar||el===modal||['SCRIPT','STYLE'].includes(el.tagName))return;const cs=getComputedStyle(el),r=el.getBoundingClientRect();if(cs.position!=='fixed'&&r.height>=innerHeight*.94&&(cs.overflow==='hidden'||getComputedStyle(document.body).overflow==='hidden')&&!el.dataset.ppgTall){el.classList.add('ppg-tall-root');el.dataset.ppgTall='1'}})}requestAnimationFrame(protectLayout);addEventListener('resize',protectLayout);
+$('#ppg-about').onclick=()=>open(`<h2>${CFG.name}</h2><p>${CFG.desc}</p><h3>Como jogar</h3><p>${CFG.how}</p><h3>Dica de estratégia</h3><p>${CFG.tip}</p><p class="ppg-credit">Produção: Projeto Primata Games em 2026.</p>`);
+$('#ppg-theme').onclick=()=>{prefs.theme=prefs.theme==='light'?'dark':'light';writeJSON(PREF_KEY,prefs);document.body.classList.toggle('ppg-light',prefs.theme==='light');document.body.classList.toggle('ppg-dark',prefs.theme==='dark');$('#ppg-theme').textContent=prefs.theme==='light'?'🌙 Escuro':'☀️ Claro';sfx(520,.05)};
+let ac=null,master=null,music=null,beat=0;function initAudio(){if(ac)return;ac=new (window.AudioContext||window.webkitAudioContext)();master=ac.createGain();master.gain.value=prefs.sound?.10:0;master.connect(ac.destination)}function tone(f,d=.08,type='sine',vol=.08,when=0){if(!prefs.sound)return;initAudio();const t=ac.currentTime+when,o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(master);o.start(t);o.stop(t+d)}function sfx(f=420,d=.045){tone(f,d,'triangle',.10)}function startBgm(){if(music||!prefs.sound)return;initAudio();music=setInterval(()=>{if(document.hidden||!prefs.sound)return;const seq=[110,138.59,164.81,220,196,164.81,146.83,123.47],f=seq[beat++%seq.length];tone(f,.16,'triangle',.019);if(beat%4===1)tone(f/2,.1,'sine',.012)},390)}function stopBgm(){clearInterval(music);music=null}function syncNative(on){try{soundEnabled=on}catch{}}function unlock(){initAudio();ac?.resume();if(prefs.sound)startBgm();syncNative(prefs.sound)}addEventListener('pointerdown',unlock,{once:true});addEventListener('keydown',unlock,{once:true});window.PPGPlatform={tone,sfx,get soundOn(){return prefs.sound},setLife(v){const e=$('#ppg-life'),f=$('#ppg-life-fill'),n=$('#ppg-life-num');if(v==null){e.classList.remove('show');return}v=Math.max(0,Math.min(100,v));e.classList.add('show');f.style.width=v+'%';n.textContent=Math.round(v)}};
+$('#ppg-sound').onclick=e=>{e.stopPropagation();prefs.sound=!prefs.sound;writeJSON(PREF_KEY,prefs);initAudio();master.gain.setTargetAtTime(prefs.sound?.10:0,ac.currentTime,.02);syncNative(prefs.sound);if(prefs.sound){ac.resume();startBgm();sfx(660,.08)}else stopBgm();$('#ppg-sound').textContent=prefs.sound?'🔊 Som ON':'🔇 Som OFF'};
+const sessionId=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7);function formatValue(v){if(v==null)return '—';if(Math.abs(v)>=1e9)return v.toLocaleString('pt-BR',{notation:'compact',maximumFractionDigits:2})+CFG.unit;return (Number.isInteger(v)?v:v.toFixed(2).replace('.',','))+CFG.unit}function difficultyKey(){try{return String('Padrão')||'Padrão'}catch{return 'Padrão'}}function metric(){try{const num=window.__ppgHelpers.num,money=window.__ppgHelpers.money;return num(document.querySelector('#score')?.textContent)}catch{return null}}
+function upsert(v){if(v==null||!Number.isFinite(v)||(CFG.mode==='min'&&v<=0))return;let db=readJSON(REC_KEY,{});if(Array.isArray(db))db={'Padrão':db};const dk=difficultyKey(),r=Array.isArray(db[dk])?db[dk]:[],me=r.find(x=>x.sessionId===sessionId);if(me){const better=CFG.mode==='min'?v<me.value:v>me.value;if(!better)return;me.value=v;me.at=Date.now()}else r.push({sessionId,value:v,at:Date.now()});r.sort((a,b)=>CFG.mode==='min'?a.value-b.value:b.value-a.value);db[dk]=r.slice(0,5);writeJSON(REC_KEY,db)}setInterval(()=>upsert(metric()),800);addEventListener('pagehide',()=>upsert(metric()));
+function renderRecords(){let db=readJSON(REC_KEY,{});if(Array.isArray(db))db={'Padrão':db};const keys=Object.keys(db).sort((a,b)=>a.localeCompare(b,'pt-BR',{numeric:true}));const sections=keys.length?keys.map(dk=>{const r=db[dk]||[];return `<section class="ppg-diff-section"><div class="ppg-diff-title">◆ ${dk}</div>${r.length?`<div class="ppg-record-list">${r.map((x,i)=>`<div class="ppg-record"><b>#${i+1}</b><span><strong>${formatValue(x.value)}</strong><br><small>${new Date(x.at).toLocaleDateString('pt-BR')}</small></span><small>${CFG.metric}</small></div>`).join('')}</div>`:`<div class="ppg-empty">Sem marcas nesta dificuldade.</div>`}</section>`}).join(''):`<div class="ppg-empty">Ainda não há marca registrada neste navegador.</div>`;open(`<h2>Placares locais</h2><p>Os recordes são separados por dificuldade/modo quando o jogo oferece níveis distintos.</p>${sections}`)}$('#ppg-records').onclick=renderRecords;
+function pollLife(){let v=null;try{v=(()=>{try{return typeof life!=='undefined'?life:null}catch{return null}})()}catch{}window.PPGPlatform.setLife(v)}setInterval(pollLife,250);pollLife();syncNative(prefs.sound);
+})();
+</script>
+</body>
+</html>

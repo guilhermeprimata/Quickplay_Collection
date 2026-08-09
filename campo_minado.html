@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Toxic Stench</title>
+
+<style>
+        /* Paleta autoral Toxic Stench: esgoto, lodo e ferrugem */
+        :root {
+            --nebula-lime: #C4F76A;
+            --nebula-violet: #6B7B32;
+            --nebula-deep: #2F3A20;
+            --nebula-light: #F1F3E6;
+            --nebula-mid: #8B9070;
+            --nebula-muted: #54604A;
+            --text-color: #223018;
+            --bg-color: #8e9972;
+            --cell-hidden-color: #7d8662;
+            --cell-revealed-color: #b7b18b;
+            --border-color: #4e563d;
+            --button-bg: #566439;
+            --button-text: #ecf7ca;
+            --button-hover-bg: #6d7a45;
+            --sewer-slime: #b9db67;
+            --sewer-gunk: #5d4b31;
+            --sewer-rust: #8f542b;
+        }
+
+        /* Cores para o modo escuro */
+        .dark-mode {
+            --text-color: #eef6d8;
+            --bg-color: #26301e;
+            --cell-hidden-color: #485338;
+            --cell-revealed-color: #34392b;
+            --border-color: #78845d;
+            --button-bg: #b3d25c;
+            --button-text: #223018;
+            --button-hover-bg: #cce77a;
+        }
+
+        /* Estilo do corpo, usando a fonte Arial conforme o guia */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--bg-color);
+            background-image:
+              radial-gradient(circle at 18% 14%, rgba(186,218,98,.18), transparent 18%),
+              radial-gradient(circle at 82% 20%, rgba(255,180,72,.10), transparent 22%),
+              linear-gradient(180deg, rgba(35,44,24,.22), rgba(0,0,0,.12)),
+              repeating-linear-gradient(135deg, rgba(255,255,255,.03) 0 10px, rgba(0,0,0,.04) 10px 20px);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+            width: 100%;
+            max-width: 600px; /* Largura máxima para a área do jogo */
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            width: 100%;
+        }
+
+        header img {
+            height: 40px; 
+            margin-right: 10px;
+        }
+
+        /* Título do jogo em caixa alta e com as cores da marca */
+        header h1 {
+            font-size: 2rem; 
+            font-weight: 700;
+            color: #31401d;
+            text-shadow: 0 2px 0 rgba(255,255,255,.25), 0 4px 14px rgba(62,82,18,.25);
+            text-transform: uppercase; /* Conforme diretriz de tipografia */
+        }
+        .dark-mode header h1 {
+            color: #d6f58f;
+        }
+
+        canvas {
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            box-shadow: 0 18px 34px rgba(33,38,16,.35), inset 0 0 0 2px rgba(239,247,206,.08);
+            background: linear-gradient(180deg, rgba(99,112,66,.55), rgba(76,83,53,.8));
+            cursor: pointer;
+            transition: border-color 0.3s;
+            max-width: 100%;
+            height: auto; 
+        }
+
+        .controls, .info, .credits-container, .ranking-container {
+            margin-top: 1rem;
+            text-align: center;
+        }
+        
+        .info span {
+            margin: 0 10px;
+            font-size: 1.1rem;
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: .65rem;
+            margin-top: 1.35rem;
+        }
+
+        /* Botões refinados para combinar melhor com o resto do projeto */
+        button, .button-style {
+            background: linear-gradient(180deg, color-mix(in srgb, var(--button-bg) 88%, white 12%), var(--button-bg));
+            color: var(--button-text);
+            border: 1px solid rgba(255,255,255,.12);
+            padding: .78rem 1.15rem;
+            border-radius: 12px;
+            font-size: .93rem;
+            cursor: pointer;
+            transition: background-color 0.2s, box-shadow 0.2s, transform 0.1s, filter .2s;
+            font-weight: 700;
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255,255,255,.12);
+            text-transform: uppercase;
+            letter-spacing: .02em;
+            min-height: 44px;
+        }
+
+        button:hover, .button-style:hover {
+            background-color: var(--button-hover-bg);
+            box-shadow: 0 10px 22px rgba(0, 0, 0, 0.24);
+            transform: translateY(-2px);
+            filter: brightness(1.04);
+        }
+
+        button:active, .button-style:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+        }
+        
+        /* Estilo do botão de modo de bandeira ativo */
+        button.active-flag-mode {
+            background-color: var(--nebula-lime);
+            color: var(--nebula-deep);
+        }
+        .dark-mode button.active-flag-mode {
+            background-color: var(--nebula-violet);
+            color: var(--nebula-lime);
+        }
+
+        /* Estilo para os créditos */
+        .credits {
+            font-style: italic;
+            font-size: 0.8rem;
+            margin-top: 1.5rem;
+            color: var(--nebula-muted);
+            font-family: 'Arial', sans-serif; /* Garantindo que os créditos usem Arial */
+        }
+        .dark-mode .credits {
+            color: var(--nebula-mid);
+        }
+
+        /* Estilos do Modal */
+        .modal {
+            display: none; 
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: var(--bg-color);
+            margin: auto;
+            padding: 25px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            font-family: 'Arial', sans-serif; /* Garantindo que o conteúdo do modal use Arial */
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+            color: var(--nebula-violet);
+            font-family: 'Arial', sans-serif; /* Garantindo que os títulos do modal usem Arial */
+            text-transform: uppercase; /* Títulos do modal em caixa alta */
+        }
+        .dark-mode .modal-content h2 {
+            color: var(--nebula-lime);
+        }
+
+        .modal-content input[type="text"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid var(--nebula-mid);
+            border-radius: 4px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .modal-buttons button {
+            margin: 0 5px;
+        }
+        
+        .ranking-container h2 {
+            color: var(--nebula-violet);
+            margin-bottom: 0.5rem;
+            font-family: 'Arial', sans-serif; /* Garantindo que o título do ranking use Arial */
+            text-transform: uppercase; /* Título do ranking em caixa alta */
+        }
+        .dark-mode .ranking-container h2 {
+            color: var(--nebula-lime);
+        }
+        .ranking-list {
+            list-style: none;
+            padding: 0;
+            font-family: 'Arial', sans-serif; /* Garantindo que a lista do ranking use Arial */
+        }
+        .ranking-list li {
+            background-color: var(--cell-revealed-color);
+            padding: 8px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        .dark-mode .ranking-list li {
+             background-color: var(--cell-hidden-color);
+        }
+
+        .loader {
+            border: 4px solid var(--cell-hidden-color);
+            border-top: 4px solid var(--nebula-violet);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        .dark-mode .loader {
+            border-top: 4px solid var(--nebula-lime);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 640px) {
+            .button-group { gap: .5rem; }
+            button, .button-style {
+                padding: .72rem .9rem;
+                font-size: .86rem;
+                min-height: 40px;
+                border-radius: 10px;
+            }
+            .info span { font-size: 1rem; }
+        }
+
+        /* Estilo para a caixa de alerta personalizada */
+        #custom-alert-box {
+            background-color: var(--nebula-violet);
+            color: var(--nebula-lime);
+            border-radius: 6px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.25);
+            font-size: 0.95rem;
+            font-family: 'Arial', sans-serif; /* Garantindo que o alerta use Arial */
+        }
+        .dark-mode #custom-alert-box {
+            background-color: var(--nebula-lime);
+            color: var(--nebula-deep);
+        }
+    </style>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
+    body {
+        font-size: 16px;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    .game-board {
+        display: grid;
+        grid-template-columns: repeat(10, 1fr);
+        gap: 2px;
+        width: 100%;
+        max-width: 400px;
+    }
+    .cell {
+        width: 100%;
+        padding-top: 100%;
+        position: relative;
+    }
+    .cell-content {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5em;
+    }
+    .controls {
+        display: flex;
+        justify-content: space-around;
+        width: 100%;
+        max-width: 400px;
+        margin-top: 10px;
+    }
+    .button {
+        flex: 1;
+        margin: 5px;
+        padding: 10px;
+        font-size: 1em;
+    }
+</style><script id="ppg-tone-shim">
+(function(){
+  if(window.Tone) return;
+  let ac=null;
+  const get=()=>ac||(ac=new (window.AudioContext||window.webkitAudioContext)());
+  const noteFreq=n=>{if(typeof n==='number')return n;const m=String(n).match(/^([A-G])([#b]?)(-?\d)$/);if(!m)return 440;const semi={C:0,D:2,E:4,F:5,G:7,A:9,B:11}[m[1]]+(m[2]==='#'?1:m[2]==='b'?-1:0);return 440*Math.pow(2,((+m[3]-4)*12+semi-9)/12)};
+  const durSec=d=>{if(typeof d==='number')return d; if(/^\d+(\.\d+)?$/.test(String(d)))return +d; return ({'1n':2,'2n':1,'4n':.5,'8n':.25,'16n':.125,'32n':.0625})[d]||.2};
+  class Synth{constructor(opts={}){this.opts=opts;this.volume={value:0}}toDestination(){return this}triggerAttackRelease(note,dur='8n',when){const A=get(),t=typeof when==='number'?when:A.currentTime,notes=Array.isArray(note)?note:[note];notes.forEach((n,i)=>{const o=A.createOscillator(),g=A.createGain(),d=durSec(dur),v=Math.pow(10,(this.volume.value||0)/20)*.10;o.type=this.opts.oscillator?.type||'sine';o.frequency.setValueAtTime(noteFreq(n),t);g.gain.setValueAtTime(v/Math.max(1,notes.length),t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(A.destination);o.start(t+i*.002);o.stop(t+d+.01)})}}
+  class PolySynth extends Synth{constructor(_Type,opts={}){super(opts)}}
+  class NoiseSynth extends Synth{triggerAttackRelease(dur='8n',when){const A=get(),t=typeof when==='number'?when:A.currentTime,d=durSec(dur),buf=A.createBuffer(1,Math.max(1,A.sampleRate*d),A.sampleRate),data=buf.getChannelData(0);for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*(1-i/data.length);const src=A.createBufferSource(),g=A.createGain();src.buffer=buf;g.gain.value=Math.pow(10,(this.volume.value||0)/20)*.12;src.connect(g).connect(A.destination);src.start(t)}}
+  window.Tone={Synth,PolySynth,NoiseSynth,start:async()=>{const A=get();if(A.state==='suspended')await A.resume()},now:()=>get().currentTime,get context(){return get()}};
+})();
+</script>
+<style id="ppg-viewport-fit">
+:root{--fitbar:var(--ppg-bar-h,48px)}@media(max-height:820px){body{min-height:100dvh!important}.game-container{padding:.35rem!important}header{margin-bottom:.25rem!important}header h1{font-size:clamp(20px,4vh,30px)!important;margin:.2rem 0}.info{margin-top:.2rem!important}.button-group{margin-top:.55rem!important;gap:.35rem!important}.button-group button{padding:.52rem .75rem!important;font-size:.78rem!important;min-height:34px!important}.credits-container{display:none}.ranking-container{margin-top:.35rem!important;max-height:78px;overflow:auto}.ranking-container h2{font-size:14px;margin:2px}.ranking-list{margin:2px}.ranking-list li{padding:3px!important;margin-bottom:2px!important;font-size:11px!important}}
+</style>
+</head>
+<body>
+<div class="game-container">
+<header>
+
+<h1>TOXIC STENCH</h1>
+</header>
+<div class="info">
+<span id="bombs-left">Cocôs: 0</span>
+<span id="timer">Tempo: 0s</span>
+</div>
+<canvas id="minesweeperCanvas"></canvas>
+<div class="loader" id="ranking-loader" style="display: none;"></div>
+<div class="ranking-container" id="rankingContainer" style="display: none;">
+<h2>Top 5 Menores Fedorômetros</h2>
+<ol class="ranking-list" id="ranking-list"></ol>
+</div>
+<div class="button-group">
+<button id="new-game-btn">Novo Mapa</button>
+<button id="toggle-flag-btn">Marcar Cocô (🚩)</button>
+<button id="reset-all-btn">Resetar Tudo</button>
+<button id="dark-mode-btn">Modo Escuro</button>
+<button id="toggle-sound-btn">Som: On</button> <!-- Novo botão de som -->
+<button id="back-btn">Voltar</button>
+</div>
+<div class="credits-container">
+<p class="credits">TOXIC STENCH · Projeto Primata Games · 2026</p>
+</div>
+</div>
+<!-- O elemento #ranking foi removido, pois o ranking será gerenciado dinamicamente via JS e localStorage -->
+<div class="modal" id="nameModal">
+<div class="modal-content">
+<h2>Novo Recorde!</h2>
+<p>Parabéns! Você entrou no Top 5. Digite seu nome:</p>
+<input id="playerNameInput" maxlength="20" placeholder="Seu nome" type="text"/>
+<div class="modal-buttons">
+<button class="button-style" id="submitScoreBtn">Salvar</button>
+</div>
+</div>
+</div>
+<div class="modal" id="confirmResetModal">
+<div class="modal-content">
+<h2>Confirmar Reset</h2>
+<p>Tem certeza que deseja resetar tudo? Isso limpará o ranking e todos os dados salvos.</p>
+<div class="modal-buttons">
+<button class="button-style" id="confirmResetBtn">Confirmar</button>
+<button class="button-style" id="cancelResetBtn">Cancelar</button>
+</div>
+</div>
+</div>
+<script type="module">
+        // --- Removendo importações do Firebase Firestore para ranking local ---
+
+        // --- Configuração Firebase (apenas para autenticação, se necessário) ---
+        // As variáveis __firebase_config e __app_id ainda são fornecidas pelo ambiente,
+        // mas o Firestore não será usado para o ranking.
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { /* Default local config if not provided */ };
+        // const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'; // Não mais necessário para ranking local
+        let userId; 
+        
+        // --- Sound Synthesis (Tone.js) ---
+        let soundsReady = false;
+        let clickSound, flagSound, bombSound, winSound, gameOverSound; 
+        let animationFrameId; // Para controlar o loop de animação
+        let soundEnabled = localStorage.getItem('soundEnabled') === 'false' ? false : true; // Estado inicial do som
+
+        async function initSounds() {
+            if (soundsReady) return;
+            try {
+                await Tone.start(); 
+                console.log("Audio Context started by Tone.js");
+
+                clickSound = new Tone.Synth({
+                    oscillator: { type: "sine" },
+                    envelope: { attack: 0.005, decay: 0.1, sustain: 0.01, release: 0.1 }
+                }).toDestination();
+                
+                flagSound = new Tone.Synth({
+                    oscillator: { type: "triangle" },
+                    envelope: { attack: 0.01, decay: 0.05, sustain: 0.02, release: 0.1 }
+                }).toDestination();
+
+                bombSound = new Tone.NoiseSynth({
+                    noise: { type: "pink" },
+                    envelope: { attack: 0.001, decay: 0.8, sustain: 0, release: 0.7 } 
+                }).toDestination();
+                bombSound.volume.value = -8; 
+
+                winSound = new Tone.PolySynth(Tone.Synth, {
+                    oscillator: { type: "sine" },
+                    envelope: { attack: 0.05, decay: 0.2, sustain: 0.1, release: 0.2 }
+                }).toDestination();
+                winSound.volume.value = -12; 
+
+                gameOverSound = new Tone.PolySynth(Tone.Synth, {
+                    oscillator: { type: "sawtooth" }, 
+                    envelope: { attack: 0.1, decay: 0.5, sustain: 0.2, release: 1.0 } 
+                }).toDestination();
+                gameOverSound.volume.value = -10; 
+                
+                soundsReady = true;
+                console.log("Sounds initialized.");
+            } catch (e) {
+                console.error("Error starting Tone.js or initializing sounds:", e);
+            }
+        }
+        
+        function playClickSound() {
+            if (soundsReady && clickSound && soundEnabled) { // Verifica soundEnabled
+                clickSound.triggerAttackRelease("C5", "8n", Tone.now());
+            }
+        }
+        function playFlagSound() {
+            if (soundsReady && flagSound && soundEnabled) { // Verifica soundEnabled
+                flagSound.triggerAttackRelease("E5", "16n", Tone.now());
+            }
+        }
+        function playBombSound() {
+            if (soundsReady && bombSound && soundEnabled) { // Verifica soundEnabled
+                bombSound.triggerAttackRelease("1.5", Tone.now()); 
+            }
+        }
+
+        // Melodia de vitória (4 segundos)
+        function playWinSound() {
+            if (soundsReady && winSound && soundEnabled) { // Verifica soundEnabled
+                const now = Tone.now();
+                winSound.triggerAttackRelease(["C4", "E4", "G4", "C5"], "8n", now);
+                winSound.triggerAttackRelease(["D4", "F#4", "A4", "D5"], "8n", now + 0.4);
+                winSound.triggerAttackRelease(["E4", "G#4", "B4", "E5"], "8n", now + 0.8);
+                winSound.triggerAttackRelease(["F#4", "A4", "C#5", "F#5"], "8n", now + 1.2);
+                winSound.triggerAttackRelease(["G5", "B5", "D6"], "8n", now + 2.0);
+                winSound.triggerAttackRelease(["C6"], "2n", now + 2.5); 
+            }
+        }
+
+        // Melodia de Game Over (3 segundos)
+        function playGameOverSound() {
+            if (soundsReady && gameOverSound && soundEnabled) { // Verifica soundEnabled
+                const now = Tone.now();
+                gameOverSound.triggerAttackRelease(["C4", "C#3", "G3"], "8n", now); 
+                gameOverSound.triggerAttackRelease(["B3", "F3", "A#2"], "8n", now + 0.5); 
+                gameOverSound.triggerAttackRelease(["A3", "E3", "G#2"], "8n", now + 1.0); 
+                gameOverSound.triggerAttackRelease(["D2"], "1n", now + 1.8); 
+            }
+        }
+
+
+        // --- Game Variables ---
+        const canvas = document.getElementById('minesweeperCanvas');
+        const ctx = canvas.getContext('2d');
+        const bombsLeftEl = document.getElementById('bombs-left');
+        const timerEl = document.getElementById('timer');
+
+        const GRID_SIZE = 16; 
+        let NUM_BOMBS; 
+        let cellSize;
+        let board;
+        let revealedCount;
+        let flagsPlaced;
+        let gameOver;
+        let gameWon;
+        let firstClick;
+        let timerInterval;
+        let secondsPassed;
+        let flagMode = false;
+
+        // Partículas para explosão
+        let particles = [];
+        const PARTICLE_COUNT = 40; 
+        const PARTICLE_LIFETIME = 90; 
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.radius = Math.random() * 3 + 1; 
+                this.vx = (Math.random() - 0.5) * 8; 
+                this.vy = (Math.random() - 0.5) * 8; 
+                this.alpha = 1; 
+                this.life = PARTICLE_LIFETIME; 
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.alpha -= 1 / this.life; 
+                this.life--;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+
+        // --- UI Elements ---
+        const newGameBtn = document.getElementById('new-game-btn');
+        const resetAllBtn = document.getElementById('reset-all-btn');
+        const darkModeBtn = document.getElementById('dark-mode-btn');
+        const backBtn = document.getElementById('back-btn');
+        const toggleFlagBtn = document.getElementById('toggle-flag-btn');
+        const toggleSoundBtn = document.getElementById('toggle-sound-btn'); // Novo elemento
+
+        const nameModal = document.getElementById('nameModal');
+        const playerNameInput = document.getElementById('playerNameInput');
+        const submitScoreBtn = document.getElementById('submitScoreBtn');
+        
+        const confirmResetModal = document.getElementById('confirmResetModal');
+        const confirmResetBtn = document.getElementById('confirmResetBtn');
+        const cancelResetBtn = document.getElementById('cancelResetBtn');
+
+        const rankingContainer = document.getElementById('rankingContainer');
+        const rankingListEl = document.getElementById('ranking-list');
+        const rankingLoader = document.getElementById('ranking-loader');
+
+
+        // --- Game Logic Functions ---
+        function getRandomBombs() {
+            return Math.floor(Math.random() * (20 - 15 + 1)) + 15; 
+        }
+
+        function calculateCellSize() {
+            const padding = 20; 
+            const controlsHeight = 200; 
+            const availableWidth = Math.min(600, window.innerWidth - padding);
+            const availableHeight = window.innerHeight - controlsHeight - padding;
+            
+            const canvasMaxWidth = Math.min(availableWidth, 560); 
+            
+            cellSize = Math.floor(Math.min(canvasMaxWidth / GRID_SIZE, availableHeight / GRID_SIZE));
+            
+            canvas.width = GRID_SIZE * cellSize;
+            canvas.height = GRID_SIZE * cellSize;
+        }
+
+        function placeBombs(firstClickRow, firstClickCol) {
+            let bombsToPlace = NUM_BOMBS;
+            while (bombsToPlace > 0) {
+                const row = Math.floor(Math.random() * GRID_SIZE);
+                const col = Math.floor(Math.random() * GRID_SIZE);
+
+                if ((row === firstClickRow && col === firstClickCol) || board[row][col].isBomb) {
+                    continue;
+                }
+                let isNearFirstClick = false;
+                for (let dr = -1; dr <= 1; dr++) {
+                    for (let dc = -1; dc <= 1; dc++) {
+                        if (row === firstClickRow + dr && col === firstClickCol + dc) {
+                            isNearFirstClick = true;
+                            break;
+                        }
+                    }
+                    if (isNearFirstClick) break;
+                }
+                if(isNearFirstClick) continue;
+
+                board[row][col].isBomb = true;
+                bombsToPlace--;
+            }
+
+            for (let r = 0; r < GRID_SIZE; r++) {
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    if (!board[r][c].isBomb) {
+                        board[r][c].adjacentBombs = countAdjacentBombs(r, c);
+                    }
+                }
+            }
+        }
+
+        function countAdjacentBombs(row, col) {
+            let count = 0;
+            for (let dr = -1; dr <= 1; dr++) {
+                for (let dc = -1; dc <= 1; dc++) {
+                    if (dr === 0 && dc === 0) continue;
+                    const nr = row + dr;
+                    const nc = col + dc;
+                    if (nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE && board[nr][nc].isBomb) {
+                        count++;
+                    }
+                }
+            }
+            return count;
+        }
+        
+        async function revealCell(row, col, isPlayerAction = true) { 
+            if (row < 0 || row >= GRID_SIZE || col < 0 || col >= GRID_SIZE || board[row][col].isRevealed || board[row][col].isFlagged) {
+                return;
+            }
+
+            if (firstClick) {
+                await initSounds(); 
+                NUM_BOMBS = getRandomBombs(); 
+                placeBombs(row, col);
+                startTimer();
+                firstClick = false;
+                updateBombsLeftDisplay(); 
+            }
+            
+            if (isPlayerAction) {
+                playClickSound();
+            }
+            
+            board[row][col].isRevealed = true;
+            revealedCount++;
+            
+            if (board[row][col].isBomb) {
+                if (isPlayerAction) { 
+                    gameOver = true;
+                    gameWon = false;
+                    stopTimer(); 
+                    
+                    ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
+                    ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
+
+                    createExplosionParticles(col * cellSize + cellSize / 2, row * cellSize + cellSize / 2); 
+                    
+                    revealAllBombs(false); 
+
+                    playBombSound(); 
+                    setTimeout(() => {
+                        showCustomAlert("Você pisou num cocô tóxico! Fim de jogo.");
+                        playGameOverSound(); 
+                    }, 1000); 
+
+                    if (!animationFrameId) { 
+                        animationFrameId = requestAnimationFrame(drawBoard);
+                    }
+                }
+            } else {
+                if (board[row][col].adjacentBombs === 0) {
+                    for (let dr = -1; dr <= 1; dr++) {
+                        for (let dc = -1; dc <= 1; dc++) {
+                            if (dr === 0 && dc === 0) continue;
+                            revealCell(row + dr, col + dc, false); 
+                        }
+                    }
+                }
+                checkWinCondition();
+            }
+            drawBoard();
+        }
+
+        function createExplosionParticles(x, y) {
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                const colors = ['#b8f06a', '#7b4d25', '#553117', '#8fa14a', '#d4ff89'];
+                const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                particles.push(new Particle(x, y, randomColor));
+            }
+        }
+
+        async function toggleFlag(row, col) { 
+            if (gameOver || board[row][col].isRevealed) return;
+            if (firstClick) { 
+                 await initSounds();
+            }
+
+            playFlagSound();
+            if (board[row][col].isFlagged) {
+                board[row][col].isFlagged = false;
+                flagsPlaced--;
+            } else {
+                if (flagsPlaced < NUM_BOMBS) {
+                    board[row][col].isFlagged = true;
+                    flagsPlaced++;
+                } else {
+                    showCustomAlert("Número máximo de bandeiras atingido!");
+                }
+            }
+            updateBombsLeftDisplay();
+            drawBoard();
+        }
+
+        function checkWinCondition() {
+            if (gameOver) return;
+            const nonBombCells = GRID_SIZE * GRID_SIZE - NUM_BOMBS;
+            if (revealedCount === nonBombCells) {
+                gameOver = true;
+                gameWon = true;
+                playWinSound(); 
+                revealAllBombs(true); 
+                stopTimer();
+                setTimeout(async () => {
+                    showCustomAlert("Parabéns! Você venceu!");
+                    await checkAndSubmitScore();
+                }, 100);
+            }
+        }
+        
+        function revealAllBombs(showMushrooms) {
+            for (let r = 0; r < GRID_SIZE; r++) {
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    if (board[r][c].isBomb) {
+                        board[r][c].isRevealed = true;
+                        board[r][c].isMushroom = showMushrooms;
+                    }
+                }
+            }
+        }
+
+        // --- Drawing Functions ---
+        function drawBoard() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let r = 0; r < GRID_SIZE; r++) {
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    drawCell(r, c);
+                }
+            }
+            updateParticles(); 
+            drawParticles();   
+            
+            if (!gameOver || particles.length > 0) {
+                animationFrameId = requestAnimationFrame(drawBoard);
+            } else {
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                    animationFrameId = null;
+                }
+            }
+        }
+
+        function drawCell(row, col) {
+            const x = col * cellSize;
+            const y = row * cellSize;
+            const cell = board[row] && board[row][col] ? board[row][col] : null; 
+
+            if (!cell) {
+                console.warn(`Attempted to draw undefined cell at (${row}, ${col}). Board state:`, board);
+                return; 
+            }
+
+            ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--border-color').trim();
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x, y, cellSize, cellSize);
+
+            if (cell.isRevealed) {
+                ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--cell-revealed-color').trim();
+                ctx.fillRect(x, y, cellSize, cellSize);
+                ctx.fillStyle = 'rgba(93,75,49,.10)';
+                ctx.fillRect(x+2, y+2, cellSize*0.4, cellSize*0.18);
+                ctx.fillRect(x+cellSize*0.52, y+cellSize*0.62, cellSize*0.24, cellSize*0.12);
+
+                if (cell.isBomb) {
+                    if (cell.isMushroom) { 
+                        drawMushroom(x, y);
+                    } else { 
+                        drawBomb(x, y);
+                    }
+                } else if (cell.adjacentBombs > 0) {
+                    ctx.fillStyle = getTextColorForNumber(cell.adjacentBombs);
+                    ctx.font = `${cellSize * 0.6}px Arial`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(cell.adjacentBombs.toString(), x + cellSize / 2, y + cellSize / 2 + 2);
+                }
+            } else {
+                ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--cell-hidden-color').trim();
+                ctx.fillRect(x, y, cellSize, cellSize);
+                ctx.fillStyle = 'rgba(196,247,106,.08)';
+                ctx.beginPath();
+                ctx.arc(x + cellSize*0.28, y + cellSize*0.32, cellSize*0.08, 0, Math.PI*2);
+                ctx.arc(x + cellSize*0.72, y + cellSize*0.68, cellSize*0.05, 0, Math.PI*2);
+                ctx.fill();
+                if (cell.isFlagged) {
+                    drawFlag(x, y);
+                }
+            }
+        }
+
+        function getTextColorForNumber(number) {
+            const colors = {
+                1: '#0000FF', 2: '#008000', 3: '#FF0000', 4: '#00008B',
+                5: '#8B0000', 6: '#008B8B', 7: '#000000', 8: '#808080'
+            };
+            return colors[number] || '#000000';
+        }
+
+        function drawBomb(x, y) { return drawBombEmoji(x, y); }
+
+        function drawMushroom(x, y) { return drawMushroomEmoji(x, y); }
+
+        function drawBombEmoji(x, y) {
+            const centerX = x + cellSize / 2;
+            const centerY = y + cellSize / 2;
+            const t = performance.now() * 0.0022;
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            const discR = cellSize * 0.33;
+            const disc = ctx.createRadialGradient(0, -cellSize * 0.04, discR * 0.15, 0, 0, discR);
+            disc.addColorStop(0, 'rgba(255,248,220,.95)');
+            disc.addColorStop(.42, 'rgba(221,233,168,.92)');
+            disc.addColorStop(.43, 'rgba(56,44,28,.96)');
+            disc.addColorStop(1, 'rgba(28,21,14,.98)');
+            ctx.fillStyle = disc;
+            ctx.beginPath();
+            ctx.arc(0, 0, discR, 0, Math.PI * 2);
+            ctx.fill();
+            // bafo tóxico + partículas de fedor
+            ctx.lineCap = 'round';
+            for (let i = 0; i < 3; i++) {
+                ctx.strokeStyle = 'rgba(198,255,122,.72)';
+                ctx.lineWidth = Math.max(1.4, cellSize * 0.04);
+                ctx.beginPath();
+                ctx.moveTo(-cellSize*0.10 + i*cellSize*0.10, -cellSize*0.20);
+                ctx.bezierCurveTo(-cellSize*0.18 + i*cellSize*0.08, -cellSize*0.34, cellSize*0.02 + i*cellSize*0.08, -cellSize*0.28, cellSize*0.02 + i*cellSize*0.08, -cellSize*0.48);
+                ctx.stroke();
+                const px = -cellSize*0.12 + i*cellSize*0.12 + Math.sin(t*1.4 + i)*cellSize*0.02;
+                const py = -cellSize*0.28 - i*cellSize*0.08 - ((t*16 + i*7)%(cellSize*0.11));
+                ctx.fillStyle = `rgba(201,255,137,${0.18 + i*0.06})`;
+                ctx.beginPath();
+                ctx.arc(px, py, cellSize*(0.028 + i*0.004), 0, Math.PI*2);
+                ctx.fill();
+            }
+            ctx.font = `900 ${Math.floor(cellSize * 0.84)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.shadowColor = 'rgba(0,0,0,.55)';
+            ctx.shadowBlur = Math.max(3, cellSize * 0.10);
+            // tinge o emoji para um marrom mais forte
+            ctx.filter = 'sepia(1) saturate(2.0) hue-rotate(-18deg) brightness(.84) contrast(1.08)';
+            ctx.strokeStyle = 'rgba(18,12,8,.65)';
+            ctx.lineWidth = Math.max(1.2, cellSize * 0.03);
+            ctx.strokeText('💩', 0, cellSize * 0.03);
+            ctx.fillText('💩', 0, cellSize * 0.03);
+            ctx.filter = 'none';
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = 'rgba(255,255,255,.14)';
+            ctx.beginPath();
+            ctx.arc(-cellSize*0.09, -cellSize*0.10, cellSize*0.06, 0, Math.PI*2);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function drawMushroomEmoji(x, y) {
+            const centerX = x + cellSize / 2;
+            const centerY = y + cellSize / 2;
+            const t = performance.now() * 0.0022;
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            const discR = cellSize * 0.36;
+            const disc = ctx.createRadialGradient(0, 0, discR * 0.12, 0, 0, discR);
+            disc.addColorStop(0, 'rgba(253,255,228,.98)');
+            disc.addColorStop(.35, 'rgba(219,243,144,.95)');
+            disc.addColorStop(.58, 'rgba(74,56,32,.96)');
+            disc.addColorStop(1, 'rgba(24,18,10,1)');
+            ctx.fillStyle = disc;
+            ctx.beginPath();
+            ctx.arc(0, 0, discR, 0, Math.PI * 2);
+            ctx.fill();
+            // partículazinhas de fedor
+            for (let i = 0; i < 4; i++) {
+                const px = -cellSize*0.16 + i*cellSize*0.1 + Math.sin(t*1.2 + i*1.3)*cellSize*0.025;
+                const py = -cellSize*0.24 - i*cellSize*0.055 - ((t*14 + i*5)%(cellSize*0.09));
+                ctx.fillStyle = `rgba(194,250,123,${0.16 + i*0.04})`;
+                ctx.beginPath();
+                ctx.arc(px, py, cellSize*(0.022 + i*0.004), 0, Math.PI*2);
+                ctx.fill();
+            }
+            ctx.shadowColor = 'rgba(185,240,95,.80)';
+            ctx.shadowBlur = Math.max(8, cellSize * 0.18);
+            ctx.font = `900 ${Math.floor(cellSize * 0.88)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.filter = 'sepia(1) saturate(2.0) hue-rotate(-18deg) brightness(.84) contrast(1.08)';
+            ctx.strokeStyle = 'rgba(18,12,8,.65)';
+            ctx.lineWidth = Math.max(1.2, cellSize * 0.03);
+            ctx.strokeText('💩', 0, cellSize * 0.02);
+            ctx.fillText('💩', 0, cellSize * 0.02);
+            ctx.filter = 'none';
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = 'rgba(198,255,122,.92)';
+            ctx.lineWidth = Math.max(2, cellSize * 0.06);
+            ctx.beginPath();
+            ctx.arc(0, 0, cellSize * 0.37, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.strokeStyle = 'rgba(255,255,255,.42)';
+            ctx.lineWidth = Math.max(1, cellSize * 0.025);
+            ctx.beginPath();
+            ctx.arc(0, 0, cellSize * 0.28, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+
+        function drawFlag(x, y) {
+            const poleX = x + cellSize * 0.3;
+            const poleTopY = y + cellSize * 0.2;
+            const poleBottomY = y + cellSize * 0.8;
+            ctx.fillStyle = 'black';
+            ctx.fillRect(poleX - cellSize*0.03, poleTopY, cellSize * 0.06, poleBottomY - poleTopY);
+            ctx.fillStyle = 'red';
+            ctx.beginPath();
+            ctx.moveTo(poleX, poleTopY);
+            ctx.lineTo(poleX + cellSize * 0.4, poleTopY + cellSize * 0.15);
+            ctx.lineTo(poleX, poleTopY + cellSize * 0.3);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        // Funções para atualizar e desenhar partículas
+        function updateParticles() {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update();
+                if (particles[i].life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+        }
+
+        function drawParticles() {
+            for (const particle of particles) {
+                particle.draw();
+            }
+        }
+
+        // --- Timer and Score ---
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            secondsPassed = 0;
+            timerEl.textContent = `Tempo: ${secondsPassed}s`;
+            timerInterval = setInterval(() => {
+                secondsPassed++;
+                timerEl.textContent = `Tempo: ${secondsPassed}s`;
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
+
+        function updateBombsLeftDisplay() {
+            bombsLeftEl.textContent = `Cocôs: ${NUM_BOMBS - flagsPlaced}`;
+        }
+
+        // --- Game Initialization and Reset ---
+        async function initGame() { 
+            board = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(null).map(() => ({
+                isBomb: false,
+                isRevealed: false,
+                isFlagged: false,
+                adjacentBombs: 0,
+                isMushroom: false
+            })));
+
+            if (!soundsReady) { 
+                await initSounds();
+            }
+            NUM_BOMBS = getRandomBombs(); 
+            
+            revealedCount = 0;
+            flagsPlaced = 0;
+            gameOver = false;
+            gameWon = false;
+            firstClick = true;
+            flagMode = false;
+            toggleFlagBtn.classList.remove('active-flag-mode');
+            toggleFlagBtn.textContent = 'Marcar Cocô (🚩)';
+            updateSoundButtonText(); // Atualiza o texto do botão de som
+
+            stopTimer();
+            secondsPassed = 0;
+            timerEl.textContent = `Tempo: 0s`;
+            updateBombsLeftDisplay();
+            calculateCellSize(); 
+            particles = []; 
+            
+            if (animationFrameId) { 
+                cancelAnimationFrame(animationFrameId);
+            }
+            animationFrameId = requestAnimationFrame(drawBoard);
+
+            loadRanking(); 
+        }
+        
+        // --- Event Listeners ---
+        canvas.addEventListener('click', (event) => {
+            if (gameOver && !firstClick) return; 
+
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
+            const col = Math.floor(x / cellSize);
+            const row = Math.floor(y / cellSize);
+
+            if (row < 0 || row >= GRID_SIZE || col < 0 || col >= GRID_SIZE) return;
+
+            if (flagMode) {
+                toggleFlag(row, col);
+            } else {
+                revealCell(row, col);
+            }
+        });
+
+        canvas.addEventListener('contextmenu', (event) => {
+            event.preventDefault(); 
+            if (gameOver && !firstClick) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
+            const col = Math.floor(x / cellSize);
+            const row = Math.floor(y / cellSize);
+            
+            if (row < 0 || row >= GRID_SIZE || col < 0 || col >= GRID_SIZE) return;
+
+            toggleFlag(row, col);
+        });
+
+        newGameBtn.addEventListener('click', initGame);
+
+        resetAllBtn.addEventListener('click', () => {
+            confirmResetModal.style.display = 'flex';
+        });
+
+        confirmResetBtn.addEventListener('click', async () => {
+            await resetAllData();
+            confirmResetModal.style.display = 'none';
+        });
+        
+        cancelResetBtn.addEventListener('click', () => {
+            confirmResetModal.style.display = 'none';
+        });
+
+        darkModeBtn.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            darkModeBtn.textContent = document.body.classList.contains('dark-mode') ? 'Modo Claro' : 'Modo Escuro';
+        });
+
+        backBtn.addEventListener('click', () => {
+            window.history.back();
+        });
+
+        toggleFlagBtn.addEventListener('click', () => {
+            flagMode = !flagMode;
+            toggleFlagBtn.classList.toggle('active-flag-mode', flagMode);
+            toggleFlagBtn.textContent = flagMode ? 'Revelar Célula (🧽)' : 'Marcar Cocô (🚩)';
+        });
+
+        // Event listener para o novo botão de som
+        toggleSoundBtn.addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            localStorage.setItem('soundEnabled', soundEnabled); // Salva a preferência
+            updateSoundButtonText();
+        });
+
+        function updateSoundButtonText() {
+            toggleSoundBtn.textContent = `Som: ${soundEnabled ? 'On' : 'Off'}`;
+        }
+
+        window.addEventListener('resize', () => {
+            calculateCellSize();
+        });
+        
+        // --- Funções de Ranking Local (usando localStorage) ---
+        const LOCAL_STORAGE_KEY = 'toxic_stench_top_scores';
+
+        async function loadRanking() {
+            rankingLoader.style.display = 'block';
+            rankingContainer.style.display = 'none';
+            try {
+                const storedScores = localStorage.getItem(LOCAL_STORAGE_KEY);
+                let scores = storedScores ? JSON.parse(storedScores) : [];
+                
+                rankingListEl.innerHTML = ''; 
+
+                if (scores.length > 0) {
+                    scores.sort((a, b) => a.time - b.time); 
+                    scores.slice(0, 5).forEach((score, index) => { 
+                        const li = document.createElement('li');
+                        li.textContent = `${index + 1}. ${score.name}: ${score.time}s`;
+                        rankingListEl.appendChild(li);
+                    });
+                } else {
+                     rankingListEl.innerHTML = '<li>Nenhum recorde ainda. Seja o primeiro!</li>';
+                }
+                rankingContainer.style.display = 'block';
+            } catch (error) {
+                console.error("Erro ao carregar ranking local: ", error);
+                rankingListEl.innerHTML = '<li>Erro ao carregar ranking local.</li>';
+                rankingContainer.style.display = 'block';
+            } finally {
+                rankingLoader.style.display = 'none';
+            }
+        }
+
+        async function checkAndSubmitScore() {
+            if (!gameWon) return; 
+
+            let scores = [];
+            try {
+                const storedScores = localStorage.getItem(LOCAL_STORAGE_KEY);
+                scores = storedScores ? JSON.parse(storedScores) : [];
+            } catch (error) {
+                console.error("Erro ao buscar pontuações locais: ", error);
+            }
+            
+            scores.sort((a, b) => a.time - b.time);
+
+            if (scores.length < 5 || secondsPassed < scores[scores.length - 1].time) {
+                nameModal.style.display = 'flex';
+            }
+        }
+
+        submitScoreBtn.addEventListener('click', async () => {
+            const playerName = playerNameInput.value.trim();
+            if (!playerName) {
+                showCustomAlert("Por favor, insira seu nome.");
+                return;
+            }
+
+            nameModal.style.display = 'none';
+            rankingLoader.style.display = 'block';
+
+            try {
+                let currentScores = [];
+                const storedScores = localStorage.getItem(LOCAL_STORAGE_KEY);
+                if (storedScores) {
+                    currentScores = JSON.parse(storedScores);
+                }
+
+                currentScores.push({ name: playerName, time: secondsPassed, date: new Date().toISOString() });
+                currentScores.sort((a, b) => a.time - b.time); 
+                const newTopScores = currentScores.slice(0, 5); 
+
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newTopScores));
+                showCustomAlert("Recorde salvo com sucesso!");
+                await loadRanking(); 
+            } catch (error) {
+                console.error("Erro ao salvar o recorde local: ", error);
+                showCustomAlert("Erro ao salvar o recorde. Tente novamente.");
+            } finally {
+                playerNameInput.value = ""; 
+                rankingLoader.style.display = 'none';
+            }
+        });
+        
+        async function resetAllData() {
+            try {
+                localStorage.removeItem(LOCAL_STORAGE_KEY);
+                showCustomAlert("Todos os dados foram resetados!");
+                initGame(); 
+            } catch (error) {
+                console.error("Erro ao resetar os dados locais: ", error);
+                showCustomAlert("Erro ao resetar os dados.");
+            }
+        }
+        
+        function showCustomAlert(message, duration = 3000) {
+            let alertBox = document.getElementById('custom-alert-box');
+            if (!alertBox) {
+                alertBox = document.createElement('div');
+                alertBox.id = 'custom-alert-box';
+                alertBox.style.position = 'fixed';
+                alertBox.style.bottom = '20px';
+                alertBox.style.left = '50%';
+                alertBox.style.transform = 'translateX(-50%)';
+                alertBox.style.padding = '12px 22px'; 
+                alertBox.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--nebula-violet').trim();
+                alertBox.style.color = getComputedStyle(document.documentElement).getPropertyValue('--nebula-lime').trim();
+                if (document.body.classList.contains('dark-mode')) {
+                     alertBox.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--nebula-lime').trim();
+                     alertBox.style.color = getComputedStyle(document.documentElement).getPropertyValue('--nebula-deep').trim();
+                }
+                alertBox.style.borderRadius = '6px';
+                alertBox.style.boxShadow = '0 3px 12px rgba(0,0,0,0.25)';
+                alertBox.style.zIndex = '2000';
+                alertBox.style.opacity = '0';
+                alertBox.style.transition = 'opacity 0.5s ease-in-out, bottom 0.3s ease-in-out';
+                alertBox.style.fontSize = '0.95rem';
+                document.body.appendChild(alertBox);
+            }
+
+            alertBox.textContent = message;
+            alertBox.style.bottom = '30px'; 
+            alertBox.style.opacity = '1';
+
+            setTimeout(() => {
+                alertBox.style.opacity = '0';
+                alertBox.style.bottom = '20px'; 
+            }, duration);
+        }
+
+        // --- Initial Setup ---
+        // Função de inicialização principal
+        (async () => {
+            // Inicializa um userId local para consistência (não usado para ranking online)
+            userId = localStorage.getItem('localUserId');
+            if (!userId) {
+                userId = `anon_${crypto.randomUUID()}`;
+                localStorage.setItem('localUserId', userId);
+            }
+            console.log("User ID (local):", userId);
+
+            // Adiciona event listener para o novo botão de som
+            // Já adicionado acima, mas mantido aqui para clareza da ordem de inicialização
+            // toggleSoundBtn.addEventListener('click', () => { ... }); 
+            
+            initGame(); // Inicia o jogo
+        })();
+    </script>
+<style id="ppg-platform-style">
+:root{--ppg-ui-bg:rgba(10,13,28,.88);--ppg-ui-fg:#f7f5ff;--ppg-ui-line:rgba(255,255,255,.15);--ppg-ui-accent:#a875ff;--ppg-ui-accent2:#35e6ca}
+#ppg-toolbar{position:fixed;z-index:2147483000;top:10px;right:10px;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;max-width:min(92vw,620px);font-family:Inter,"Segoe UI",system-ui,sans-serif!important}
+#ppg-toolbar button,#ppg-toolbar a{min-height:34px!important;padding:7px 10px!important;margin:0!important;border:1px solid var(--ppg-ui-line)!important;border-radius:10px!important;background:var(--ppg-ui-bg)!important;color:var(--ppg-ui-fg)!important;font:700 12px/1 Inter,"Segoe UI",system-ui,sans-serif!important;text-decoration:none!important;text-transform:none!important;letter-spacing:0!important;box-shadow:0 8px 25px rgba(0,0,0,.22)!important;cursor:pointer!important;backdrop-filter:blur(10px);transform:none!important}
+#ppg-toolbar button:hover,#ppg-toolbar a:hover{border-color:var(--ppg-ui-accent2)!important;filter:brightness(1.12)!important}
+.ppg-modal{position:fixed;z-index:2147483640;inset:0;display:none;place-items:center;padding:18px;background:rgba(2,3,12,.78);backdrop-filter:blur(8px);font-family:Inter,"Segoe UI",system-ui,sans-serif!important}.ppg-modal.open{display:grid}.ppg-card{width:min(560px,96vw);max-height:min(80vh,720px);overflow:auto;padding:22px;border:1px solid rgba(255,255,255,.16);border-radius:20px;background:linear-gradient(145deg,#14162b,#0a0d1b);color:#f8f7ff;text-align:left;box-shadow:0 30px 90px #0009}.ppg-card h2{margin:0 0 8px!important;color:#d9c7ff!important;font:800 clamp(22px,4vw,30px)/1.1 Inter,"Segoe UI",system-ui,sans-serif!important}.ppg-card h3{margin:17px 0 6px!important;color:#63ecd6!important;font:800 14px/1.2 Inter,"Segoe UI",system-ui,sans-serif!important;text-transform:uppercase;letter-spacing:.08em}.ppg-card p,.ppg-card li{color:#d7d9e7!important;font:400 14px/1.55 Inter,"Segoe UI",system-ui,sans-serif!important}.ppg-card .ppg-credit{margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.12);font-weight:800;color:#fff!important}.ppg-close{float:right;border:0!important;background:#282c48!important;color:white!important;border-radius:9px!important;padding:7px 10px!important;cursor:pointer!important}.ppg-record-list{display:grid;gap:8px;margin-top:12px}.ppg-record{display:grid;grid-template-columns:34px 1fr auto;gap:8px;padding:10px;border-radius:12px;background:#ffffff0b;border:1px solid #ffffff10;align-items:center}.ppg-record small{color:#989db7}.ppg-empty{padding:14px;border:1px dashed #ffffff2a;border-radius:12px;color:#aeb3c8}
+body.ppg-light{background-color:#edf1f8!important;color:#182038!important}body.ppg-light :is(.menu-card,.card,.panel,.toolbar,.stats,.help,.bet-panel,.track-card,.game-container){filter:brightness(1.08) saturate(.92)}body.ppg-dark{color-scheme:dark}
+@media(max-width:720px){#ppg-toolbar{top:6px;right:6px}#ppg-toolbar button,#ppg-toolbar a{padding:6px 8px!important;font-size:11px!important}.ppg-card{padding:17px}}
+</style><script id="ppg-platform-script">
+(()=>{'use strict';
+const CFG={"id": "toxic_stench", "name": "Toxic Stench", "emoji": "💩", "desc": "Campo minado repaginado como um pesadelo fétido de esgoto, com cocôs tóxicos escondidos no mapa.", "how": "Revele casas seguras e marque onde acredita que os cocôs tóxicos estejam escondidos. Os números indicam quantos cocôs existem nas oito casas vizinhas.", "tip": "Abra primeiro regiões amplas. Quando um número já estiver satisfeito pelas bandeiras ao redor, o restante costuma ser terreno limpo.", "metric": "Casas seguras", "unit": " pts", "mode": "max"};
+const STATS_KEY='ppg_minigames_stats_v1', PREF_KEY='ppg_platform_prefs_v1', REC_KEY='ppg_records_'+CFG.id;
+const $=s=>document.querySelector(s), num=v=>{const m=String(v??'').replace(/\s/g,'').replace(/\.(?=\d{3}(\D|$))/g,'').replace(',','.').match(/-?\d+(?:\.\d+)?/);return m?+m[0]:null};
+const money=v=>{const s=String(v??'').replace(/R\$|◈|Créditos?|Banca:|💰/gi,'').trim();let m=s.match(/(-?[\d.,]+)\s*(K|M|B|T|Qa|Qi|Sx|Sp|Oc|No|Dc)?/i);if(!m)return null;let n=num(m[1]);const u=(m[2]||'').toLowerCase(),map={k:1e3,m:1e6,b:1e9,t:1e12,qa:1e15,qi:1e18,sx:1e21,sp:1e24,oc:1e27,no:1e30,dc:1e33};return n*(map[u]||1)};
+window.__ppgHelpers={num,money};
+function readJSON(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}}function writeJSON(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
+function dayKey(d=new Date()){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}function dayDiff(a,b){const A=new Date(a+'T12:00:00'),B=new Date(b+'T12:00:00');return Math.round((B-A)/86400000)}
+let all=readJSON(STATS_KEY,{}),st=all[CFG.id]||{starts:0,totalSeconds:0,longestStreak:0,currentStreak:0,lastDay:null};const today=dayKey();st.starts=(st.starts||0)+1;if(st.lastDay!==today){const dd=st.lastDay?dayDiff(st.lastDay,today):99;st.currentStreak=dd===1?(st.currentStreak||0)+1:1;st.longestStreak=Math.max(st.longestStreak||0,st.currentStreak);st.lastDay=today}st.lastStarted=Date.now();all[CFG.id]=st;writeJSON(STATS_KEY,all);
+let lastTick=performance.now();function flushTime(){const now=performance.now(),d=Math.max(0,(now-lastTick)/1000);lastTick=now;all=readJSON(STATS_KEY,{});const x=all[CFG.id]||st;x.totalSeconds=(x.totalSeconds||0)+d;x.lastPlayed=Date.now();all[CFG.id]=x;writeJSON(STATS_KEY,all)}setInterval(flushTime,5000);addEventListener('pagehide',flushTime);document.addEventListener('visibilitychange',()=>{if(document.hidden)flushTime();else lastTick=performance.now()});
+let prefs=readJSON(PREF_KEY,{theme:'dark',sound:true});document.body.classList.toggle('ppg-light',prefs.theme==='light');document.body.classList.toggle('ppg-dark',prefs.theme!=='light');
+const toolbar=document.createElement('nav');toolbar.id='ppg-toolbar';toolbar.innerHTML=`<button id="ppg-theme" title="Alternar modo claro/escuro">${prefs.theme==='light'?'🌙 Escuro':'☀️ Claro'}</button><button id="ppg-sound" title="Som e música">${prefs.sound?'🔊 Som':'🔇 Som'}</button><button id="ppg-records">🏆 Recordes</button><button id="ppg-about">ⓘ Sobre</button><a href="menu_minigames.html" id="ppg-menu">↩ Menu de Mini Games</a>`;document.body.appendChild(toolbar);
+const modal=document.createElement('div');modal.className='ppg-modal';modal.id='ppg-modal';modal.innerHTML=`<div class="ppg-card"><button class="ppg-close" aria-label="Fechar">✕</button><div id="ppg-modal-body"></div></div>`;document.body.appendChild(modal);const body=$('#ppg-modal-body');function open(html){body.innerHTML=html;modal.classList.add('open')}function close(){modal.classList.remove('open')}modal.addEventListener('click',e=>{if(e.target===modal||e.target.closest('.ppg-close'))close()});addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+$('#ppg-about').onclick=()=>open(`<h2>${CFG.name}</h2><p>${CFG.desc}</p><h3>Como jogar</h3><p>${CFG.how}</p><h3>Dica de estratégia</h3><p>${CFG.tip}</p><p class="ppg-credit">Produção: Projeto Primata Games em 2026.</p>`);
+$('#ppg-theme').onclick=()=>{prefs.theme=prefs.theme==='light'?'dark':'light';writeJSON(PREF_KEY,prefs);document.body.classList.toggle('ppg-light',prefs.theme==='light');document.body.classList.toggle('ppg-dark',prefs.theme==='dark');$('#ppg-theme').textContent=prefs.theme==='light'?'🌙 Escuro':'☀️ Claro';sfx(520,.05)};
+// Áudio procedural comum: garante BGM + SFX sem arquivos externos.
+let ac=null,master=null,music=null,beat=0;function initAudio(){if(ac)return;ac=new (window.AudioContext||window.webkitAudioContext)();master=ac.createGain();master.gain.value=prefs.sound?.12:0;master.connect(ac.destination)}function tone(f,d=.08,type='sine',vol=.08,when=0){if(!prefs.sound)return;initAudio();const t=ac.currentTime+when,o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(master);o.start(t);o.stop(t+d)}function sfx(f=420,d=.045){tone(f,d,'triangle',.11)}function startBgm(){if(music||!prefs.sound)return;initAudio();music=setInterval(()=>{if(document.hidden||!prefs.sound)return;const seq=[98,110,123.47,138.59,146.83,164.81,138.59,123.47,110,98,87.31,98,110,123.47,131.81,110],f=seq[beat++%seq.length];tone(f,.19,'triangle',.022);if(beat%8===1)tone(f/2,.12,'sine',.015);if(beat%8===5)tone(f*1.5,.07,'square',.008,.03)},430)}function stopBgm(){clearInterval(music);music=null}function unlock(){initAudio();ac?.resume();if(prefs.sound)startBgm()}addEventListener('pointerdown',unlock,{once:true});addEventListener('keydown',unlock,{once:true});document.addEventListener('click',e=>{if(e.target.closest('button,a,input,select'))sfx(380+Math.random()*80,.035)},true);
+$('#ppg-sound').onclick=e=>{e.stopPropagation();prefs.sound=!prefs.sound;writeJSON(PREF_KEY,prefs);initAudio();master.gain.setTargetAtTime(prefs.sound?.12:0,ac.currentTime,.02);if(prefs.sound){ac.resume();startBgm();sfx(660,.08)}else stopBgm();$('#ppg-sound').textContent=prefs.sound?'🔊 Som':'🔇 Som'};
+// Ranking local por sessão. A mesma sessão é atualizada em vez de poluir o top 5 com cada incremento.
+const sessionId=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7);function formatValue(v){if(v==null)return '—';if(Math.abs(v)>=1e9)return v.toLocaleString('pt-BR',{notation:'compact',maximumFractionDigits:2})+CFG.unit;return (Number.isInteger(v)?v:v.toFixed(2).replace('.',','))+CFG.unit}function metric(){try{const num=window.__ppgHelpers.num,money=window.__ppgHelpers.money;return (()=>{const el=document.querySelector('#timer'); return el?num(el.textContent):null})()}catch{return null}}function upsert(v){if(v==null||!Number.isFinite(v)||(CFG.mode==='min'&&v<=0))return;let r=readJSON(REC_KEY,[]),me=r.find(x=>x.sessionId===sessionId);if(me){const better=CFG.mode==='min'?v<me.value:v>me.value;if(!better)return;me.value=v;me.at=Date.now()}else r.push({sessionId,value:v,at:Date.now()});r.sort((a,b)=>CFG.mode==='min'?a.value-b.value:b.value-a.value);writeJSON(REC_KEY,r.slice(0,5))}setInterval(()=>upsert(metric()),800);addEventListener('pagehide',()=>upsert(metric()));
+function renderRecords(){const r=readJSON(REC_KEY,[]);const list=r.length?`<div class="ppg-record-list">${r.map((x,i)=>`<div class="ppg-record"><b>#${i+1}</b><span><strong>${formatValue(x.value)}</strong><br><small>${new Date(x.at).toLocaleDateString('pt-BR')}</small></span><small>${CFG.metric}</small></div>`).join('')}</div>`:`<div class="ppg-empty">Ainda não há marca registrada neste navegador. Jogue uma partida e ela aparece aqui.</div>`;open(`<h2>Recordes locais</h2><p>Top 5 persistente deste jogo, salvo somente neste navegador.</p>${list}`)}$('#ppg-records').onclick=renderRecords;
+})();
+</script>
+</body>
+</html>

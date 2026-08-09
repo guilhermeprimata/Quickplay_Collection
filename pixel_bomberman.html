@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pixel Bomberman</title>
+  <style>
+    body { margin: 0; background: #111; color: white; font-family: sans-serif; text-align: center; }
+    canvas { background: #222; display: block; margin: auto; }
+  </style>
+</head>
+<body>
+<h2>Pixel Bomberman</h2>
+<canvas id="game" width="480" height="480"></canvas>
+<p id="hud">Vidas: 3 | Pontos: 0</p>
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+const tileSize = 32;
+const cols = canvas.width / tileSize;
+const rows = canvas.height / tileSize;
+
+let map = [];
+let bombs = [];
+let flames = [];
+let enemies = [];
+let score = 0;
+let lives = 3;
+let enemyMoveTimer = 0;
+let framesSinceDamage = 0;
+let killsSinceVoucher = 0;
+
+const player = {
+  x: 1,
+  y: 1,
+  alive: true
+};
+
+function drawPixelArt(x, y, color, pattern) {
+  const px = x * tileSize;
+  const py = y * tileSize;
+  ctx.fillStyle = color;
+  for (let i = 0; i < pattern.length; i++) {
+    for (let j = 0; j < pattern[i].length; j++) {
+      if (pattern[i][j]) {
+        ctx.fillRect(px + j * 4, py + i * 4, 4, 4);
+      }
+    }
+  }
+}
+
+const spritePlayer = [
+  [0,1,0],
+  [1,1,1],
+  [1,0,1]
+];
+
+const spriteEnemy = [
+  [1,1,1],
+  [1,0,1],
+  [1,1,1]
+];
+
+const spriteBlock = [
+  [1,1,1],
+  [1,0,1],
+  [1,1,1]
+];
+
+const spriteWall = [
+  [1,0,1],
+  [0,1,0],
+  [1,0,1]
+];
+
+function initMap() {
+  map = [];
+  for (let y = 0; y < rows; y++) {
+    map[y] = [];
+    for (let x = 0; x < cols; x++) {
+      if (y % 2 === 1 && x % 2 === 1) {
+        map[y][x] = "wall";
+      } else if (Math.random() < 0.2 && !(x === 1 && y === 1)) {
+        map[y][x] = "block";
+      } else {
+        map[y][x] = "empty";
+      }
+    }
+  }
+  enemies = [];
+  for (let i = 0; i < 5; i++) {
+    let ex, ey;
+    do {
+      ex = Math.floor(Math.random() * cols);
+      ey = Math.floor(Math.random() * rows);
+    } while (map[ey][ex] !== "empty" || (ex === 1 && ey === 1));
+    enemies.push({ x: ex, y: ey });
+  }
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) {
+      if (map[y][x] === "wall") drawPixelArt(x, y, "#555", spriteWall);
+      else if (map[y][x] === "block") drawPixelArt(x, y, "#964B00", spriteBlock);
+    }
+  }
+  drawPixelArt(player.x, player.y, "cyan", spritePlayer);
+  bombs.forEach(b => drawPixelArt(b.x, b.y, "red", spriteBlock));
+  flames.forEach(f => drawPixelArt(f.x, f.y, "orange", spriteWall));
+  enemies.forEach(e => drawPixelArt(e.x, e.y, "lime", spriteEnemy));
+}
+
+function placeBomb() {
+  bombs.push({ x: player.x, y: player.y, timer: 60 });
+}
+
+function explodeBomb(bomb) {
+  const beforeEnemies=enemies.length;
+  const positions = [
+    { x: bomb.x, y: bomb.y },
+    { x: bomb.x + 1, y: bomb.y },
+    { x: bomb.x - 1, y: bomb.y },
+    { x: bomb.x, y: bomb.y + 1 },
+    { x: bomb.x, y: bomb.y - 1 }
+  ];
+  positions.forEach(pos => {
+    if (map[pos.y] && map[pos.y][pos.x] === "block") {
+      map[pos.y][pos.x] = "empty";
+      score += 10;
+    }
+    flames.push({ x: pos.x, y: pos.y, timer: 30 });
+    enemies = enemies.filter(e => !(e.x === pos.x && e.y === pos.y));
+  });
+  const killed=beforeEnemies-enemies.length;killsSinceVoucher+=killed;if(killsSinceVoucher>=8&&lives<3){killsSinceVoucher-=8;lives++;}
+  if (positions.some(p => p.x === player.x && p.y === player.y)) {
+    lives--;framesSinceDamage=0;
+    if (lives <= 0) {
+      alert("Game Over! Pontuação: " + score);
+      lives = 3;
+      score = 0;
+      initMap();
+    }
+  }
+}
+
+function updateEnemies() {
+  enemyMoveTimer++;
+  if (enemyMoveTimer % 60 !== 0) return; // move a cada 60 frames
+
+  enemies.forEach(e => {
+    const dirs = ["up", "down", "left", "right"];
+    const dir = dirs[Math.floor(Math.random() * dirs.length)];
+    let dx = 0, dy = 0;
+    if (dir === "up") dy = -1;
+    if (dir === "down") dy = 1;
+    if (dir === "left") dx = -1;
+    if (dir === "right") dx = 1;
+    const nx = e.x + dx;
+    const ny = e.y + dy;
+    if (map[ny] && map[ny][nx] === "empty") {
+      e.x = nx;
+      e.y = ny;
+    }
+    if (e.x === player.x && e.y === player.y) {
+      lives--;framesSinceDamage=0;
+      if (lives <= 0) {
+        alert("Game Over! Pontuação: " + score);
+        lives = 3;
+        score = 0;
+        initMap();
+      }
+    }
+  });
+}
+
+function update() {
+  framesSinceDamage++;if(lives<3&&framesSinceDamage>=1800){lives++;framesSinceDamage=0;}
+  bombs.forEach(b => {
+    b.timer--;
+    if (b.timer <= 0) {
+      explodeBomb(b);
+    }
+  });
+  bombs = bombs.filter(b => b.timer > 0);
+  flames.forEach(f => f.timer--);
+  flames = flames.filter(f => f.timer > 0);
+  updateEnemies();
+  document.getElementById("hud").textContent = `Vidas: ${lives} | Pontos: ${score}`;
+}
+
+document.addEventListener("keydown", e => {
+  let dx = 0, dy = 0;
+  if (e.key === "ArrowUp") dy = -1;
+  else if (e.key === "ArrowDown") dy = 1;
+  else if (e.key === "ArrowLeft") dx = -1;
+  else if (e.key === "ArrowRight") dx = 1;
+  else if (e.key === " ") placeBomb();
+
+  const nx = player.x + dx;
+  const ny = player.y + dy;
+  if (map[ny] && map[ny][nx] === "empty") {
+    player.x = nx;
+    player.y = ny;
+  }
+});
+
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+
+initMap();
+loop();
+</script>
+<style id="ppg-platform-style">
+:root{--ppg-bar-h:48px;--ppg-ui-bg:#0b0d1d;--ppg-ui-fg:#f7f5ff;--ppg-ui-line:rgba(255,255,255,.14);--ppg-ui-accent:#a875ff;--ppg-ui-accent2:#35e6ca}
+html{scroll-padding-top:var(--ppg-bar-h)}body{box-sizing:border-box!important;padding-top:var(--ppg-bar-h)!important}
+#ppg-toolbar{position:fixed;z-index:2147483000;inset:0 0 auto 0;height:var(--ppg-bar-h);display:flex;align-items:center;gap:6px;padding:6px max(8px,env(safe-area-inset-right)) 6px max(8px,env(safe-area-inset-left));overflow-x:auto;overflow-y:hidden;white-space:nowrap;background:linear-gradient(90deg,rgba(9,10,25,.97),rgba(20,16,45,.96));border-bottom:1px solid var(--ppg-ui-line);box-shadow:0 7px 24px rgba(0,0,0,.30);font-family:Inter,"Segoe UI",system-ui,sans-serif!important;scrollbar-width:none}
+#ppg-toolbar::-webkit-scrollbar{display:none}#ppg-toolbar .ppg-brand{display:flex;align-items:center;gap:6px;margin-right:auto;padding-right:7px;color:#cfc4ff;font:900 11px/1 Inter,"Segoe UI",system-ui,sans-serif!important;letter-spacing:.08em;text-transform:uppercase}
+#ppg-toolbar button,#ppg-toolbar a{flex:0 0 auto;min-height:34px!important;padding:7px 10px!important;margin:0!important;border:1px solid var(--ppg-ui-line)!important;border-radius:9px!important;background:#15182dcc!important;color:var(--ppg-ui-fg)!important;font:700 12px/1 Inter,"Segoe UI",system-ui,sans-serif!important;text-decoration:none!important;text-transform:none!important;letter-spacing:0!important;box-shadow:none!important;cursor:pointer!important;transform:none!important}
+#ppg-toolbar button:hover,#ppg-toolbar a:hover{border-color:var(--ppg-ui-accent2)!important;filter:brightness(1.13)!important}.ppg-life{flex:0 0 116px;display:none;align-items:center;gap:6px;padding:5px 8px;border:1px solid #ffffff18;border-radius:9px;background:#15182dcc;color:#fff;font:800 10px/1 Inter,system-ui}.ppg-life.show{display:flex}.ppg-life-track{width:68px;height:7px;border-radius:9px;overflow:hidden;background:#ffffff16}.ppg-life-fill{height:100%;width:100%;background:linear-gradient(90deg,#ff4c78,#ffd166,#5ff0c0);transition:width .18s ease}
+.ppg-modal{position:fixed;z-index:2147483640;inset:var(--ppg-bar-h) 0 0;display:none;place-items:center;padding:18px;background:rgba(2,3,12,.78);backdrop-filter:blur(8px);font-family:Inter,"Segoe UI",system-ui,sans-serif!important}.ppg-modal.open{display:grid}.ppg-card{width:min(610px,96vw);max-height:min(80vh,720px);overflow:auto;padding:22px;border:1px solid rgba(255,255,255,.16);border-radius:20px;background:linear-gradient(145deg,#14162b,#0a0d1b);color:#f8f7ff;text-align:left;box-shadow:0 30px 90px #0009}.ppg-card h2{margin:0 0 8px!important;color:#d9c7ff!important;font:800 clamp(22px,4vw,30px)/1.1 Inter,"Segoe UI",system-ui,sans-serif!important}.ppg-card h3{margin:17px 0 6px!important;color:#63ecd6!important;font:800 14px/1.2 Inter,"Segoe UI",system-ui,sans-serif!important;text-transform:uppercase;letter-spacing:.08em}.ppg-card p,.ppg-card li{color:#d7d9e7!important;font:400 14px/1.55 Inter,"Segoe UI",system-ui,sans-serif!important}.ppg-card .ppg-credit{margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.12);font-weight:800;color:#fff!important}.ppg-close{float:right;border:0!important;background:#282c48!important;color:white!important;border-radius:9px!important;padding:7px 10px!important;cursor:pointer!important}.ppg-diff-section{margin:13px 0 20px}.ppg-diff-title{display:flex;align-items:center;gap:8px;margin:0 0 8px;color:#74efdb;font-weight:900}.ppg-record-list{display:grid;gap:7px}.ppg-record{display:grid;grid-template-columns:34px 1fr auto;gap:8px;padding:9px;border-radius:11px;background:#ffffff0b;border:1px solid #ffffff10;align-items:center}.ppg-record small{color:#989db7}.ppg-empty{padding:14px;border:1px dashed #ffffff2a;border-radius:12px;color:#aeb3c8}
+body.ppg-light{color-scheme:light;background-color:#edf1f8!important;color:#182038!important}body.ppg-light :is(.menu-card,.card,.panel,.toolbar,.stats,.help,.bet-panel,.track-card,.game-container){filter:brightness(1.07) saturate(.93)}body.ppg-dark{color-scheme:dark}
+.ppg-fixed-shift{max-height:calc(100dvh - var(--ppg-bar-h))!important}.ppg-tall-root{height:calc(100dvh - var(--ppg-bar-h))!important;max-height:calc(100dvh - var(--ppg-bar-h))!important}
+@media(max-width:700px){:root{--ppg-bar-h:46px}#ppg-toolbar{gap:4px;padding-inline:5px}#ppg-toolbar .ppg-brand{display:none}#ppg-toolbar button,#ppg-toolbar a{padding:6px 8px!important;font-size:11px!important}.ppg-life{flex-basis:98px}.ppg-life-track{width:52px}.ppg-card{padding:17px}}
+</style><script id="ppg-platform-script">
+(()=>{'use strict';
+const CFG={"id": "pixel_bomber", "name": "Pixel Bomber", "emoji": "💥", "desc": "Arena em pixel art com bombas, blocos e inimigos.", "how": "Use as setas para andar e Espaço para plantar bombas. Explosões quebram blocos e eliminam inimigos — mas também podem atingir você.", "tip": "Plante a bomba já pensando na rota de fuga. O jogo pune aquela clássica descoberta científica: “opa, eu também estou no raio da explosão”.", "metric": "Pontuação", "unit": " pts", "mode": "max"};
+const STATS_KEY='ppg_minigames_stats_v1',PREF_KEY='ppg_platform_prefs_v2',REC_KEY='ppg_records_v2_'+CFG.id;
+const $=s=>document.querySelector(s),num=v=>{const m=String(v??'').replace(/\s/g,'').replace(/\.(?=\d{3}(\D|$))/g,'').replace(',','.').match(/-?\d+(?:\.\d+)?/);return m?+m[0]:null};
+const money=v=>{const s=String(v??'').replace(/R\$|◈|Créditos?|Banca:|💰/gi,'').trim();let m=s.match(/(-?[\d.,]+)\s*(K|M|B|T|Qa|Qi|Sx|Sp|Oc|No|Dc)?/i);if(!m)return null;let n=num(m[1]);const u=(m[2]||'').toLowerCase(),map={k:1e3,m:1e6,b:1e9,t:1e12,qa:1e15,qi:1e18,sx:1e21,sp:1e24,oc:1e27,no:1e30,dc:1e33};return n*(map[u]||1)};window.__ppgHelpers={num,money};
+function readJSON(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}}function writeJSON(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
+function dayKey(d=new Date()){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}function dayDiff(a,b){const A=new Date(a+'T12:00:00'),B=new Date(b+'T12:00:00');return Math.round((B-A)/86400000)}
+let all=readJSON(STATS_KEY,{}),st=all[CFG.id]||{starts:0,totalSeconds:0,longestStreak:0,currentStreak:0,lastDay:null};const today=dayKey();st.starts=(st.starts||0)+1;if(st.lastDay!==today){const dd=st.lastDay?dayDiff(st.lastDay,today):99;st.currentStreak=dd===1?(st.currentStreak||0)+1:1;st.longestStreak=Math.max(st.longestStreak||0,st.currentStreak);st.lastDay=today}st.lastStarted=Date.now();all[CFG.id]=st;writeJSON(STATS_KEY,all);
+let lastTick=performance.now();function flushTime(){const now=performance.now(),d=Math.max(0,(now-lastTick)/1000);lastTick=now;all=readJSON(STATS_KEY,{});const x=all[CFG.id]||st;x.totalSeconds=(x.totalSeconds||0)+d;x.lastPlayed=Date.now();all[CFG.id]=x;writeJSON(STATS_KEY,all)}setInterval(flushTime,5000);addEventListener('pagehide',flushTime);document.addEventListener('visibilitychange',()=>{if(document.hidden)flushTime();else lastTick=performance.now()});
+let prefs=readJSON(PREF_KEY,readJSON('ppg_platform_prefs_v1',{theme:'dark',sound:true}));writeJSON(PREF_KEY,prefs);document.body.classList.toggle('ppg-light',prefs.theme==='light');document.body.classList.toggle('ppg-dark',prefs.theme!=='light');
+const toolbar=document.createElement('nav');toolbar.id='ppg-toolbar';toolbar.setAttribute('aria-label','Controles comuns do Projeto Primata Games');toolbar.innerHTML=`<span class="ppg-brand">🦧 PPG</span><span class="ppg-life" id="ppg-life"><span>♥</span><span class="ppg-life-track"><span class="ppg-life-fill" id="ppg-life-fill"></span></span><span id="ppg-life-num">100</span></span><button id="ppg-theme">${prefs.theme==='light'?'🌙 Escuro':'☀️ Claro'}</button><button id="ppg-sound">${prefs.sound?'🔊 Som ON':'🔇 Som OFF'}</button><button id="ppg-records">🏆 Placares</button><button id="ppg-about">ⓘ Sobre</button><a href="menu_minigames.html" id="ppg-menu">↩ Mini Games</a>`;document.body.prepend(toolbar);
+const modal=document.createElement('div');modal.className='ppg-modal';modal.id='ppg-modal';modal.innerHTML=`<div class="ppg-card"><button class="ppg-close" aria-label="Fechar">✕</button><div id="ppg-modal-body"></div></div>`;document.body.appendChild(modal);const modalBody=$('#ppg-modal-body');function open(html){modalBody.innerHTML=html;modal.classList.add('open')}function close(){modal.classList.remove('open')}modal.addEventListener('click',e=>{if(e.target===modal||e.target.closest('.ppg-close'))close()});addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+// Reserva uma faixa real para a barra comum. Elementos fixed que começavam em y=0 são deslocados,
+// e raízes full-viewport estáticas são encurtadas. Assim a barra não cobre HUD/canvas/menus do jogo.
+function protectLayout(){const bar=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ppg-bar-h'))||48;[...document.body.querySelectorAll('*')].forEach(el=>{if(el.closest('#ppg-toolbar,.ppg-modal')||['SCRIPT','STYLE'].includes(el.tagName))return;const cs=getComputedStyle(el);if(cs.position==='fixed'){const r=el.getBoundingClientRect();if(r.top<bar-2&&r.bottom>0&&!el.dataset.ppgShifted){const top=cs.top==='auto'?'0px':cs.top;el.style.setProperty('top',`calc(${top} + var(--ppg-bar-h))`,'important');el.classList.add('ppg-fixed-shift');el.dataset.ppgShifted='1'}}});[...document.body.children].forEach(el=>{if(el===toolbar||el===modal||['SCRIPT','STYLE'].includes(el.tagName))return;const cs=getComputedStyle(el),r=el.getBoundingClientRect();if(cs.position!=='fixed'&&r.height>=innerHeight*.94&&(cs.overflow==='hidden'||getComputedStyle(document.body).overflow==='hidden')&&!el.dataset.ppgTall){el.classList.add('ppg-tall-root');el.dataset.ppgTall='1'}})}requestAnimationFrame(protectLayout);addEventListener('resize',protectLayout);
+$('#ppg-about').onclick=()=>open(`<h2>${CFG.name}</h2><p>${CFG.desc}</p><h3>Como jogar</h3><p>${CFG.how}</p><h3>Dica de estratégia</h3><p>${CFG.tip}</p><p class="ppg-credit">Produção: Projeto Primata Games em 2026.</p>`);
+$('#ppg-theme').onclick=()=>{prefs.theme=prefs.theme==='light'?'dark':'light';writeJSON(PREF_KEY,prefs);document.body.classList.toggle('ppg-light',prefs.theme==='light');document.body.classList.toggle('ppg-dark',prefs.theme==='dark');$('#ppg-theme').textContent=prefs.theme==='light'?'🌙 Escuro':'☀️ Claro';sfx(520,.05)};
+let ac=null,master=null,music=null,beat=0;function initAudio(){if(ac)return;ac=new (window.AudioContext||window.webkitAudioContext)();master=ac.createGain();master.gain.value=prefs.sound?.10:0;master.connect(ac.destination)}function tone(f,d=.08,type='sine',vol=.08,when=0){if(!prefs.sound)return;initAudio();const t=ac.currentTime+when,o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(master);o.start(t);o.stop(t+d)}function sfx(f=420,d=.045){tone(f,d,'triangle',.10)}function startBgm(){if(music||!prefs.sound)return;initAudio();music=setInterval(()=>{if(document.hidden||!prefs.sound)return;const seq=[110,138.59,164.81,220,196,164.81,146.83,123.47],f=seq[beat++%seq.length];tone(f,.16,'triangle',.019);if(beat%4===1)tone(f/2,.1,'sine',.012)},390)}function stopBgm(){clearInterval(music);music=null}function syncNative(on){}function unlock(){initAudio();ac?.resume();if(prefs.sound)startBgm();syncNative(prefs.sound)}addEventListener('pointerdown',unlock,{once:true});addEventListener('keydown',unlock,{once:true});window.PPGPlatform={tone,sfx,get soundOn(){return prefs.sound},setLife(v){const e=$('#ppg-life'),f=$('#ppg-life-fill'),n=$('#ppg-life-num');if(v==null){e.classList.remove('show');return}v=Math.max(0,Math.min(100,v));e.classList.add('show');f.style.width=v+'%';n.textContent=Math.round(v)}};
+$('#ppg-sound').onclick=e=>{e.stopPropagation();prefs.sound=!prefs.sound;writeJSON(PREF_KEY,prefs);initAudio();master.gain.setTargetAtTime(prefs.sound?.10:0,ac.currentTime,.02);syncNative(prefs.sound);if(prefs.sound){ac.resume();startBgm();sfx(660,.08)}else stopBgm();$('#ppg-sound').textContent=prefs.sound?'🔊 Som ON':'🔇 Som OFF'};
+const sessionId=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7);function formatValue(v){if(v==null)return '—';if(Math.abs(v)>=1e9)return v.toLocaleString('pt-BR',{notation:'compact',maximumFractionDigits:2})+CFG.unit;return (Number.isInteger(v)?v:v.toFixed(2).replace('.',','))+CFG.unit}function difficultyKey(){try{return String('Padrão')||'Padrão'}catch{return 'Padrão'}}function metric(){try{const num=window.__ppgHelpers.num,money=window.__ppgHelpers.money;return (()=>{const t=document.querySelector('#hud')?.textContent||'';const m=t.match(/Pontos:\s*(\d+)/i);return m?+m[1]:null})()}catch{return null}}
+function upsert(v){if(v==null||!Number.isFinite(v)||(CFG.mode==='min'&&v<=0))return;let db=readJSON(REC_KEY,{});if(Array.isArray(db))db={'Padrão':db};const dk=difficultyKey(),r=Array.isArray(db[dk])?db[dk]:[],me=r.find(x=>x.sessionId===sessionId);if(me){const better=CFG.mode==='min'?v<me.value:v>me.value;if(!better)return;me.value=v;me.at=Date.now()}else r.push({sessionId,value:v,at:Date.now()});r.sort((a,b)=>CFG.mode==='min'?a.value-b.value:b.value-a.value);db[dk]=r.slice(0,5);writeJSON(REC_KEY,db)}setInterval(()=>upsert(metric()),800);addEventListener('pagehide',()=>upsert(metric()));
+function renderRecords(){let db=readJSON(REC_KEY,{});if(Array.isArray(db))db={'Padrão':db};const keys=Object.keys(db).sort((a,b)=>a.localeCompare(b,'pt-BR',{numeric:true}));const sections=keys.length?keys.map(dk=>{const r=db[dk]||[];return `<section class="ppg-diff-section"><div class="ppg-diff-title">◆ ${dk}</div>${r.length?`<div class="ppg-record-list">${r.map((x,i)=>`<div class="ppg-record"><b>#${i+1}</b><span><strong>${formatValue(x.value)}</strong><br><small>${new Date(x.at).toLocaleDateString('pt-BR')}</small></span><small>${CFG.metric}</small></div>`).join('')}</div>`:`<div class="ppg-empty">Sem marcas nesta dificuldade.</div>`}</section>`}).join(''):`<div class="ppg-empty">Ainda não há marca registrada neste navegador.</div>`;open(`<h2>Placares locais</h2><p>Os recordes são separados por dificuldade/modo quando o jogo oferece níveis distintos.</p>${sections}`)}$('#ppg-records').onclick=renderRecords;
+function pollLife(){let v=null;try{v=(()=>{try{return typeof lives!=='undefined'?Math.max(0,Math.min(100,lives/3*100)):null}catch{return null}})()}catch{}window.PPGPlatform.setLife(v)}setInterval(pollLife,250);pollLife();syncNative(prefs.sound);
+})();
+</script>
+</body>
+</html>

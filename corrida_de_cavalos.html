@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Corrida de Cavalos - Apostas</title>
+  <style>
+    :root {
+      --bg: #101216;
+      --panel: #1b2028;
+      --panel2: #242b35;
+      --gold: #ffd166;
+      --green: #32d583;
+      --red: #ff5d73;
+      --muted: #aeb8c5;
+      --line: rgba(255,255,255,.12);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--bg); color: #fff; font-family: "Segoe UI", Arial, sans-serif; }
+    body { overflow-x: hidden; }
+    button, input { font: inherit; }
+    button { border: 0; cursor: pointer; }
+
+    #menu {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: radial-gradient(circle at top, #263343 0, #11161d 46%, #080a0d 100%);
+    }
+    .menu-card {
+      width: min(520px, 100%);
+      padding: 34px;
+      text-align: center;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: rgba(20,25,32,.92);
+      box-shadow: 0 24px 70px rgba(0,0,0,.48);
+    }
+    h1 { margin: 0 0 8px; font-size: clamp(30px, 6vw, 48px); }
+    .subtitle { margin: 0 0 26px; color: var(--muted); }
+    .primary, .secondary, .bet-adjust, .horse-button {
+      color: #fff;
+      border-radius: 10px;
+      transition: transform .15s, filter .15s, background .15s;
+    }
+    button:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.09); }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    .primary { padding: 13px 24px; font-weight: 800; background: linear-gradient(135deg, #198754, #32d583); }
+    .secondary { padding: 12px 20px; background: #343d49; }
+    .menu-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
+    #optionsPanel { display: none; margin-top: 20px; padding: 16px; text-align: left; border-radius: 12px; background: #0f1318; }
+    #optionsPanel label { display: block; margin: 8px 0; color: #dbe2ea; }
+
+    #game { display: none; min-height: 100vh; padding: 18px; }
+    .game-shell { width: min(1500px, 100%); margin: 0 auto; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 14px; }
+    .topbar h2 { margin: 0; }
+    .bank { padding: 10px 16px; border: 1px solid rgba(50,213,131,.28); border-radius: 12px; background: rgba(50,213,131,.1); color: #d8ffea; font-weight: 800; }
+    .game-grid { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 16px; align-items: start; }
+    .track-card, .bet-panel { border: 1px solid var(--line); border-radius: 16px; background: var(--panel); box-shadow: 0 18px 50px rgba(0,0,0,.25); }
+    .track-card { padding: 12px; overflow: hidden; }
+    canvas { display: block; width: 100%; height: auto; border-radius: 10px; background: #111; }
+    .race-status { min-height: 28px; margin: 12px 3px 0; color: var(--gold); font-weight: 800; text-align: center; }
+    .bet-panel { padding: 16px; }
+    .bet-panel h3 { margin: 0 0 5px; }
+    .hint { margin: 0 0 12px; color: var(--muted); font-size: 13px; }
+    #horseButtons { display: grid; gap: 7px; max-height: 340px; overflow-y: auto; padding-right: 3px; }
+    .horse-button { display: grid; grid-template-columns: 27px 1fr auto; gap: 9px; align-items: center; width: 100%; padding: 10px; text-align: left; background: #303844; border: 1px solid transparent; }
+    .horse-button.selected { background: rgba(50,213,131,.17); border-color: var(--green); }
+    .horse-color { width: 18px; height: 18px; border-radius: 50%; box-shadow: inset 0 0 0 2px rgba(255,255,255,.28); }
+    .horse-name { font-weight: 750; }
+    .odds { color: var(--gold); font-weight: 900; }
+    .bet-box { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+    .bet-controls { display: grid; grid-template-columns: 48px 1fr 48px; gap: 8px; align-items: center; }
+    .bet-adjust { height: 42px; background: #3b4553; font-size: 20px; font-weight: 900; }
+    #betInput { width: 100%; height: 42px; padding: 0 10px; border: 1px solid var(--line); border-radius: 9px; outline: none; color: #fff; background: #11161c; text-align: center; font-weight: 900; }
+    #betInput:focus { border-color: var(--gold); }
+    .potential { margin: 10px 0; color: #cbd5df; font-size: 14px; }
+    #placeBetBtn { width: 100%; }
+    .message { min-height: 22px; margin: 10px 0 0; font-size: 14px; text-align: center; }
+    .success { color: var(--green); }
+    .error { color: var(--red); }
+    .tv-overlay { display: none; position: fixed; inset: 0; pointer-events: none; z-index: 99; background: repeating-linear-gradient(0deg, rgba(255,255,255,.035), rgba(255,255,255,.035) 2px, transparent 2px, transparent 4px); mix-blend-mode: overlay; }
+    .tv-on { filter: contrast(1.15) brightness(.9) saturate(.85); }
+
+    @media (max-width: 980px) {
+      .game-grid { grid-template-columns: 1fr; }
+      .bet-panel { width: 100%; }
+      #horseButtons { max-height: none; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 600px) {
+      #game { padding: 10px; }
+      .topbar { align-items: flex-start; flex-direction: column; }
+      #horseButtons { grid-template-columns: 1fr; }
+    }
+  </style>
+<style id="ppg-viewport-fit">
+:root{--fitbar:var(--ppg-bar-h,48px)}@media(min-width:981px){#game{height:calc(100dvh - var(--fitbar));min-height:0!important;padding:7px 12px!important;overflow:hidden}.game-shell{height:100%;display:flex;flex-direction:column;min-height:0}.topbar{flex:0 0 auto;margin-bottom:6px!important}.game-grid{flex:1 1 auto;min-height:0;align-items:stretch}.track-card,.bet-panel{min-height:0;overflow:hidden}.track-card{display:flex;flex-direction:column}.track-card canvas{width:min(100%,calc((100dvh - var(--fitbar) - 125px)*1100/650));max-height:calc(100dvh - var(--fitbar) - 125px);margin:auto;object-fit:contain}.bet-panel{overflow:auto}#horseButtons{max-height:min(340px,35dvh)!important}.race-status{margin-top:4px!important}}
+@media(max-height:650px) and (min-width:981px){.topbar small{display:none}.bank{padding:6px 10px!important}.bet-panel{padding:8px!important}.hint{display:none}.horse-button{padding:5px!important}.bet-box{margin-top:6px!important;padding-top:6px!important}}
+@media(max-width:980px){#game{height:calc(100dvh - var(--fitbar));min-height:0!important;padding:5px 7px!important;overflow:hidden}.game-shell{height:100%;display:flex;flex-direction:column;min-height:0}.topbar{flex:0 0 auto;margin-bottom:4px!important}.topbar small{display:none}.game-grid{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:1fr!important;grid-template-rows:minmax(0,1fr) minmax(120px,34dvh);gap:6px!important}.track-card{min-height:0;display:flex;flex-direction:column;padding:5px!important}.track-card canvas{width:auto!important;height:100%!important;max-width:100%;max-height:100%;margin:auto;object-fit:contain}.race-status{min-height:18px!important;margin:2px!important;font-size:12px}.bet-panel{min-height:0;padding:7px!important;overflow:auto}.bet-panel h3{font-size:14px;margin:0!important}.hint{display:none}#horseButtons{max-height:90px!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:3px!important}.horse-button{padding:4px!important;font-size:11px}.bet-box{margin-top:4px!important;padding-top:4px!important}.bet-controls{grid-template-columns:36px 1fr 36px!important}.bet-adjust,#betInput{height:32px!important}.potential,.message{margin:3px 0!important;font-size:11px!important}}
+</style>
+</head>
+<body>
+  <main id="menu">
+    <section class="menu-card">
+      <h1>🏇 Corrida de Cavalos</h1>
+      <p class="subtitle">Escolha seu cavalo, confira as odds e aposte na vitória.</p>
+      <div class="menu-actions">
+        <button class="primary" onclick="startGame()">Jogar</button>
+        <button class="secondary" onclick="toggleOptions()">Opções</button>
+      </div>
+      <div id="optionsPanel">
+        <label><input type="checkbox" id="soundToggle" checked> Efeitos sonoros</label>
+        <label><input type="checkbox" id="tvToggle"> Efeito de TV antiga</label>
+      </div>
+    </section>
+  </main>
+
+  <main id="game">
+    <div class="game-shell">
+      <header class="topbar">
+        <div><h2>Hipódromo Estelar</h2><small style="color:var(--muted)">Seis competidores por rodada</small></div>
+        <div class="bank" id="bankDisplay">Banca: R$ 1.000</div>
+      </header>
+      <div class="game-grid">
+        <section class="track-card">
+          <canvas id="raceCanvas" width="1100" height="650"></canvas>
+          <div class="race-status" id="raceStatus">Selecione um cavalo e confirme sua aposta.</div>
+        </section>
+        <aside class="bet-panel">
+          <h3>Painel de odds</h3>
+          <p class="hint">Odds decimais. O retorno inclui o valor apostado.</p>
+          <div id="horseButtons"></div>
+          <div class="bet-box">
+            <div class="bet-controls">
+              <button class="bet-adjust" onclick="adjustBet(-50)">−</button>
+              <input id="betInput" type="number" min="1" step="50" value="100" aria-label="Valor da aposta">
+              <button class="bet-adjust" onclick="adjustBet(50)">+</button>
+            </div>
+            <div class="potential" id="potentialReturn">Retorno potencial: selecione um cavalo</div>
+            <button id="placeBetBtn" class="primary" onclick="placeBet()">Apostar R$ 100</button>
+            <div class="message" id="message"></div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </main>
+  <div id="tvOverlay" class="tv-overlay"></div>
+
+  <script>
+    const canvas = document.getElementById('raceCanvas');
+    const ctx = canvas.getContext('2d');
+    const horseNames = ['Relâmpago','Trovão Azul','Vento Norte','Fúria Selvagem','Pegasus','Centauro','Cometa','Astro','Raio','Tempestade','Neblina','Tornado','Granizo','Sol Dourado','Lua Prateada','Estrela Cadente','Galáxia','Cosmos'];
+    const horseColors = ['#FFD166','#3A86FF','#EF476F','#FF8C42','#9BDE57','#C77DFF'];
+    let horses = [], selectedHorse = null, betHorse = null;
+    let bank = 1000, bet = 100, raceInProgress = false, animationId = null;
+    let lastTime = 0, finishers = [];
+
+    function money(value) { return value.toLocaleString('pt-BR', {style:'currency', currency:'BRL', maximumFractionDigits:0}); }
+    function toggleOptions() {
+      const panel = document.getElementById('optionsPanel');
+      panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+    }
+    function startGame() {
+      document.getElementById('menu').style.display = 'none';
+      document.getElementById('game').style.display = 'block';
+      applyOptions();
+      prepareRace();
+    }
+    function applyOptions() {
+      const tv = document.getElementById('tvToggle').checked;
+      document.getElementById('tvOverlay').style.display = tv ? 'block' : 'none';
+      document.body.classList.toggle('tv-on', tv);
+    }
+
+    function generateRaceHorses() {
+      return [...horseNames].sort(() => Math.random() - .5).slice(0, 6).map((name, i) => {
+        const speed = 60 + Math.random() * 35;
+        const stamina = 60 + Math.random() * 35;
+        const temperament = 55 + Math.random() * 40;
+        const rating = speed * .46 + stamina * .34 + temperament * .20;
+        return { id: crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + i, name, color: horseColors[i], speed, stamina, temperament, rating, odds: 0, x: 62, lane: i, phase: Math.random() * Math.PI * 2, finished: false };
+      });
+    }
+    function calculateOdds(list) {
+      const strengths = list.map(h => Math.pow(h.rating, 3.5));
+      const total = strengths.reduce((a,b) => a + b, 0);
+      list.forEach((h, i) => {
+        const fair = total / strengths[i];
+        h.odds = Math.max(1.35, Math.min(8.5, fair * .9));
+      });
+    }
+    function prepareRace() {
+      cancelAnimationFrame(animationId);
+      horses = generateRaceHorses();
+      calculateOdds(horses);
+      selectedHorse = null; betHorse = null; raceInProgress = false; finishers = [];
+      bet = Math.min(100, bank);
+      document.getElementById('betInput').value = bet;
+      document.getElementById('raceStatus').textContent = bank > 0 ? 'Selecione um cavalo e confirme sua aposta.' : 'Sua banca terminou. Recarregue a página para recomeçar.';
+      setMessage('', '');
+      updateBank(); showHorseButtons(); updateBetUI(); drawScene(0);
+      document.getElementById('placeBetBtn').disabled = bank <= 0;
+    }
+    function showHorseButtons() {
+      const box = document.getElementById('horseButtons'); box.innerHTML = '';
+      horses.forEach((horse, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'horse-button';
+        btn.innerHTML = `<span class="horse-color" style="background:${horse.color}"></span><span class="horse-name">${index + 1}. ${horse.name}</span><span class="odds">${horse.odds.toFixed(2)}x</span>`;
+        btn.onclick = () => selectHorse(horse, btn);
+        box.appendChild(btn);
+      });
+    }
+    function selectHorse(horse, btn) {
+      if (raceInProgress) return;
+      selectedHorse = horse;
+      document.querySelectorAll('.horse-button').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected'); updateBetUI();
+    }
+    function readBet() {
+      const raw = Number(document.getElementById('betInput').value);
+      bet = Number.isFinite(raw) ? Math.max(1, Math.floor(raw)) : 100;
+      bet = Math.min(bet, bank);
+      document.getElementById('betInput').value = bet;
+    }
+    function adjustBet(delta) {
+      if (raceInProgress) return;
+      readBet(); bet = Math.max(1, Math.min(bank, bet + delta));
+      document.getElementById('betInput').value = bet; updateBetUI();
+    }
+    function updateBetUI() {
+      readBet();
+      document.getElementById('placeBetBtn').textContent = `Apostar ${money(bet)}`;
+      document.getElementById('potentialReturn').textContent = selectedHorse ? `Retorno potencial: ${money(Math.floor(bet * selectedHorse.odds))}` : 'Retorno potencial: selecione um cavalo';
+    }
+    document.getElementById('betInput').addEventListener('input', updateBetUI);
+    document.getElementById('tvToggle').addEventListener('change', applyOptions);
+
+    function placeBet() {
+      readBet();
+      if (!selectedHorse) return setMessage('Escolha um cavalo antes de apostar.', 'error');
+      if (bet <= 0 || bet > bank) return setMessage('Valor de aposta inválido.', 'error');
+      if (raceInProgress) return;
+      betHorse = selectedHorse; bank -= bet; raceInProgress = true;
+      updateBank(); setControlsDisabled(true); setMessage(`Aposta confirmada em ${betHorse.name}.`, 'success');
+      document.getElementById('raceStatus').textContent = 'Atenção para a corneta de largada!';
+      playStartBugle();
+      setTimeout(() => {
+        startHoofbeats();
+        lastTime = performance.now();
+        animationId = requestAnimationFrame(raceLoop);
+      }, 1850);
+    }
+    function setControlsDisabled(value) {
+      document.querySelectorAll('.horse-button, .bet-adjust, #betInput, #placeBetBtn').forEach(el => el.disabled = value);
+    }
+    function raceLoop(time) {
+      const dt = Math.min(.032, (time - lastTime) / 1000 || .016); lastTime = time;
+      const finishX = canvas.width - 95;
+      horses.forEach(h => {
+        if (h.finished) return;
+        const progress = (h.x - 62) / (finishX - 62);
+        const fatigue = progress > .7 ? (h.stamina / 100) : 1;
+        const variance = .77 + Math.random() * .46;
+        const temperamentBurst = Math.random() < h.temperament / 8500 ? 1.35 : 1;
+        h.x += (52 + h.speed * 1.08) * fatigue * variance * temperamentBurst * dt;
+        h.phase += dt * (10 + h.speed / 10);
+        if (h.x >= finishX) { h.x = finishX; h.finished = true; finishers.push(h); }
+      });
+      drawScene(time);
+      const leader = [...horses].sort((a,b) => b.x - a.x)[0];
+      document.getElementById('raceStatus').textContent = `${leader.name} lidera a corrida!`;
+      if (finishers.length) finishRace(finishers[0]); else animationId = requestAnimationFrame(raceLoop);
+    }
+    function finishRace(winner) {
+      raceInProgress = false;
+      stopHoofbeats();
+      const won = winner.id === betHorse.id;
+      if (won) {
+        const winnings = Math.floor(bet * betHorse.odds); bank += winnings;
+        document.getElementById('raceStatus').textContent = `🏆 ${winner.name} venceu! Você recebeu ${money(winnings)}.`;
+        setMessage('Palpite vencedor!', 'success');
+        playVictoryMelody();
+      } else {
+        document.getElementById('raceStatus').textContent = `${winner.name} venceu. Sua aposta em ${betHorse.name} não ganhou.`;
+        setMessage(`Você perdeu ${money(bet)} nesta rodada.`, 'error');
+        playDefeatMelody();
+      }
+      updateBank();
+      setTimeout(prepareRace, 3500);
+    }
+
+    function drawScene(time) {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      const laneH = 96, top = 42;
+      ctx.fillStyle = '#1f522e'; ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle = '#173d23'; ctx.fillRect(0,0,canvas.width,30); ctx.fillRect(0,top + laneH*6,canvas.width,canvas.height);
+      for (let i=0;i<6;i++) {
+        const y = top + i*laneH;
+        ctx.fillStyle = i%2 ? '#49372d' : '#574137'; ctx.fillRect(0,y,canvas.width,laneH);
+        ctx.strokeStyle = 'rgba(255,255,255,.45)'; ctx.lineWidth=2; ctx.setLineDash([18,13]);
+        ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); ctx.stroke(); ctx.setLineDash([]);
+        ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(0,y+7,52,30);
+        ctx.fillStyle='#fff'; ctx.font='700 18px Segoe UI'; ctx.textAlign='center'; ctx.fillText(String(i+1),26,y+29);
+      }
+      drawFinishLine(canvas.width-76, top, laneH*6);
+      horses.forEach(h => drawHorse(h.x, top+h.lane*laneH+49, h, time));
+    }
+    function drawFinishLine(x,y,h) {
+      const size=12;
+      for(let row=0;row<Math.ceil(h/size);row++) for(let col=0;col<2;col++) {
+        ctx.fillStyle=(row+col)%2?'#111':'#fff'; ctx.fillRect(x+col*size,y+row*size,size,size);
+      }
+      ctx.fillStyle='#fff'; ctx.font='800 13px Segoe UI'; ctx.textAlign='center'; ctx.fillText('CHEGADA',x+12,y-10);
+    }
+    function drawHorse(x, y, h, time) {
+      // Sprite pixel art retro. Cada bloco é um pixel grande do cavalo.
+      const frame = Math.floor(h.phase / 1.6) % 4;
+      const bob = frame === 1 || frame === 3 ? -2 : 0;
+      const px = 4;
+      const dark = shadeColor(h.color, -38);
+      const light = shadeColor(h.color, 26);
+
+      ctx.save();
+      ctx.translate(Math.round(x / px) * px, Math.round((y + bob) / px) * px);
+      ctx.imageSmoothingEnabled = false;
+
+      // Sombra quadriculada.
+      ctx.fillStyle = 'rgba(0,0,0,.28)';
+      ctx.fillRect(-10 * px, 6 * px, 19 * px, 2 * px);
+
+      // Cauda, mudando de posição entre os quadros.
+      ctx.fillStyle = '#24201f';
+      const tailY = frame % 2 === 0 ? -1 : -3;
+      pixelRect(-11, tailY, 4, 1, px);
+      pixelRect(-12, tailY + 1, 3, 1, px);
+      pixelRect(-13, tailY + 2, 2, 1, px);
+
+      // Corpo principal com contorno em degraus.
+      ctx.fillStyle = dark;
+      pixelRect(-8, -4, 14, 8, px);
+      pixelRect(-6, -5, 10, 1, px);
+      pixelRect(-7, 4, 11, 1, px);
+      ctx.fillStyle = h.color;
+      pixelRect(-7, -3, 12, 6, px);
+      pixelRect(-5, -4, 8, 1, px);
+      ctx.fillStyle = light;
+      pixelRect(-5, -3, 7, 1, px);
+
+      // Pescoço inclinado e cabeça reconhecível.
+      ctx.fillStyle = dark;
+      pixelRect(4, -7, 3, 7, px);
+      pixelRect(6, -10, 5, 5, px);
+      pixelRect(10, -9, 3, 3, px);
+      ctx.fillStyle = h.color;
+      pixelRect(5, -7, 2, 6, px);
+      pixelRect(7, -9, 4, 4, px);
+      pixelRect(10, -8, 2, 2, px);
+
+      // Orelhas, crina, olho e focinho.
+      ctx.fillStyle = dark;
+      pixelRect(7, -12, 1, 3, px);
+      pixelRect(10, -11, 1, 2, px);
+      pixelRect(4, -9, 1, 7, px);
+      ctx.fillStyle = '#f6f1dd';
+      pixelRect(10, -8, 1, 1, px);
+      ctx.fillStyle = '#111';
+      ctx.fillRect(10 * px, -8 * px, px, px);
+      pixelRect(12, -7, 1, 1, px);
+
+      // Sela e manta numerada.
+      ctx.fillStyle = '#242424';
+      pixelRect(-3, -6, 6, 2, px);
+      ctx.fillStyle = '#f5f5f5';
+      pixelRect(-3, -4, 5, 4, px);
+      ctx.fillStyle = dark;
+      ctx.font = `bold ${3 * px}px monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(String(h.lane + 1), -0.5 * px, -2 * px);
+
+      // Pernas em quatro quadros para dar sensação de galope.
+      ctx.fillStyle = dark;
+      const poses = [
+        [[-6,4,-8,9],[-2,4,-1,9],[3,4,6,8],[5,4,4,9]],
+        [[-6,4,-4,9],[-2,4,-5,8],[3,4,2,9],[5,4,8,8]],
+        [[-6,4,-9,7],[-2,4,1,9],[3,4,5,9],[5,4,2,8]],
+        [[-6,4,-7,9],[-2,4,-4,8],[3,4,1,8],[5,4,7,9]]
+      ];
+      poses[frame].forEach(([x1,y1,x2,y2]) => drawPixelLeg(x1,y1,x2,y2,px));
+
+      // Nome com fundo escuro para continuar legível.
+      ctx.font = '700 13px Segoe UI';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'alphabetic';
+      const labelW = ctx.measureText(h.name).width + 10;
+      ctx.fillStyle = 'rgba(10,12,15,.78)';
+      ctx.fillRect(-11 * px, -18 * px, labelW, 17);
+      ctx.fillStyle = '#fff';
+      ctx.fillText(h.name, -11 * px + 5, -18 * px + 13);
+      ctx.restore();
+    }
+
+    function pixelRect(x, y, w, h, size) {
+      ctx.fillRect(x * size, y * size, w * size, h * size);
+    }
+
+    function drawPixelLeg(x1, y1, x2, y2, size) {
+      // Linha sem suavização, reforçada por quadrados para manter o aspecto 8-bit.
+      const steps = Math.max(Math.abs(x2 - x1), Math.abs(y2 - y1));
+      for (let i = 0; i <= steps; i++) {
+        const t = steps ? i / steps : 0;
+        const x = Math.round(x1 + (x2 - x1) * t);
+        const y = Math.round(y1 + (y2 - y1) * t);
+        ctx.fillRect(x * size, y * size, size, size);
+      }
+      ctx.fillStyle = '#171717';
+      ctx.fillRect((x2 - 1) * size, y2 * size, 2 * size, size);
+    }
+
+    function shadeColor(hex, percent) {
+      const value = parseInt(hex.slice(1), 16);
+      const amount = Math.round(2.55 * percent);
+      const r = Math.max(0, Math.min(255, (value >> 16) + amount));
+      const g = Math.max(0, Math.min(255, ((value >> 8) & 255) + amount));
+      const b = Math.max(0, Math.min(255, (value & 255) + amount));
+      return `rgb(${r},${g},${b})`;
+    }
+
+    function updateBank() { document.getElementById('bankDisplay').textContent = `Banca: ${money(bank)}`; }
+    function setMessage(text, type) { const el=document.getElementById('message'); el.textContent=text; el.className=`message ${type}`; }
+    let audioContext = null;
+    let hoofbeatTimer = null;
+
+    function getAudioContext() {
+      if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioContext.state === 'suspended') audioContext.resume();
+      return audioContext;
+    }
+
+    function soundEnabled() {
+      return document.getElementById('soundToggle').checked;
+    }
+
+    function synthNote(freq, start, duration, options = {}) {
+      if (!soundEnabled()) return;
+      const ac = getAudioContext();
+      const osc = ac.createOscillator();
+      const gain = ac.createGain();
+      const filter = ac.createBiquadFilter();
+      osc.type = options.type || 'triangle';
+      osc.frequency.setValueAtTime(freq, start);
+      if (options.slideTo) osc.frequency.exponentialRampToValueAtTime(options.slideTo, start + duration);
+      filter.type = 'lowpass';
+      filter.frequency.value = options.filter || 2600;
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(options.volume || 0.1, start + Math.min(.025, duration / 4));
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+      osc.connect(filter); filter.connect(gain); gain.connect(ac.destination);
+      osc.start(start); osc.stop(start + duration + .03);
+    }
+
+    function playStartBugle() {
+      if (!soundEnabled()) return;
+      const ac = getAudioContext();
+      const t = ac.currentTime + .04;
+      // Fanfarra original em timbre de corneta, executada em arpejo ascendente.
+      const notes = [
+        [392.00,0.00,.18],[523.25,.20,.18],[659.25,.40,.32],
+        [523.25,.77,.15],[659.25,.94,.15],[783.99,1.11,.48]
+      ];
+      notes.forEach(([f, offset, d]) => {
+        synthNote(f, t + offset, d, {type:'sawtooth', volume:.075, filter:1800});
+        synthNote(f * 2, t + offset, d, {type:'square', volume:.018, filter:2400});
+      });
+    }
+
+    function startHoofbeats() {
+      stopHoofbeats();
+      if (!soundEnabled()) return;
+      let step = 0;
+      const pattern = [0, 115, 260, 375];
+      const scheduleGroup = () => {
+        if (!raceInProgress || !soundEnabled()) return stopHoofbeats();
+        pattern.forEach((delay, index) => setTimeout(() => {
+          if (raceInProgress) playHoof(index % 2 === 0 ? .075 : .055);
+        }, delay));
+        step++;
+      };
+      scheduleGroup();
+      hoofbeatTimer = setInterval(scheduleGroup, 515);
+    }
+
+    function playHoof(volume) {
+      const ac = getAudioContext();
+      const t = ac.currentTime;
+      const osc = ac.createOscillator();
+      const gain = ac.createGain();
+      const filter = ac.createBiquadFilter();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(145, t);
+      osc.frequency.exponentialRampToValueAtTime(52, t + .075);
+      filter.type = 'lowpass'; filter.frequency.value = 420;
+      gain.gain.setValueAtTime(volume, t);
+      gain.gain.exponentialRampToValueAtTime(.0001, t + .09);
+      osc.connect(filter); filter.connect(gain); gain.connect(ac.destination);
+      osc.start(t); osc.stop(t + .1);
+    }
+
+    function stopHoofbeats() {
+      if (hoofbeatTimer) clearInterval(hoofbeatTimer);
+      hoofbeatTimer = null;
+    }
+
+    function playVictoryMelody() {
+      if (!soundEnabled()) return;
+      const ac = getAudioContext();
+      const t = ac.currentTime + .05;
+      const tune = [[523.25,0,.28],[659.25,.30,.28],[783.99,.60,.28],[1046.50,.92,.55],[783.99,1.52,.22],[880.00,1.76,.22],[1046.50,2.02,.85]];
+      tune.forEach(([f,o,d]) => {
+        synthNote(f,t+o,d,{type:'triangle',volume:.09,filter:3000});
+        synthNote(f/2,t+o,d,{type:'sine',volume:.035,filter:1800});
+      });
+    }
+
+    function playDefeatMelody() {
+      if (!soundEnabled()) return;
+      const ac = getAudioContext();
+      const t = ac.currentTime + .05;
+      const tune = [[392.00,0,.42],[369.99,.46,.42],[329.63,.92,.48],[293.66,1.45,.50],[261.63,2.02,.88]];
+      tune.forEach(([f,o,d]) => {
+        synthNote(f,t+o,d,{type:'triangle',volume:.075,filter:1500,slideTo:f*.94});
+        synthNote(f/2,t+o,d,{type:'sine',volume:.025,filter:900});
+      });
+    }
+  </script>
+<style id="ppg-platform-style">
+:root{--ppg-ui-bg:rgba(10,13,28,.88);--ppg-ui-fg:#f7f5ff;--ppg-ui-line:rgba(255,255,255,.15);--ppg-ui-accent:#a875ff;--ppg-ui-accent2:#35e6ca}
+#ppg-toolbar{position:fixed;z-index:2147483000;top:10px;right:10px;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;max-width:min(92vw,620px);font-family:Inter,"Segoe UI",system-ui,sans-serif!important}
+#ppg-toolbar button,#ppg-toolbar a{min-height:34px!important;padding:7px 10px!important;margin:0!important;border:1px solid var(--ppg-ui-line)!important;border-radius:10px!important;background:var(--ppg-ui-bg)!important;color:var(--ppg-ui-fg)!important;font:700 12px/1 Inter,"Segoe UI",system-ui,sans-serif!important;text-decoration:none!important;text-transform:none!important;letter-spacing:0!important;box-shadow:0 8px 25px rgba(0,0,0,.22)!important;cursor:pointer!important;backdrop-filter:blur(10px);transform:none!important}
+#ppg-toolbar button:hover,#ppg-toolbar a:hover{border-color:var(--ppg-ui-accent2)!important;filter:brightness(1.12)!important}
+.ppg-modal{position:fixed;z-index:2147483640;inset:0;display:none;place-items:center;padding:18px;background:rgba(2,3,12,.78);backdrop-filter:blur(8px);font-family:Inter,"Segoe UI",system-ui,sans-serif!important}.ppg-modal.open{display:grid}.ppg-card{width:min(560px,96vw);max-height:min(80vh,720px);overflow:auto;padding:22px;border:1px solid rgba(255,255,255,.16);border-radius:20px;background:linear-gradient(145deg,#14162b,#0a0d1b);color:#f8f7ff;text-align:left;box-shadow:0 30px 90px #0009}.ppg-card h2{margin:0 0 8px!important;color:#d9c7ff!important;font:800 clamp(22px,4vw,30px)/1.1 Inter,"Segoe UI",system-ui,sans-serif!important}.ppg-card h3{margin:17px 0 6px!important;color:#63ecd6!important;font:800 14px/1.2 Inter,"Segoe UI",system-ui,sans-serif!important;text-transform:uppercase;letter-spacing:.08em}.ppg-card p,.ppg-card li{color:#d7d9e7!important;font:400 14px/1.55 Inter,"Segoe UI",system-ui,sans-serif!important}.ppg-card .ppg-credit{margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.12);font-weight:800;color:#fff!important}.ppg-close{float:right;border:0!important;background:#282c48!important;color:white!important;border-radius:9px!important;padding:7px 10px!important;cursor:pointer!important}.ppg-record-list{display:grid;gap:8px;margin-top:12px}.ppg-record{display:grid;grid-template-columns:34px 1fr auto;gap:8px;padding:10px;border-radius:12px;background:#ffffff0b;border:1px solid #ffffff10;align-items:center}.ppg-record small{color:#989db7}.ppg-empty{padding:14px;border:1px dashed #ffffff2a;border-radius:12px;color:#aeb3c8}
+body.ppg-light{background-color:#edf1f8!important;color:#182038!important}body.ppg-light :is(.menu-card,.card,.panel,.toolbar,.stats,.help,.bet-panel,.track-card,.game-container){filter:brightness(1.08) saturate(.92)}body.ppg-dark{color-scheme:dark}
+@media(max-width:720px){#ppg-toolbar{top:6px;right:6px}#ppg-toolbar button,#ppg-toolbar a{padding:6px 8px!important;font-size:11px!important}.ppg-card{padding:17px}}
+</style><script id="ppg-platform-script">
+(()=>{'use strict';
+const CFG={"id": "corrida", "name": "Hipódromo Estelar", "emoji": "🏇", "desc": "Corridas, odds e gestão de banca em rodadas rápidas.", "how": "Escolha um cavalo, ajuste sua aposta e confirme. Cada competidor tem características ocultas refletidas parcialmente nas odds.", "tip": "Não concentre a banca inteira em uma corrida. Odds altas pagam mais porque também carregam mais caos — o universo não distribui almoço grátis.", "metric": "Maior banca", "unit": " cr", "mode": "max"};
+const STATS_KEY='ppg_minigames_stats_v1', PREF_KEY='ppg_platform_prefs_v1', REC_KEY='ppg_records_'+CFG.id;
+const $=s=>document.querySelector(s), num=v=>{const m=String(v??'').replace(/\s/g,'').replace(/\.(?=\d{3}(\D|$))/g,'').replace(',','.').match(/-?\d+(?:\.\d+)?/);return m?+m[0]:null};
+const money=v=>{const s=String(v??'').replace(/R\$|◈|Créditos?|Banca:|💰/gi,'').trim();let m=s.match(/(-?[\d.,]+)\s*(K|M|B|T|Qa|Qi|Sx|Sp|Oc|No|Dc)?/i);if(!m)return null;let n=num(m[1]);const u=(m[2]||'').toLowerCase(),map={k:1e3,m:1e6,b:1e9,t:1e12,qa:1e15,qi:1e18,sx:1e21,sp:1e24,oc:1e27,no:1e30,dc:1e33};return n*(map[u]||1)};
+window.__ppgHelpers={num,money};
+function readJSON(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}}function writeJSON(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
+function dayKey(d=new Date()){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}function dayDiff(a,b){const A=new Date(a+'T12:00:00'),B=new Date(b+'T12:00:00');return Math.round((B-A)/86400000)}
+let all=readJSON(STATS_KEY,{}),st=all[CFG.id]||{starts:0,totalSeconds:0,longestStreak:0,currentStreak:0,lastDay:null};const today=dayKey();st.starts=(st.starts||0)+1;if(st.lastDay!==today){const dd=st.lastDay?dayDiff(st.lastDay,today):99;st.currentStreak=dd===1?(st.currentStreak||0)+1:1;st.longestStreak=Math.max(st.longestStreak||0,st.currentStreak);st.lastDay=today}st.lastStarted=Date.now();all[CFG.id]=st;writeJSON(STATS_KEY,all);
+let lastTick=performance.now();function flushTime(){const now=performance.now(),d=Math.max(0,(now-lastTick)/1000);lastTick=now;all=readJSON(STATS_KEY,{});const x=all[CFG.id]||st;x.totalSeconds=(x.totalSeconds||0)+d;x.lastPlayed=Date.now();all[CFG.id]=x;writeJSON(STATS_KEY,all)}setInterval(flushTime,5000);addEventListener('pagehide',flushTime);document.addEventListener('visibilitychange',()=>{if(document.hidden)flushTime();else lastTick=performance.now()});
+let prefs=readJSON(PREF_KEY,{theme:'dark',sound:true});document.body.classList.toggle('ppg-light',prefs.theme==='light');document.body.classList.toggle('ppg-dark',prefs.theme!=='light');
+const toolbar=document.createElement('nav');toolbar.id='ppg-toolbar';toolbar.innerHTML=`<button id="ppg-theme" title="Alternar modo claro/escuro">${prefs.theme==='light'?'🌙 Escuro':'☀️ Claro'}</button><button id="ppg-sound" title="Som e música">${prefs.sound?'🔊 Som':'🔇 Som'}</button><button id="ppg-records">🏆 Recordes</button><button id="ppg-about">ⓘ Sobre</button><a href="menu_minigames.html" id="ppg-menu">↩ Menu de Mini Games</a>`;document.body.appendChild(toolbar);
+const modal=document.createElement('div');modal.className='ppg-modal';modal.id='ppg-modal';modal.innerHTML=`<div class="ppg-card"><button class="ppg-close" aria-label="Fechar">✕</button><div id="ppg-modal-body"></div></div>`;document.body.appendChild(modal);const body=$('#ppg-modal-body');function open(html){body.innerHTML=html;modal.classList.add('open')}function close(){modal.classList.remove('open')}modal.addEventListener('click',e=>{if(e.target===modal||e.target.closest('.ppg-close'))close()});addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+$('#ppg-about').onclick=()=>open(`<h2>${CFG.name}</h2><p>${CFG.desc}</p><h3>Como jogar</h3><p>${CFG.how}</p><h3>Dica de estratégia</h3><p>${CFG.tip}</p><p class="ppg-credit">Produção: Projeto Primata Games em 2026.</p>`);
+$('#ppg-theme').onclick=()=>{prefs.theme=prefs.theme==='light'?'dark':'light';writeJSON(PREF_KEY,prefs);document.body.classList.toggle('ppg-light',prefs.theme==='light');document.body.classList.toggle('ppg-dark',prefs.theme==='dark');$('#ppg-theme').textContent=prefs.theme==='light'?'🌙 Escuro':'☀️ Claro';sfx(520,.05)};
+// Áudio procedural comum: garante BGM + SFX sem arquivos externos.
+let ac=null,master=null,music=null,beat=0;function initAudio(){if(ac)return;ac=new (window.AudioContext||window.webkitAudioContext)();master=ac.createGain();master.gain.value=prefs.sound?.12:0;master.connect(ac.destination)}function tone(f,d=.08,type='sine',vol=.08,when=0){if(!prefs.sound)return;initAudio();const t=ac.currentTime+when,o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(master);o.start(t);o.stop(t+d)}function sfx(f=420,d=.045){tone(f,d,'triangle',.11)}function startBgm(){if(music||!prefs.sound)return;initAudio();music=setInterval(()=>{if(document.hidden||!prefs.sound)return;const seq=[110,138.59,164.81,220,196,164.81,146.83,123.47],f=seq[beat++%seq.length];tone(f,.16,'triangle',.025);if(beat%4===1)tone(f/2,.1,'sine',.018)},360)}function stopBgm(){clearInterval(music);music=null}function unlock(){initAudio();ac?.resume();if(prefs.sound)startBgm()}addEventListener('pointerdown',unlock,{once:true});addEventListener('keydown',unlock,{once:true});document.addEventListener('click',e=>{if(e.target.closest('button,a,input,select'))sfx(380+Math.random()*80,.035)},true);
+$('#ppg-sound').onclick=e=>{e.stopPropagation();prefs.sound=!prefs.sound;writeJSON(PREF_KEY,prefs);initAudio();master.gain.setTargetAtTime(prefs.sound?.12:0,ac.currentTime,.02);if(prefs.sound){ac.resume();startBgm();sfx(660,.08)}else stopBgm();$('#ppg-sound').textContent=prefs.sound?'🔊 Som':'🔇 Som'};
+// Ranking local por sessão. A mesma sessão é atualizada em vez de poluir o top 5 com cada incremento.
+const sessionId=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7);function formatValue(v){if(v==null)return '—';if(Math.abs(v)>=1e9)return v.toLocaleString('pt-BR',{notation:'compact',maximumFractionDigits:2})+CFG.unit;return (Number.isInteger(v)?v:v.toFixed(2).replace('.',','))+CFG.unit}function metric(){try{const num=window.__ppgHelpers.num,money=window.__ppgHelpers.money;return money(document.querySelector('#bankDisplay')?.textContent)}catch{return null}}function upsert(v){if(v==null||!Number.isFinite(v)||(CFG.mode==='min'&&v<=0))return;let r=readJSON(REC_KEY,[]),me=r.find(x=>x.sessionId===sessionId);if(me){const better=CFG.mode==='min'?v<me.value:v>me.value;if(!better)return;me.value=v;me.at=Date.now()}else r.push({sessionId,value:v,at:Date.now()});r.sort((a,b)=>CFG.mode==='min'?a.value-b.value:b.value-a.value);writeJSON(REC_KEY,r.slice(0,5))}setInterval(()=>upsert(metric()),800);addEventListener('pagehide',()=>upsert(metric()));
+function renderRecords(){const r=readJSON(REC_KEY,[]);const list=r.length?`<div class="ppg-record-list">${r.map((x,i)=>`<div class="ppg-record"><b>#${i+1}</b><span><strong>${formatValue(x.value)}</strong><br><small>${new Date(x.at).toLocaleDateString('pt-BR')}</small></span><small>${CFG.metric}</small></div>`).join('')}</div>`:`<div class="ppg-empty">Ainda não há marca registrada neste navegador. Jogue uma partida e ela aparece aqui.</div>`;open(`<h2>Recordes locais</h2><p>Top 5 persistente deste jogo, salvo somente neste navegador.</p>${list}`)}$('#ppg-records').onclick=renderRecords;
+})();
+</script>
+</body>
+</html>

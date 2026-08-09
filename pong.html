@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#06152f">
+<title>Neon Pong: Pixel Arena</title>
+<style>
+:root{--gold:#ff61c7;--blue:#20d9ff;--deep:#031026;--cyan:#52e7ff;--white:#f4fbff}
+*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#020916;color:var(--white);font-family:ui-monospace,SFMono-Regular,Consolas,monospace;touch-action:none}
+body{display:grid;place-items:center;padding:max(8px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));background:radial-gradient(circle at 50% 20%,#0d3470 0,#06152f 36%,#020916 75%)}
+#app{width:min(96vw,calc(92vh * 16 / 9),1100px);display:flex;flex-direction:column;gap:clamp(6px,1vh,12px)}
+header{height:clamp(32px,5vh,52px);display:flex;align-items:center;justify-content:space-between;gap:10px}.brand{font-weight:900;color:var(--gold);font-size:clamp(15px,2.2vh,24px);text-shadow:3px 3px 0 #4d1c94;white-space:nowrap}.hint{font-size:clamp(9px,1.4vh,13px);color:#a8d7ff;text-align:right}
+#stage{position:relative;width:100%;aspect-ratio:16/9;border:clamp(3px,.6vh,7px) solid #1cc7df;box-shadow:0 0 0 3px #1b1244,0 0 28px #9d4dff88,inset 0 0 28px #001538;border-radius:10px;overflow:hidden;background:#061b48}
+canvas{width:100%;height:100%;display:block;image-rendering:pixelated}
+#overlay{position:absolute;inset:0;display:grid;place-items:center;background:#02091ac9;backdrop-filter:blur(3px);padding:18px;text-align:center}.panel{max-width:520px;padding:clamp(16px,3vh,30px);border:3px solid var(--cyan);background:#061b48;box-shadow:8px 8px 0 #00102c,0 0 24px #52e7ff55}.panel h1{margin:0 0 8px;color:var(--gold);font-size:clamp(25px,5vh,48px);text-shadow:4px 4px 0 #4d1c94}.panel p{margin:7px 0;color:#ceeaff;font-size:clamp(11px,1.8vh,16px);line-height:1.45}
+.controls{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;height:clamp(34px,6vh,50px)}button{border:0;border-bottom:4px solid #815a00;background:var(--gold);color:#09204d;font:900 clamp(10px,1.6vh,15px) ui-monospace,monospace;padding:7px 14px;cursor:pointer;box-shadow:3px 3px 0 #00102c;border-radius:4px}button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #00102c}button.secondary{background:#65dfff;border-bottom-color:#146c8b}.hidden{display:none!important}
+@media(max-height:520px){header{height:26px}.hint{display:none}.controls{height:32px}button{padding:4px 10px}#app{gap:4px;width:min(94vw,calc(82vh * 16 / 9))}}
+</style>
+</head>
+<body>
+<main id="app">
+<header><div class="brand">NEON PONG // PIXEL ARENA</div><div class="hint">↑ ↓ ou W S • mouse/toque • P pausa • M som</div></header>
+<div id="stage"><canvas id="game" width="960" height="540" aria-label="Jogo Pong"></canvas><div id="overlay"><div class="panel"><h1 id="overlayTitle">NEON PONG</h1><p id="overlayText">Primeiro a marcar 10 pontos vence.<br>Acerte longe do centro da raquete para mudar o ângulo.</p><button id="startBtn">INICIAR PARTIDA</button></div></div></div>
+<div class="controls"><button id="pauseBtn" class="secondary">PAUSAR</button><button id="restartBtn">REINICIAR</button><button id="soundBtn" class="secondary">SOM: LIGADO</button><button id="difficultyBtn">IA: ESTRATEGISTA</button></div>
+</main>
+<script>
+'use strict';
+const canvas=document.querySelector('#game'),ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=false;
+const W=960,H=540,WIN=10;let state='menu',last=0,serveTimer=0,shake=0,flash=0,elapsed=0,muted=false,audio=null,musicStep=0,musicTimer=0;
+const keys=new Set(),particles=[],stars=Array.from({length:70},()=>({x:Math.random()*W,y:Math.random()*H,s:1+Math.random()*2,p:Math.random()*6.28}));
+const player={x:34,y:H/2-62,w:18,h:124,vy:0,score:0};
+// A IA usa observacao intervalada, previsao de rebotes, aceleracao fisica e memoria curta.
+const ai={x:W-52,y:H/2-62,w:18,h:124,vy:0,score:0,target:H/2,reaction:0,mode:'recover',confidence:0,lastSeen:null,shotMemory:[0,0,0],rallyHits:0};
+const difficulties=[
+ {name:'CASUAL',reaction:.19,error:58,maxSpeed:350,accel:1450,lookAhead:.75,adapt:0},
+ {name:'ESTRATEGISTA',reaction:.115,error:30,maxSpeed:445,accel:2050,lookAhead:1,adapt:.45},
+ {name:'MESTRE',reaction:.072,error:15,maxSpeed:525,accel:2700,lookAhead:1,adapt:.75}
+];let difficultyIndex=1;
+const ball={x:W/2,y:H/2,r:10,vx:0,vy:0,speed:430,trail:[]};
+const overlay=document.querySelector('#overlay'),oTitle=document.querySelector('#overlayTitle'),oText=document.querySelector('#overlayText');
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}function rnd(a,b){return a+Math.random()*(b-a)}
+function initAudio(){if(audio)return;audio=new (window.AudioContext||window.webkitAudioContext)()}
+function tone(freq,dur=.08,type='square',vol=.06,when=0){if(muted||!audio)return;const o=audio.createOscillator(),g=audio.createGain(),t=audio.currentTime+when;o.type=type;o.frequency.setValueAtTime(freq,t);g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g).connect(audio.destination);o.start(t);o.stop(t+dur)}
+function sfx(name){if(name==='hit'){tone(230,.05,'square',.07);tone(460,.04,'square',.035,.025)}if(name==='wall')tone(150,.04,'triangle',.045);if(name==='score'){tone(330,.09);tone(494,.12,'square',.06,.08)}if(name==='lose'){tone(180,.12,'sawtooth',.05);tone(110,.2,'sawtooth',.05,.1)}}
+function music(dt){if(muted||!audio||state!=='playing')return;musicTimer-=dt;if(musicTimer<=0){const seq=[110,0,165,0,147,0,196,220];const f=seq[musicStep++%seq.length];if(f)tone(f,.11,'triangle',.018);musicTimer=.18}}
+function burst(x,y,color,n=12){for(let i=0;i<n;i++)particles.push({x,y,vx:rnd(-190,190),vy:rnd(-190,190),life:rnd(.25,.65),max:.65,color,size:rnd(2,6)})}
+function serve(dir=Math.random()<.5?-1:1){ball.x=W/2;ball.y=H/2;ball.speed=430;ai.rallyHits=0;ai.mode='recover';const ang=rnd(-.55,.55);ball.vx=Math.cos(ang)*ball.speed*dir;ball.vy=Math.sin(ang)*ball.speed;ball.trail=[];serveTimer=.65}
+function reset(){player.score=ai.score=0;player.y=ai.y=H/2-62;player.vy=ai.vy=0;ai.target=H/2;ai.shotMemory=[0,0,0];elapsed=0;serve(Math.random()<.5?-1:1);state='playing';overlay.classList.add('hidden');last=performance.now();initAudio();audio?.resume()}
+function end(win){state='gameover';sfx(win?'score':'lose');oTitle.textContent=win?'VOCÊ VENCEU!':'CPU VENCEU';oText.innerHTML=`Placar ${player.score} × ${ai.score}<br>Tempo: ${elapsed.toFixed(1)}s`;document.querySelector('#startBtn').textContent='JOGAR NOVAMENTE';overlay.classList.remove('hidden')}
+function collide(p,dir){const nearestX=clamp(ball.x,p.x,p.x+p.w),nearestY=clamp(ball.y,p.y,p.y+p.h),dx=ball.x-nearestX,dy=ball.y-nearestY;if(dx*dx+dy*dy<=ball.r*ball.r&&Math.sign(ball.vx)===dir){const rel=clamp((ball.y-(p.y+p.h/2))/(p.h/2),-1,1),angle=rel*1.05;ball.speed=Math.min(850,ball.speed*1.045+7);ball.vx=Math.cos(angle)*ball.speed*-dir;ball.vy=Math.sin(angle)*ball.speed+p.vy*.18;ball.x=dir<0?p.x+p.w+ball.r:p.x-ball.r;shake=7;flash=.08;burst(ball.x,ball.y,'#ffd43b');sfx('hit');return true}return false}
+
+// Reflete uma coordenada vertical em um corredor, incluindo qualquer quantidade de rebotes.
+function reflectY(y){const low=ball.r,span=H-ball.r*2,period=span*2;let n=((y-low)%period+period)%period;return low+(n<=span?n:period-n)}
+// Estima a intercepcao apenas com dados que a IA teria observado no ultimo ciclo.
+function predictIntercept(obs){if(!obs||obs.vx<=0)return H/2;const travel=(ai.x-ball.r-obs.x)/Math.max(1,obs.vx);return reflectY(obs.y+obs.vy*Math.max(0,travel))}
+function updateAI(dt){
+ const d=difficulties[difficultyIndex];ai.reaction-=dt;
+ if(ai.reaction<=0){
+  ai.reaction=d.reaction*rnd(.82,1.2);ai.lastSeen={x:ball.x,y:ball.y,vx:ball.vx,vy:ball.vy};
+  if(ball.vx>35){
+   ai.mode='intercept';let impact=predictIntercept(ai.lastSeen);
+   // A memória identifica se o jogador tende a devolver no alto, centro ou baixo.
+   const total=ai.shotMemory.reduce((a,b)=>a+b,0);let bias=0;
+   if(total>2&&d.adapt){const dominant=ai.shotMemory.indexOf(Math.max(...ai.shotMemory));bias=(dominant-1)*18*d.adapt}
+   // A incerteza diminui perto da raquete e cresce em ralis rápidos, evitando leitura perfeita.
+   const proximity=clamp((ai.x-ball.x)/W,0,1),rallyPenalty=Math.min(14,ai.rallyHits*1.4);
+   const uncertainty=(d.error*proximity+rallyPenalty)*(Math.random()*2-1);
+   ai.confidence=clamp(1-proximity*.55-rallyPenalty/60,.25,1);
+   ai.target=clamp(impact+uncertainty+bias,ai.h*.35,H-ai.h*.35);
+  }else{
+   ai.mode='recover';
+   // Quando a bola se afasta, retorna ao centro com leve posicionamento estratégico.
+   const scorePressure=(player.score-ai.score)*7;ai.target=clamp(H/2+scorePressure,ai.h/2,H-ai.h/2);ai.confidence=.45;
+  }
+ }
+ const center=ai.y+ai.h/2,diff=ai.target-center;
+ // Controle PD: acelera e freia, sem teletransporte nem perseguição perfeita.
+ const desired=clamp(diff*5.8,-d.maxSpeed,d.maxSpeed),delta=clamp(desired-ai.vy,-d.accel*dt,d.accel*dt);
+ ai.vy+=delta;ai.vy*=Math.pow(.72,dt);if(Math.abs(diff)<5)ai.vy*=Math.pow(.05,dt);
+ ai.y=clamp(ai.y+ai.vy*dt,0,H-ai.h);
+ if((ai.y<=0&&ai.vy<0)||(ai.y>=H-ai.h&&ai.vy>0))ai.vy=0;
+}
+function rememberPlayerShot(){const zone=ball.y<H/3?0:ball.y>H*2/3?2:1;ai.shotMemory[zone]=Math.min(12,ai.shotMemory[zone]+1);for(let i=0;i<3;i++)if(i!==zone)ai.shotMemory[i]*=.94}
+function cycleDifficulty(){difficultyIndex=(difficultyIndex+1)%difficulties.length;document.querySelector('#difficultyBtn').textContent=`IA: ${difficulties[difficultyIndex].name}`;tone(520+difficultyIndex*90,.07);if(state==='playing')serve(ball.vx<0?-1:1)}
+
+function update(dt){stars.forEach(s=>s.p+=dt*(.8+s.s*.2));for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=.97;p.vy*=.97;p.life-=dt;if(p.life<=0)particles.splice(i,1)}shake=Math.max(0,shake-28*dt);flash=Math.max(0,flash-dt);if(state!=='playing')return;elapsed+=dt;music(dt);
+ const input=(keys.has('arrowup')||keys.has('w')?-1:0)+(keys.has('arrowdown')||keys.has('s')?1:0);const accel=2600,max=560;player.vy+=input*accel*dt;player.vy*=input?0.88:Math.pow(.0008,dt);player.vy=clamp(player.vy,-max,max);player.y=clamp(player.y+player.vy*dt,0,H-player.h);
+ updateAI(dt);
+ if(serveTimer>0){serveTimer-=dt;return}const steps=Math.max(1,Math.ceil(dt*ball.speed/8)),sd=dt/steps;for(let i=0;i<steps;i++){ball.x+=ball.vx*sd;ball.y+=ball.vy*sd;if(ball.y-ball.r<0&&ball.vy<0){ball.y=ball.r;ball.vy*=-1;sfx('wall')}if(ball.y+ball.r>H&&ball.vy>0){ball.y=H-ball.r;ball.vy*=-1;sfx('wall')}(collide(player,-1)&&(rememberPlayerShot(),ai.rallyHits++))|| (collide(ai,1)&&(ai.rallyHits++))}ball.trail.unshift({x:ball.x,y:ball.y});if(ball.trail.length>9)ball.trail.pop();
+ if(ball.x<-30){ai.score++;burst(20,ball.y,'#ff5577',24);sfx('score');if(ai.score>=WIN)end(false);else serve(1)}else if(ball.x>W+30){player.score++;burst(W-20,ball.y,'#52e7ff',24);sfx('score');if(player.score>=WIN)end(true);else serve(-1)}}
+function pixelText(text,x,y,size=28,align='center',color='#fff'){ctx.font=`900 ${size}px ui-monospace,Consolas,monospace`;ctx.textAlign=align;ctx.textBaseline='middle';ctx.fillStyle='#00102c';ctx.fillText(text,x+3,y+3);ctx.fillStyle=color;ctx.fillText(text,x,y)}
+function drawPaddle(p,c){ctx.fillStyle='#00183f';ctx.fillRect(p.x-4,p.y-4,p.w+8,p.h+8);ctx.fillStyle=c;ctx.fillRect(p.x,p.y,p.w,p.h);ctx.fillStyle='#fff3a0';ctx.fillRect(p.x+3,p.y+8,4,p.h-16);ctx.fillStyle='#b77b00';ctx.fillRect(p.x+p.w-4,p.y+5,4,p.h-10)}
+function draw(){ctx.save();if(shake)ctx.translate(rnd(-shake,shake),rnd(-shake,shake));const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#082960');g.addColorStop(1,'#03112e');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);stars.forEach(s=>{ctx.globalAlpha=.28+.35*Math.sin(s.p);ctx.fillStyle=s.s>2?'#52e7ff':'#a7cfff';ctx.fillRect(s.x|0,s.y|0,s.s|0,s.s|0)});ctx.globalAlpha=1;ctx.strokeStyle='#1375ca55';ctx.lineWidth=2;for(let y=90;y<H;y+=48){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}ctx.setLineDash([16,14]);ctx.strokeStyle='#90dfff88';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(W/2,82);ctx.lineTo(W/2,H);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#021638cc';ctx.fillRect(0,0,W,82);pixelText(player.score,350,42,45,'center','#ffd43b');pixelText(ai.score,610,42,45,'center','#ff7189');pixelText(`${Math.floor(elapsed/60).toString().padStart(2,'0')}:${Math.floor(elapsed%60).toString().padStart(2,'0')}`,480,34,20,'center','#a8e8ff');pixelText(`IA ${difficulties[difficultyIndex].name} • ${ai.mode==='intercept'?'PREVENDO':'REPOSICIONANDO'}`,480,62,12,'center',ai.mode==='intercept'?'#72f1b8':'#8ebfff');drawPaddle(player,'#ffd43b');drawPaddle(ai,'#ff5577');ball.trail.forEach((t,i)=>{ctx.globalAlpha=(1-i/ball.trail.length)*.32;ctx.fillStyle='#52e7ff';const z=Math.max(2,ball.r-i);ctx.fillRect(t.x-z,t.y-z,z*2,z*2)});ctx.globalAlpha=1;ctx.fillStyle='#fff';ctx.fillRect(ball.x-ball.r,ball.y-ball.r,ball.r*2,ball.r*2);ctx.fillStyle='#52e7ff';ctx.fillRect(ball.x-ball.r+3,ball.y-ball.r+3,6,6);particles.forEach(p=>{ctx.globalAlpha=clamp(p.life/p.max,0,1);ctx.fillStyle=p.color;ctx.fillRect(p.x,p.y,p.size,p.size)});ctx.globalAlpha=1;if(serveTimer>0&&state==='playing')pixelText('PREPARE-SE',W/2,H/2-55,22,'center','#fff');if(state==='paused'){ctx.fillStyle='#020916aa';ctx.fillRect(0,0,W,H);pixelText('PAUSADO',W/2,H/2,48,'center','#ffd43b')}if(flash){ctx.globalAlpha=flash*5;ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H)}ctx.restore()}
+function loop(t){const dt=Math.min(.033,(t-last)/1000||0);last=t;update(dt);draw();requestAnimationFrame(loop)}
+function setPointer(e){if(state!=='playing')return;const r=canvas.getBoundingClientRect(),y=(e.clientY-r.top)/r.height*H;player.y=clamp(y-player.h/2,0,H-player.h);player.vy=0}
+addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(['arrowup','arrowdown',' '].includes(k))e.preventDefault();keys.add(k);if(k==='p')togglePause();if(k==='m')toggleSound()},{passive:false});addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));canvas.addEventListener('pointermove',setPointer);canvas.addEventListener('pointerdown',e=>{initAudio();audio?.resume();setPointer(e)});
+function togglePause(){if(state==='playing')state='paused';else if(state==='paused'){state='playing';last=performance.now()}document.querySelector('#pauseBtn').textContent=state==='paused'?'CONTINUAR':'PAUSAR'}function toggleSound(){muted=!muted;document.querySelector('#soundBtn').textContent=`SOM: ${muted?'DESLIGADO':'LIGADO'}`;if(!muted){initAudio();audio.resume();tone(440,.06)}}
+document.querySelector('#startBtn').onclick=reset;document.querySelector('#restartBtn').onclick=reset;document.querySelector('#pauseBtn').onclick=togglePause;document.querySelector('#soundBtn').onclick=toggleSound;document.querySelector('#difficultyBtn').onclick=cycleDifficulty;serve();requestAnimationFrame(loop);
+</script>
+<style id="ppg-platform-style">
+:root{--ppg-ui-bg:rgba(10,13,28,.88);--ppg-ui-fg:#f7f5ff;--ppg-ui-line:rgba(255,255,255,.15);--ppg-ui-accent:#a875ff;--ppg-ui-accent2:#35e6ca}
+#ppg-toolbar{position:fixed;z-index:2147483000;top:10px;right:10px;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;max-width:min(92vw,620px);font-family:Inter,"Segoe UI",system-ui,sans-serif!important}
+#ppg-toolbar button,#ppg-toolbar a{min-height:34px!important;padding:7px 10px!important;margin:0!important;border:1px solid var(--ppg-ui-line)!important;border-radius:10px!important;background:var(--ppg-ui-bg)!important;color:var(--ppg-ui-fg)!important;font:700 12px/1 Inter,"Segoe UI",system-ui,sans-serif!important;text-decoration:none!important;text-transform:none!important;letter-spacing:0!important;box-shadow:0 8px 25px rgba(0,0,0,.22)!important;cursor:pointer!important;backdrop-filter:blur(10px);transform:none!important}
+#ppg-toolbar button:hover,#ppg-toolbar a:hover{border-color:var(--ppg-ui-accent2)!important;filter:brightness(1.12)!important}
+.ppg-modal{position:fixed;z-index:2147483640;inset:0;display:none;place-items:center;padding:18px;background:rgba(2,3,12,.78);backdrop-filter:blur(8px);font-family:Inter,"Segoe UI",system-ui,sans-serif!important}.ppg-modal.open{display:grid}.ppg-card{width:min(560px,96vw);max-height:min(80vh,720px);overflow:auto;padding:22px;border:1px solid rgba(255,255,255,.16);border-radius:20px;background:linear-gradient(145deg,#14162b,#0a0d1b);color:#f8f7ff;text-align:left;box-shadow:0 30px 90px #0009}.ppg-card h2{margin:0 0 8px!important;color:#d9c7ff!important;font:800 clamp(22px,4vw,30px)/1.1 Inter,"Segoe UI",system-ui,sans-serif!important}.ppg-card h3{margin:17px 0 6px!important;color:#63ecd6!important;font:800 14px/1.2 Inter,"Segoe UI",system-ui,sans-serif!important;text-transform:uppercase;letter-spacing:.08em}.ppg-card p,.ppg-card li{color:#d7d9e7!important;font:400 14px/1.55 Inter,"Segoe UI",system-ui,sans-serif!important}.ppg-card .ppg-credit{margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.12);font-weight:800;color:#fff!important}.ppg-close{float:right;border:0!important;background:#282c48!important;color:white!important;border-radius:9px!important;padding:7px 10px!important;cursor:pointer!important}.ppg-record-list{display:grid;gap:8px;margin-top:12px}.ppg-record{display:grid;grid-template-columns:34px 1fr auto;gap:8px;padding:10px;border-radius:12px;background:#ffffff0b;border:1px solid #ffffff10;align-items:center}.ppg-record small{color:#989db7}.ppg-empty{padding:14px;border:1px dashed #ffffff2a;border-radius:12px;color:#aeb3c8}
+body.ppg-light{background-color:#edf1f8!important;color:#182038!important}body.ppg-light :is(.menu-card,.card,.panel,.toolbar,.stats,.help,.bet-panel,.track-card,.game-container){filter:brightness(1.08) saturate(.92)}body.ppg-dark{color-scheme:dark}
+@media(max-width:720px){#ppg-toolbar{top:6px;right:6px}#ppg-toolbar button,#ppg-toolbar a{padding:6px 8px!important;font-size:11px!important}.ppg-card{padding:17px}}
+</style><script id="ppg-platform-script">
+(()=>{'use strict';
+const CFG={"id": "neon_pong", "name": "Neon Pong", "emoji": "🏓", "desc": "Pong pixelado contra uma IA adaptativa.", "how": "Mova a raquete com W/S, setas, mouse ou toque. O primeiro a 10 pontos vence. Rebater longe do centro muda o ângulo da bola.", "tip": "Varie o ponto de impacto da raquete. Se você devolver sempre do mesmo jeito, a IA começa a ler seu “sotaque”.", "metric": "Vitória mais rápida", "unit": " s", "mode": "min"};
+const STATS_KEY='ppg_minigames_stats_v1', PREF_KEY='ppg_platform_prefs_v1', REC_KEY='ppg_records_'+CFG.id;
+const $=s=>document.querySelector(s), num=v=>{const m=String(v??'').replace(/\s/g,'').replace(/\.(?=\d{3}(\D|$))/g,'').replace(',','.').match(/-?\d+(?:\.\d+)?/);return m?+m[0]:null};
+const money=v=>{const s=String(v??'').replace(/R\$|◈|Créditos?|Banca:|💰/gi,'').trim();let m=s.match(/(-?[\d.,]+)\s*(K|M|B|T|Qa|Qi|Sx|Sp|Oc|No|Dc)?/i);if(!m)return null;let n=num(m[1]);const u=(m[2]||'').toLowerCase(),map={k:1e3,m:1e6,b:1e9,t:1e12,qa:1e15,qi:1e18,sx:1e21,sp:1e24,oc:1e27,no:1e30,dc:1e33};return n*(map[u]||1)};
+window.__ppgHelpers={num,money};
+function readJSON(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}}function writeJSON(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
+function dayKey(d=new Date()){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}function dayDiff(a,b){const A=new Date(a+'T12:00:00'),B=new Date(b+'T12:00:00');return Math.round((B-A)/86400000)}
+let all=readJSON(STATS_KEY,{}),st=all[CFG.id]||{starts:0,totalSeconds:0,longestStreak:0,currentStreak:0,lastDay:null};const today=dayKey();st.starts=(st.starts||0)+1;if(st.lastDay!==today){const dd=st.lastDay?dayDiff(st.lastDay,today):99;st.currentStreak=dd===1?(st.currentStreak||0)+1:1;st.longestStreak=Math.max(st.longestStreak||0,st.currentStreak);st.lastDay=today}st.lastStarted=Date.now();all[CFG.id]=st;writeJSON(STATS_KEY,all);
+let lastTick=performance.now();function flushTime(){const now=performance.now(),d=Math.max(0,(now-lastTick)/1000);lastTick=now;all=readJSON(STATS_KEY,{});const x=all[CFG.id]||st;x.totalSeconds=(x.totalSeconds||0)+d;x.lastPlayed=Date.now();all[CFG.id]=x;writeJSON(STATS_KEY,all)}setInterval(flushTime,5000);addEventListener('pagehide',flushTime);document.addEventListener('visibilitychange',()=>{if(document.hidden)flushTime();else lastTick=performance.now()});
+let prefs=readJSON(PREF_KEY,{theme:'dark',sound:true});document.body.classList.toggle('ppg-light',prefs.theme==='light');document.body.classList.toggle('ppg-dark',prefs.theme!=='light');
+const toolbar=document.createElement('nav');toolbar.id='ppg-toolbar';toolbar.innerHTML=`<button id="ppg-theme" title="Alternar modo claro/escuro">${prefs.theme==='light'?'🌙 Escuro':'☀️ Claro'}</button><button id="ppg-sound" title="Som e música">${prefs.sound?'🔊 Som':'🔇 Som'}</button><button id="ppg-records">🏆 Recordes</button><button id="ppg-about">ⓘ Sobre</button><a href="menu_minigames.html" id="ppg-menu">↩ Menu de Mini Games</a>`;document.body.appendChild(toolbar);
+const modal=document.createElement('div');modal.className='ppg-modal';modal.id='ppg-modal';modal.innerHTML=`<div class="ppg-card"><button class="ppg-close" aria-label="Fechar">✕</button><div id="ppg-modal-body"></div></div>`;document.body.appendChild(modal);const body=$('#ppg-modal-body');function open(html){body.innerHTML=html;modal.classList.add('open')}function close(){modal.classList.remove('open')}modal.addEventListener('click',e=>{if(e.target===modal||e.target.closest('.ppg-close'))close()});addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+$('#ppg-about').onclick=()=>open(`<h2>${CFG.name}</h2><p>${CFG.desc}</p><h3>Como jogar</h3><p>${CFG.how}</p><h3>Dica de estratégia</h3><p>${CFG.tip}</p><p class="ppg-credit">Produção: Projeto Primata Games em 2026.</p>`);
+$('#ppg-theme').onclick=()=>{prefs.theme=prefs.theme==='light'?'dark':'light';writeJSON(PREF_KEY,prefs);document.body.classList.toggle('ppg-light',prefs.theme==='light');document.body.classList.toggle('ppg-dark',prefs.theme==='dark');$('#ppg-theme').textContent=prefs.theme==='light'?'🌙 Escuro':'☀️ Claro';sfx(520,.05)};
+// Áudio procedural comum: garante BGM + SFX sem arquivos externos.
+let ac=null,master=null,music=null,beat=0;function initAudio(){if(ac)return;ac=new (window.AudioContext||window.webkitAudioContext)();master=ac.createGain();master.gain.value=prefs.sound?.12:0;master.connect(ac.destination)}function tone(f,d=.08,type='sine',vol=.08,when=0){if(!prefs.sound)return;initAudio();const t=ac.currentTime+when,o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(master);o.start(t);o.stop(t+d)}function sfx(f=420,d=.045){tone(f,d,'triangle',.11)}function startBgm(){if(music||!prefs.sound)return;initAudio();music=setInterval(()=>{if(document.hidden||!prefs.sound)return;const seq=[110,138.59,164.81,220,196,164.81,146.83,123.47],f=seq[beat++%seq.length];tone(f,.16,'triangle',.025);if(beat%4===1)tone(f/2,.1,'sine',.018)},360)}function stopBgm(){clearInterval(music);music=null}function unlock(){initAudio();ac?.resume();if(prefs.sound)startBgm()}addEventListener('pointerdown',unlock,{once:true});addEventListener('keydown',unlock,{once:true});document.addEventListener('click',e=>{if(e.target.closest('button,a,input,select'))sfx(380+Math.random()*80,.035)},true);
+$('#ppg-sound').onclick=e=>{e.stopPropagation();prefs.sound=!prefs.sound;writeJSON(PREF_KEY,prefs);initAudio();master.gain.setTargetAtTime(prefs.sound?.12:0,ac.currentTime,.02);if(prefs.sound){ac.resume();startBgm();sfx(660,.08)}else stopBgm();$('#ppg-sound').textContent=prefs.sound?'🔊 Som':'🔇 Som'};
+// Ranking local por sessão. A mesma sessão é atualizada em vez de poluir o top 5 com cada incremento.
+const sessionId=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7);function formatValue(v){if(v==null)return '—';if(Math.abs(v)>=1e9)return v.toLocaleString('pt-BR',{notation:'compact',maximumFractionDigits:2})+CFG.unit;return (Number.isInteger(v)?v:v.toFixed(2).replace('.',','))+CFG.unit}function metric(){try{const num=window.__ppgHelpers.num,money=window.__ppgHelpers.money;return (()=>{const title=document.querySelector('#overlayTitle')?.textContent||'';const t=document.querySelector('#overlayText')?.textContent||'';const m=t.match(/Tempo:\s*([\d,.]+)s/i);return /VOCÊ VENCEU/i.test(title)&&m?num(m[1]):null})()}catch{return null}}function upsert(v){if(v==null||!Number.isFinite(v)||(CFG.mode==='min'&&v<=0))return;let r=readJSON(REC_KEY,[]),me=r.find(x=>x.sessionId===sessionId);if(me){const better=CFG.mode==='min'?v<me.value:v>me.value;if(!better)return;me.value=v;me.at=Date.now()}else r.push({sessionId,value:v,at:Date.now()});r.sort((a,b)=>CFG.mode==='min'?a.value-b.value:b.value-a.value);writeJSON(REC_KEY,r.slice(0,5))}setInterval(()=>upsert(metric()),800);addEventListener('pagehide',()=>upsert(metric()));
+function renderRecords(){const r=readJSON(REC_KEY,[]);const list=r.length?`<div class="ppg-record-list">${r.map((x,i)=>`<div class="ppg-record"><b>#${i+1}</b><span><strong>${formatValue(x.value)}</strong><br><small>${new Date(x.at).toLocaleDateString('pt-BR')}</small></span><small>${CFG.metric}</small></div>`).join('')}</div>`:`<div class="ppg-empty">Ainda não há marca registrada neste navegador. Jogue uma partida e ela aparece aqui.</div>`;open(`<h2>Recordes locais</h2><p>Top 5 persistente deste jogo, salvo somente neste navegador.</p>${list}`)}$('#ppg-records').onclick=renderRecords;
+})();
+</script>
+</body>
+</html>

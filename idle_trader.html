@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<title>Idle: Império Financeiro (8-bit)</title>
+<style>
+  :root{
+    --bg:#0b1020; --panel:#0f1530; --accent:#00ffa7; --accent2:#00e1ff;
+    --ink:#e6f3ff; --muted:#9fb5c7; --warn:#ffd54a; --danger:#ff6b6b;
+  }
+  *{box-sizing:border-box} html,body{height:100%}
+  body{
+    margin:0; background:linear-gradient(#050814,#0b1020 40%, #0b1020);
+    color:var(--ink); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    display:flex; flex-direction:column; gap:8px;
+  }
+  header{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:10px 12px; background:#0d1430aa; backdrop-filter: blur(3px);
+    border-bottom:1px solid #1b2550;
+  }
+  header .stat{display:flex; gap:12px; flex-wrap:wrap; align-items:center}
+  .badge{
+    border:2px solid var(--accent2); padding:6px 10px; border-radius:6px;
+    color:var(--ink); background:#061224; text-shadow:0 0 4px #00e1ff88;
+  }
+  .controls{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+  label.tgl{
+    display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border:2px solid #203060; border-radius:6px;
+    background:#0a1330; cursor:pointer; user-select:none;
+  }
+  input[type="checkbox"]{transform:scale(1.2)}
+  main{flex:1; display:flex; gap:10px; padding:10px; min-height:0}
+  #stageWrap{
+    flex:1; position:relative; display:flex; align-items:center; justify-content:center;
+    background:#0006; border:1px solid #13224b; border-radius:8px; overflow:hidden; min-height:240px;
+  }
+  /* Canvas: sem esticar por CSS; tamanho controlado via JS (pixel-perfect) */
+  canvas{
+    image-rendering: pixelated; image-rendering: crisp-edges;
+    width:auto; height:auto; max-width:100%; max-height:100%;
+    display:block; user-select:none;
+  }
+  /* CRT overlay */
+  .crt::after{
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background:
+      repeating-linear-gradient(to bottom, rgba(255,255,255,0.06) 0, rgba(255,255,255,0.06) 1px, transparent 2px, transparent 3px),
+      radial-gradient(ellipse at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.0) 60%, rgba(0,0,0,0.15) 100%);
+    mix-blend-mode: overlay;
+  }
+  aside{ width:390px; min-width:280px; max-width:95vw; display:flex; flex-direction:column; gap:10px; }
+  .panel{
+    background:var(--panel); border:1px solid #1b2550; border-radius:8px; padding:10px; overflow:auto; min-height:0;
+  }
+  .sectionTitle{font-weight:bold; color:var(--accent); margin:2px 0 8px 0; text-shadow:0 0 6px #00ffa744}
+  .item{
+    display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center;
+    padding:8px; margin-bottom:8px; border:1px solid #1b2550; border-radius:6px; background:#0c1432;
+  }
+  .item h4{margin:0 0 4px 0; color:#d2e9ff}
+  .muted{color:var(--muted); font-size:12px}
+  .btnRow{display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end}
+  .btn{ border:2px solid #23407a; background:#0b1535; color:#cfe8ff; padding:6px 10px; border-radius:6px; cursor:pointer; }
+  .btn.buy{border-color:#2a6a52; background:#073326}
+  .btn.buy:disabled{opacity:.45; filter:grayscale(60%); cursor:not-allowed}
+  .btn.warn{border-color:#80621b; background:#2a2008; color:#ffe5a6}
+  .btn.danger{border-color:#7a2a2a; background:#330b0b; color:#ffd2d2}
+  .footerRow{display:flex; gap:8px; flex-wrap:wrap; justify-content:space-between; align-items:center}
+  .tiny{font-size:12px; color:#9cb7d1}
+  .toast{
+    position:fixed; right:14px; bottom:14px; background:#0a1a38; border:1px solid #215; padding:10px 12px; border-radius:8px; box-shadow:0 8px 20px #0008; z-index:9999;
+  }
+  /* MENU INICIAL */
+  #menuOverlay{
+    position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(#020612,#061024); z-index:9998; border-bottom:1px solid #1b2550;
+  }
+  .menuCard{
+    width:min(640px, 94vw); background:#0b163a; border:1px solid #1b2550; border-radius:10px; padding:18px;
+    box-shadow:0 12px 40px #000a;
+  }
+  .menuTitle{font-size:20px; color:#9fe; margin-bottom:12px}
+  .menuRow{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:8px 0}
+  .menuBtns{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px}
+  .note{font-size:12px; color:#9cb7d1}
+  .crtBanner{ font-size:12px; color:#9fd3ff; opacity:.8 }
+
+  /* =====================
+     MODO REDUZIDO (discreto)
+     ===================== */
+  body.reduced{
+    --bg:#0f1115; --panel:#12151c; --accent:#7aa2f7; --accent2:#5a6b82;
+    --ink:#e6ebf2; --muted:#aab2bf; --warn:#c8cfd9; --danger:#d9a6a6;
+    background:#0f1115; color:var(--ink);
+    font-family: "Segoe UI", Roboto, Inter, "Helvetica Neue", system-ui, -apple-system, Arial, sans-serif;
+  }
+  body.reduced header{ background:#0d111a; border-bottom-color:#1a2230; }
+  body.reduced .badge{
+    border-color:#3a4556; background:#10141c; text-shadow:none; color:#dbe3ee;
+  }
+  body.reduced .sectionTitle{ color:#9fb3c8; text-shadow:none; }
+  body.reduced .panel{ background:#12151c; border-color:#1a2230; }
+  body.reduced .btn{ background:#0e1422; border-color:#2b3445; color:#d7dce2; text-shadow:none; }
+  body.reduced .btn.buy{ background:#101a28; border-color:#2c3e50; }
+  body.reduced .btn.warn{ background:#141821; border-color:#2b3445; color:#d7dce2; }
+  body.reduced .btn.danger{ background:#1a1111; border-color:#3a2a2a; color:#e4d1d1; }
+  /* Esconde overlay CRT no modo reduzido, mesmo que o toggle esteja ON */
+  body.reduced #stageWrap.crt::after{ display:none; }
+</style>
+</head>
+<body>
+<header>
+  <div class="stat">
+    <div class="badge" id="moneyBadge">💰 R$ 0</div>
+    <div class="badge" id="ipsBadge">⚡ IPS: 0</div>
+    <div class="badge" id="clickBadge">🖱️ /Clique: 1</div>
+    <div class="badge" id="prestigeBadge" title="Multiplicador permanente de renda (Prestígio)">🌟 Reputação x1.00</div>
+    <div class="badge" id="marketBadge" title="Estado atual do mercado">📣 Mercado: Normal</div>
+  </div>
+  <div class="controls">
+    <button class="btn" id="modeBtn" title="Alternar modo reduzido (discreto)">🕶️ Modo reduzido: Off</button>
+    <label class="tgl"><input type="checkbox" id="soundTgl" checked/> Som</label>
+    <label class="tgl"><input type="checkbox" id="crtTgl" checked/> Efeito CRT</label>
+    <button class="btn warn" id="saveBtn">💾 Salvar</button>
+    <button class="btn danger" id="resetBtn" title="Apaga o progresso atual">🗑️ Reset</button>
+  </div>
+</header>
+
+<main>
+  <div id="stageWrap" class="crt">
+    <canvas id="stage" width="320" height="180" title="Clique para TRADAR!"></canvas>
+  </div>
+
+  <aside>
+    <div class="panel" style="max-height:36%; min-height:32%">
+      <div class="sectionTitle">📈 Ativos (Renda Passiva)</div>
+      <div id="assetsList"></div>
+    </div>
+
+    <div class="panel" style="max-height:36%; min-height:32%">
+      <div class="sectionTitle">🔧 Upgrades & Estratégias</div>
+      <div id="upgradesList"></div>
+    </div>
+
+    <div class="panel" style="max-height:28%; min-height:22%">
+      <div class="sectionTitle">🏆 Conquistas</div>
+      <div id="achList"></div>
+    </div>
+
+    <div class="panel">
+      <div class="sectionTitle">🏛️ Prestígio (IPO)</div>
+      <div class="footerRow">
+        <div class="tiny" id="prestigeInfo">Abra capital quando atingir R$ 1,00Bi para ganhar Reputação permanente.</div>
+        <button class="btn" id="prestigeBtn" disabled>🚀 Abrir Capital (Reset)</button>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<!-- MENU INICIAL -->
+<div id="menuOverlay">
+  <div class="menuCard">
+    <div class="menuTitle">🎮 Idle: Império Financeiro (8‑bit)</div>
+    <div class="crtBanner">Dica: Ative o efeito CRT para vibe retrô. Pode ser desativado a qualquer momento.</div>
+    <div class="menuRow">
+      <label class="tgl"><input type="checkbox" id="menuSoundTgl" checked/> Som</label>
+      <label class="tgl"><input type="checkbox" id="menuCrtTgl" checked/> Efeito CRT</label>
+    </div>
+    <div class="menuBtns">
+      <button class="btn buy" id="continueBtn">▶️ Continuar</button>
+      <button class="btn warn" id="newGameBtn">🆕 Novo Jogo</button>
+    </div>
+    <div class="note">“Continuar” usa seu progresso salvo. “Novo Jogo” permite começar do zero (você poderá escolher manter ou não a Reputação).</div>
+  </div>
+</div>
+
+<div id="toast" class="toast" style="display:none"></div>
+
+<script>
+/* =======================
+   BASE / PIXEL-PERFECT
+======================= */
+const BASE_W = 320, BASE_H = 180;
+const canvas = document.getElementById("stage");
+const ctx = canvas.getContext("2d");
+let PP = { scale: 1 }; // escala inteira (1x,2x,3x...)
+function setSmoothing(off=true){
+  const v = !off;
+  ctx.imageSmoothingEnabled = v;
+  ctx.mozImageSmoothingEnabled = v;
+  ctx.webkitImageSmoothingEnabled = v;
+  ctx.msImageSmoothingEnabled = v;
+}
+function setBaseTransform(){ ctx.setTransform(PP.scale,0,0,PP.scale,0,0); }
+function setShakeTransform(dx,dy){ ctx.setTransform(PP.scale,0,0,PP.scale, dx*PP.scale, dy*PP.scale); }
+
+function resizeCanvas(){
+  const wrap = document.getElementById("stageWrap");
+  const dpr = window.devicePixelRatio || 1;
+  const r = wrap.getBoundingClientRect();
+  const maxW = Math.max(1, Math.floor(r.width * dpr));
+  const maxH = Math.max(1, Math.floor(r.height * dpr));
+  const sx = Math.max(1, Math.floor(maxW / BASE_W));
+  const sy = Math.max(1, Math.floor(maxH / BASE_H));
+  PP.scale = Math.max(1, Math.min(sx, sy));
+  canvas.width  = BASE_W * PP.scale;
+  canvas.height = BASE_H * PP.scale;
+  canvas.style.width  = (canvas.width / dpr) + "px";
+  canvas.style.height = (canvas.height / dpr) + "px";
+  setSmoothing(true);
+  setBaseTransform();
+}
+window.addEventListener("resize", resizeCanvas);
+
+/* =======================
+   UTIL & ESTADO DO JOGO
+======================= */
+const fmt = (n)=>{
+  if(!isFinite(n)) return "∞";
+  const neg = n<0; n = Math.abs(n);
+  if(n<1e3) return (neg?"-":"")+n.toLocaleString("pt-BR",{maximumFractionDigits:2});
+  const units = ["K","M","B","T","Qa","Qi","Sx","Sp","Oc","No","Dc"];
+  let u=-1; while(n>=1000 && u<units.length-1){ n/=1000; u++; }
+  return (neg?"-":"")+n.toLocaleString("pt-BR",{maximumFractionDigits:2})+(u>=0?units[u]:"");
+};
+const SAVE_KEY="idle-finance-save-v3"; // v3: adiciona modo reduzido persistente
+const RNG = (seed=1337)=>{ let s=seed>>>0; return ()=>{ s|=0; s=(s+0x6D2B79F5)|0; let t=Math.imul(s^(s>>>15),1|s); t^=t+Math.imul(t^(t>>>7),61|t); return ((t^(t>>>14))>>>0)/4294967296; } };
+let rand = RNG(Math.floor(Math.random()*1e9));
+
+const state = {
+  money: 0, totalEarned: 0,
+  click: 1, ipsMult: 1,
+  items: {}, boughtUpg: {},
+  sound: true, crt: true,
+  prestige: { rep:0, mult:1.00, times:0 },
+  lastSave: Date.now(),
+  seed: Math.floor(Math.random()*1e9),
+  stats: { clicks:0, firstAsset:false },
+  achievements: {},
+  // Mercado & gráficos
+  market: { mode:"normal", multIPS:1, multClick:1, ttl:0, next: 20 },
+  price: 100,
+  // UI
+  ui: { reduced:false, prevSound:null }
+};
+
+const PRICE_GROWTH = 1.15;
+the_OFFLINE_FACTOR = 0.5;  // 50% offline
+const OFFLINE_CAP_HRS = 8;
+const IPO_THRESHOLD = 1e9;
+let globalDiscount = 1.0;
+
+const ASSETS = [
+  {key:"poupanca", name:"Conta Poupança", baseCost:50,      ips:0.1,  desc:"Juros tímidos, mas constantes."},
+  {key:"tdireto",  name:"Tesouro Direto", baseCost:250,     ips:0.7,  desc:"Renda fixa do governo."},
+  {key:"bluechip", name:"Ações Blue-Chip", baseCost:1200,   ips:3.5,  desc:"Grandes empresas estáveis."},
+  {key:"fii",      name:"Fundo Imobiliário", baseCost:7500, ips:15,   desc:"Dividendos mensais."},
+  {key:"robo",     name:"Robô de Trading", baseCost:25000,  ips:40,   desc:"Algoritmos que nunca dormem."},
+  {key:"deskprop", name:"Desk Proprietário", baseCost:100000,ips:130,  desc:"Operações com capital próprio."},
+  {key:"agencia",  name:"Agência de Investimento", baseCost:450000, ips:420, desc:"Clientes e comissões crescentes."},
+  {key:"corretora",name:"Corretora Regional", baseCost:2_000_000, ips:1700, desc:"Taxas, ordens e volume."},
+  {key:"bancodig", name:"Banco Digital", baseCost:12_000_000, ips:9800, desc:"Spread + tarifas + escalabilidade."},
+  {key:"hedge",    name:"Hedge Fund", baseCost:80_000_000, ips:55000, desc:"Taxas 2/20 e alavancagem."},
+  {key:"private",  name:"Private Equity", baseCost:600_000_000, ips:380000, desc:"Compra, reestrutura, vende."},
+  {key:"bolsa",    name:"Bolsa Própria", baseCost:3_500_000_000, ips:2600000, desc:"Taxas de negociação do mundo."},
+  {key:"conglomerado", name:"Conglomerado Global", baseCost:22_000_000_000, ips:18500000, desc:"Topo da cadeia financeira."}
+];
+
+const UPGRADES = [
+  {key:"mouse_pro", name:"Mouse Mecânico PRO", cost:120, type:"click_add", val:1, desc:"+1 por clique."},
+  {key:"curso_day", name:"Curso de Day Trade", cost:1200, type:"click_mult", val:1.5, desc:"+50% por clique."},
+  {key:"influencer", name:"Canal Finanças", cost:6000, type:"click_add", val:10, desc:"+10 por clique."},
+  {key:"vender_curso", name:"Vender Curso de Trader", cost:15000, type:"ips_mult", val:1.15, desc:"+15% IPS (marketing poderoso)."},
+  {key:"algoritmos", name:"Algoritmos Otimizados", cost:35000, type:"ips_mult", val:1.25, desc:"+25% IPS."},
+  {key:"ia_risco", name:"IA de Risco", cost:120000, type:"ips_mult", val:1.35, desc:"+35% IPS."},
+  {key:"mentoria_vip", name:"Comunidade VIP", cost:500000, type:"click_mult", val:2, desc:"x2 por clique."},
+  {key:"rede_parcerias", name:"Rede de Parcerias", cost:1_500_000, type:"ips_mult", val:1.5, desc:"+50% IPS."},
+  {key:"marca_global", name:"Marca Global", cost:8_000_000, type:"ips_mult", val:1.8, desc:"+80% IPS."},
+  {key:"otimizacao_custos", name:"Otimização de Custos", cost:12_000_000, type:"discount", val:0.97, desc:"3% mais barato (acumulativo)."}
+];
+
+/* =======================
+   ÁUDIO (opcional)
+======================= */
+let audioCtx = null;
+function beep(freq=880, dur=0.06, type="square", vol=0.15){
+  if(!state.sound) return;
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    const t = audioCtx.currentTime;
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = type; o.frequency.setValueAtTime(freq, t);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
+    o.connect(g).connect(audioCtx.destination);
+    o.start(t); o.stop(t+dur+0.02);
+  }catch(e){}
+}
+
+/* =======================
+   SAVE / LOAD
+======================= */
+function save(manual=false){
+  try{
+    const payload = {...state, lastSave: Date.now()};
+    localStorage.setItem(SAVE_KEY, JSON.stringify(payload));
+    if(manual) showToast("Progresso salvo!");
+  }catch(e){ console.warn("Falha ao salvar", e); }
+}
+function load(){
+  try{
+    const raw = localStorage.getItem(SAVE_KEY);
+    if(!raw) return false;
+    const data = JSON.parse(raw);
+    Object.assign(state, data);
+    globalDiscount = 1.0;
+    for(const u of UPGRADES){ if(state.boughtUpg[u.key] && u.type==="discount"){ globalDiscount *= u.val; } }
+    const elapsed = Math.min(OFFLINE_CAP_HRS*3600, Math.max(0, (Date.now()- (state.lastSave||Date.now()))/1000));
+    const ips = getIPS(); const gain = ips * the_OFFLINE_FACTOR * elapsed;
+    if(gain>0){ state.money += gain; state.totalEarned += gain; showToast(`Progresso offline: +R$ ${fmt(gain)} em ${fmtTime(elapsed)}`); }
+    return true;
+  }catch(e){ console.warn("Falha ao carregar", e); return false; }
+}
+function fmtTime(sec){ const h = Math.floor(sec/3600), m = Math.floor((sec%3600)/60); return `${h}h ${m}m`; }
+
+/* =======================
+   ECONOMIA
+======================= */
+function getIPSBase(){ let base=0; for(const a of ASSETS){ const qty = state.items[a.key]||0; base += qty * a.ips; } return base; }
+function getIPS(){ return getIPSBase() * state.ipsMult * state.prestige.mult * (state.market?.multIPS||1); }
+function getClickValue(){ return state.click * state.prestige.mult * (state.market?.multClick||1); }
+function nextPrice(assetKey){
+  const a = ASSETS.find(x=>x.key===assetKey); const n = state.items[assetKey]||0;
+  return a.baseCost * Math.pow(PRICE_GROWTH, n) * globalDiscount;
+}
+function seriesCost(assetKey, k){
+  if(k<=0) return 0;
+  const a = ASSETS.find(x=>x.key===assetKey), n = state.items[assetKey]||0, r=PRICE_GROWTH;
+  const c0 = a.baseCost * Math.pow(r, n) * globalDiscount;
+  return c0 * (Math.pow(r, k)-1) / (r-1);
+}
+function maxAffordable(assetKey, money){
+  const a = ASSETS.find(x=>x.key===assetKey), n=state.items[assetKey]||0, r=PRICE_GROWTH;
+  const c = a.baseCost * Math.pow(r, n) * globalDiscount;
+  const numerator = 1 + (money * (r-1)) / c; if(numerator<=1) return 0;
+  return Math.max(0, Math.floor(Math.log(numerator)/Math.log(r)));
+}
+
+/* =======================
+   UI (DOM)
+======================= */
+const moneyBadge = document.getElementById("moneyBadge");
+const ipsBadge = document.getElementById("ipsBadge");
+const clickBadge = document.getElementById("clickBadge");
+const prestigeBadge = document.getElementById("prestigeBadge");
+const assetsList = document.getElementById("assetsList");
+const upgradesList = document.getElementById("upgradesList");
+const achList = document.getElementById("achList");
+const prestigeBtn = document.getElementById("prestigeBtn");
+const prestigeInfo = document.getElementById("prestigeInfo");
+const stageWrap = document.getElementById("stageWrap");
+const crtTgl = document.getElementById("crtTgl");
+const soundTgl = document.getElementById("soundTgl");
+const marketBadge = document.getElementById("marketBadge");
+const toastEl = document.getElementById("toast");
+const modeBtn = document.getElementById("modeBtn");
+
+// Menu
+const menuOverlay = document.getElementById("menuOverlay");
+const continueBtn = document.getElementById("continueBtn");
+const newGameBtn = document.getElementById("newGameBtn");
+const menuSoundTgl = document.getElementById("menuSoundTgl");
+const menuCrtTgl = document.getElementById("menuCrtTgl");
+
+document.getElementById("saveBtn").addEventListener("click", ()=>save(true));
+document.getElementById("resetBtn").addEventListener("click", ()=>{
+  if(confirm("Tem certeza que deseja resetar seu progresso atual? A Reputação será preservada.")) softReset(true);
+});
+soundTgl.addEventListener("change", (e)=>{ state.sound = e.target.checked; if(state.sound) beep(1200,0.05,"square",0.08); save(); });
+crtTgl.addEventListener("change", (e)=>{ state.crt = e.target.checked; stageWrap.classList.toggle("crt", state.crt); save(); });
+modeBtn.addEventListener("click", ()=>{
+  state.ui.reduced = !state.ui.reduced;
+  applyUIMode();
+});
+
+/* =======================
+   MODO REDUZIDO
+======================= */
+function applyUIMode(){
+  document.body.classList.toggle("reduced", state.ui.reduced);
+  // Botão de modo
+  modeBtn.textContent = state.ui.reduced ? "Modo reduzido: On" : "🕶️ Modo reduzido: Off";
+  // Silencia/Restabelece som
+  if(state.ui.reduced){
+    if(state.ui.prevSound===null) state.ui.prevSound = state.sound;
+    state.sound = false; soundTgl.checked = false;
+  } else {
+    if(state.ui.prevSound!==null){ state.sound = state.ui.prevSound; soundTgl.checked = state.sound; state.ui.prevSound = null; }
+  }
+  // Atualiza CRT (escondido por CSS no modo reduzido)
+  stageWrap.classList.toggle("crt", state.crt);
+  refreshUI(true);
+  save();
+}
+
+/* =======================
+   REFRESH UI
+======================= */
+function refreshUI(force=false){
+  const em = !state.ui.reduced; // usar emojis?
+  moneyBadge.textContent   = (em?"💰 ":"") + `R$ ${fmt(state.money)}`;
+  ipsBadge.textContent     = (em?"⚡ ":"") + `IPS: ${fmt(getIPS())}`;
+  clickBadge.textContent   = (em?"🖱️ ":"") + `/Clique: ${fmt(getClickValue())}`;
+  prestigeBadge.textContent= (em?"🌟 ":"") + `Reputação x${state.prestige.mult.toFixed(2)}`;
+  marketBadge.textContent  = (em?"📣 ":"") + `Mercado: ${state.market.mode==="bull"?"Bull":state.market.mode==="bear"?"Bear":"Normal"}`;
+
+  const canIPO = state.money >= IPO_THRESHOLD;
+  prestigeBtn.disabled = !canIPO;
+  const nextRep = canIPO ? calcRepGain(state.money) : calcRepGain(IPO_THRESHOLD);
+  prestigeInfo.textContent = `A cada IPO: converta patrimônio em Reputação permanente. Ganho atual: +${nextRep.toFixed(2)} Rep. (libera em R$ ${fmt(IPO_THRESHOLD)})`;
+
+  if(force){ renderAssets(); renderUpgrades(); renderAchievements(); }
+  else { updateAssetsButtons(); updateUpgradesButtons(); updateAchievementsBadges(); }
+}
+
+/* =======================
+   RENDER / UPDATES
+======================= */
+function renderAssets(){
+  assetsList.innerHTML = "";
+  for(const a of ASSETS){
+    const wrap = document.createElement("div");
+    wrap.className = "item";
+    wrap.id = `asset-${a.key}`;
+    wrap.innerHTML = `
+      <div>
+        <h4>${a.name} <span class="muted">• IPS: ${fmt(a.ips)}</span></h4>
+        <div class="muted" id="assetDesc-${a.key}">${a.desc}</div>
+        <div class="muted">Possui: <b id="assetQty-${a.key}">0</b></div>
+      </div>
+      <div class="btnRow">
+        <button class="btn buy" id="buy1-${a.key}">Comprar 1<br><small id="cost1-${a.key}">R$ 0</small></button>
+        <button class="btn buy" id="buy10-${a.key}">Comprar 10<br><small id="cost10-${a.key}">R$ 0</small></button>
+        <button class="btn buy" id="buyMax-${a.key}">Máx<br><small id="costMax-${a.key}">R$ 0</small></button>
+      </div>
+    `;
+    assetsList.appendChild(wrap);
+    document.getElementById(`buy1-${a.key}`).addEventListener("click", ()=>buyAsset(a.key,1));
+    document.getElementById(`buy10-${a.key}`).addEventListener("click", ()=>buyAsset(a.key,10));
+    document.getElementById(`buyMax-${a.key}`).addEventListener("click", ()=>{
+      const k = maxAffordable(a.key, state.money); if(k>0) buyAsset(a.key, k);
+    });
+  }
+  updateAssetsButtons();
+}
+function updateAssetsButtons(){
+  for(const a of ASSETS){
+    const qty = state.items[a.key]||0;
+    const c1 = nextPrice(a.key);
+    const c10 = seriesCost(a.key, 10);
+    const kmax = maxAffordable(a.key, state.money);
+    const cmax = seriesCost(a.key, kmax);
+    const btn1 = document.getElementById(`buy1-${a.key}`);
+    const btn10 = document.getElementById(`buy10-${a.key}`);
+    const btnMax = document.getElementById(`buyMax-${a.key}`);
+    if(btn1){ btn1.disabled = state.money < c1; document.getElementById(`cost1-${a.key}`).textContent = `R$ ${fmt(c1)}`; }
+    if(btn10){ btn10.disabled = state.money < c10; document.getElementById(`cost10-${a.key}`).textContent = `R$ ${fmt(c10)}`; }
+    if(btnMax){ btnMax.disabled = kmax<=0; document.getElementById(`costMax-${a.key}`).textContent = kmax>0?`x${kmax} = R$ ${fmt(cmax)}`:"x0 = R$ 0"; }
+    const qtyEl = document.getElementById(`assetQty-${a.key}`); if(qtyEl) qtyEl.textContent = qty;
+  }
+}
+
+function renderUpgrades(){
+  upgradesList.innerHTML="";
+  for(const u of UPGRADES){
+    const bought = !!state.boughtUpg[u.key];
+    const el = document.createElement("div");
+    el.className="item"; el.id=`upg-${u.key}`;
+    el.innerHTML=`
+      <div>
+        <h4>${u.name} ${bought?'<span class="muted">(Comprado)</span>':''}</h4>
+        <div class="muted">${u.desc}</div>
+      </div>
+      <div class="btnRow">
+        <button class="btn buy" id="buyUpg-${u.key}" ${bought?'disabled':''}>Comprar<br><small>R$ ${fmt(u.cost)}</small></button>
+      </div>
+    `;
+    upgradesList.appendChild(el);
+    document.getElementById(`buyUpg-${u.key}`).addEventListener("click", ()=>buyUpgrade(u.key));
+  }
+  updateUpgradesButtons();
+}
+function updateUpgradesButtons(){
+  for(const u of UPGRADES){
+    const btn = document.getElementById(`buyUpg-${u.key}`); if(!btn) continue;
+    const bought = !!state.boughtUpg[u.key];
+    btn.disabled = bought || state.money < u.cost;
+    const titleEl = document.querySelector(`#upg-${u.key} h4`);
+    if(titleEl) titleEl.innerHTML = `${u.name} ${bought?'<span class="muted">(Comprado)</span>':''}`;
+  }
+}
+
+/* =======================
+   CONQUISTAS
+======================= */
+const ACH = [
+  {key:"primeiros_passos", name:"Primeiros Passos", desc:"Ganhe R$ 100.", test: ()=>state.money>=100},
+  {key:"primeiro_ativo", name:"Primeiro Ativo", desc:"Compre seu primeiro ativo.", test: ()=>state.stats.firstAsset},
+  {key:"milionario", name:"Milionário", desc:"Atingir R$ 1.000.000.", test: ()=>state.money>=1e6},
+  {key:"bilionario", name:"Bilionário", desc:"Atingir R$ 1.000.000.000.", test: ()=>state.money>=1e9},
+  {key:"maquininha", name:"Maquininha", desc:"Alcançar IPS ≥ 1.000.", test: ()=>getIPS()>=1000},
+  {key:"influencer", name:"Influencer", desc:"Comprar 'Vender Curso de Trader'.", test: ()=>!!state.boughtUpg["vender_curso"]},
+  {key:"primeira_ipo", name:"Primeira IPO", desc:"Realize 1 Prestígio.", test: ()=>state.prestige.times>=1},
+  {key:"imperio", name:"Império", desc:"Comprar 'Conglomerado Global'.", test: ()=> (state.items["conglomerado"]||0) >= 1 },
+  {key:"maratona_cliques", name:"Maratona de Cliques", desc:"Somar 500 cliques.", test: ()=>state.stats.clicks>=500},
+  {key:"sobrevive_mercado", name:"Ciclos do Mercado", desc:"Passar por um evento Bull ou Bear.", test: ()=>state._flagSawEvent===true}
+];
+function renderAchievements(){
+  achList.innerHTML="";
+  for(const a of ACH){
+    const unlocked = !!state.achievements[a.key];
+    const icon = unlocked ? (state.ui.reduced ? "•" : "🏅") : (state.ui.reduced ? "–" : "🔒");
+    const el = document.createElement("div");
+    el.className="item";
+    el.innerHTML=`
+      <div>
+        <h4>${icon} ${a.name}</h4>
+        <div class="muted">${a.desc}</div>
+      </div>
+      <div class="btnRow">
+        <span class="tiny">${unlocked? "Conquistado":"Bloqueado"}</span>
+      </div>
+    `;
+    achList.appendChild(el);
+  }
+}
+function updateAchievementsBadges(){
+  for(const a of ACH){
+    if(!state.achievements[a.key] && a.test()){
+      state.achievements[a.key]=true;
+      showToast(`Conquista: ${a.name}`); // sem emoji (será limpo de qualquer forma no modo reduzido)
+      if(!state.ui.reduced) beep(1400,0.08,"square",0.12);
+      save(); renderAchievements();
+    }
+  }
+}
+
+/* =======================
+   COMPRAS & UPGRADES
+======================= */
+function spend(cost){ if(state.money < cost) return false; state.money -= cost; return true; }
+function buyAsset(key, k){
+  const kmax = maxAffordable(key, state.money); k = Math.min(k, kmax); if(k<=0) return;
+  const cost = seriesCost(key, k); if(!spend(cost)) return;
+  state.items[key] = (state.items[key]||0) + k;
+  if(!state.stats.firstAsset) state.stats.firstAsset=true;
+  if(!state.ui.reduced) particleBurst(BASE_W/2, BASE_H/2, 10+Math.min(50,k*2), "#73ffa5");
+  if(!state.ui.reduced) beep(480+Math.min(1200, k*15), 0.05, "square", 0.08);
+  save(); refreshUI(); updateAchievementsBadges();
+}
+function buyUpgrade(key){
+  const u = UPGRADES.find(x=>x.key===key); if(!u) return;
+  if(state.boughtUpg[key]) return;
+  if(state.money < u.cost) return;
+  state.money -= u.cost; state.boughtUpg[key]=true;
+  switch(u.type){
+    case "click_add": state.click += u.val; break;
+    case "click_mult": state.click *= u.val; break;
+    case "ips_mult": state.ipsMult *= u.val; break;
+    case "discount": globalDiscount *= u.val; break;
+  }
+  if(!state.ui.reduced) particleBurst(300, 40, 30, "#ffd54a");
+  if(!state.ui.reduced) beep(1200, 0.07, "sawtooth", 0.12);
+  save(); refreshUI(true); updateAchievementsBadges();
+}
+
+/* =======================
+   PRESTÍGIO (IPO)
+======================= */
+function calcRepGain(money){ const base = money/1e6; const rep = Math.cbrt(base) * 0.9; return Math.max(0, rep); }
+function doPrestige(){
+  if(state.money < IPO_THRESHOLD) return;
+  const gain = calcRepGain(state.money);
+  if(!confirm(`Abrir capital e resetar progresso por +${gain.toFixed(2)} Reputação?\nIsso MULTIPLICA permanentemente sua renda.`)) return;
+  state.prestige.rep += gain; state.prestige.times += 1;
+  state.prestige.mult = 1 + (state.prestige.rep/10);
+  softReset(true);
+  showToast(`IPO concluído! +${gain.toFixed(2)} Rep. Mult: x${state.prestige.mult.toFixed(2)}`);
+}
+document.getElementById("prestigeBtn").addEventListener("click", doPrestige);
+
+function softReset(preserveRep=true){
+  const keepPrestige = preserveRep ? {...state.prestige} : {rep:0, mult:1, times:0};
+  state.money=0; state.totalEarned=0; state.click=1; state.ipsMult=1;
+  state.items={}; state.boughtUpg={}; globalDiscount=1.0;
+  state.prestige = keepPrestige;
+  state.stats = { clicks:0, firstAsset:false };
+  if(!preserveRep){ state.achievements = {}; }
+  state.market = { mode:"normal", multIPS:1, multClick:1, ttl:0, next:20 };
+  state.price = 100; candles.length=0; genInitialCandles();
+  if(!state.ui.reduced) beep(200,0.15,"triangle",0.15);
+  save(); refreshUI(true);
+}
+
+/* =======================
+   CANVAS: PARTICULAS / SHAKE
+======================= */
+let lastTime = performance.now();
+let particles = [];
+function particleBurst(x, y, count=20, color="#73ffa5"){
+  if(state.ui.reduced) return; // sem partículas no modo discreto
+  for(let i=0;i<count;i++){
+    particles.push({
+      x, y, vx:(rand()-0.5)*60, vy:(rand()-0.8)*60 - 20, life: 0.7+rand()*0.4, t:0,
+      color, size: 1+Math.floor(rand()*2)
+    });
+  }
+}
+function drawParticles(dt){
+  for(const p of particles){ p.t += dt; p.x += p.vx*dt; p.y += p.vy*dt; p.vy += 60*dt; }
+  particles = particles.filter(p=>p.t<p.life);
+  for(const p of particles){
+    const a = Math.max(0, 1 - p.t/p.life);
+    ctx.fillStyle = `rgba(115,255,165,${a})`;
+    ctx.fillRect(Math.round(p.x), Math.round(p.y), p.size, p.size);
+  }
+}
+let floats = [];
+function spawnFloat(text, x, y){ if(state.ui.reduced) return; floats.push({text, x, y, t:0}); }
+function drawFloaters(dt){
+  if(state.ui.reduced) return;
+  ctx.font="8px monospace";
+  for(const f of floats){ f.t += dt; f.y -= 15*dt; ctx.fillStyle = `rgba(115,255,165,${Math.max(0,1-f.t*1.5)})`; ctx.fillText(f.text, Math.round(f.x), Math.round(f.y)); }
+  floats = floats.filter(f=>f.t<1.2);
+}
+let shakes = [];
+function screenShake(mag=2, ms=100){ if(state.ui.reduced) return; shakes.push({mag, t:ms, ttl:ms}); }
+function computeShake(dt){
+  let dx=0, dy=0;
+  if(shakes.length){
+    const s=shakes[0]; s.t -= dt*1000; const p=Math.max(0, s.t/s.ttl), m=s.mag*p;
+    dx = (rand()-0.5)*m; dy=(rand()-0.5)*m; if(s.t<=0) shakes.shift();
+  }
+  return {dx,dy};
+}
+
+/* =======================
+   VISUAL 8-BIT
+======================= */
+function pxRect(x,y,w,h, color){ ctx.fillStyle=color; ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h)); }
+function drawSky(){
+  for(let y=0;y<BASE_H;y++){
+    const t = y/BASE_H;
+    const c = Math.floor(8 + 10*t);
+    const baseCol = document.body.classList.contains("reduced") ? `rgb(${20+c},${22+c},${30+c})` : `rgb(${c*2},${c*3},${30+Math.floor(80*t)})`;
+    ctx.fillStyle = baseCol;
+    ctx.fillRect(0,y,BASE_W,1);
+  }
+}
+function drawStars(){
+  if(state.ui.reduced) return; // sem estrelas no modo discreto
+  for(let i=0;i<40;i++){
+    const x = (i*53 + (state.seed%97))%BASE_W;
+    const y = (i*17 + (state.seed%137))%100;
+    if(((i*state.seed)>>2)%3===0) pxRect(x, y, 1, 1, "#aaddff");
+  }
+}
+function drawBuildings(){
+  const ip = getIPS();
+  const hBase = Math.min(90, 10 + Math.log10(1+ip)*18);
+  const colMainA = state.ui.reduced ? "#141a24" : "#16305c";
+  const colMainB = state.ui.reduced ? "#1a2330" : "#1b3a6e";
+  const colWin1  = state.ui.reduced ? "#3a4a5f" : "#92ffcc";
+  const colWin2  = state.ui.reduced ? "#4e5c71" : "#ffd75a";
+  for(let i=0;i<10;i++){
+    const w=16, x=6+i*31, h = Math.max(6, Math.floor(hBase*(0.6+0.5*Math.sin(i+state.seed))));
+    const y=150-h; pxRect(x,y,w,h, i%2? colMainA:colMainB);
+    if(!state.ui.reduced){
+      for(let yy=y+2; yy<y+h-2; yy+=6){ for(let xx=x+2; xx<x+w-2; xx+=6){ if(rand()>0.3) pxRect(xx,yy,2,2, rand()>0.8? colWin2:colWin1); } }
+      pxRect(x+5,y-2,6,2, "#0e2347");
+    }
+  }
+  const towerH = Math.min(120, Math.floor(12 + Math.log10(1+state.totalEarned)*14));
+  pxRect(152, 150-towerH, 16, towerH, state.ui.reduced ? "#1a2636" : "#224b88");
+  if(!state.ui.reduced) pxRect(158, 150-towerH-4, 4, 4, "#1b3a6e");
+}
+function drawHUD(){
+  ctx.font = state.ui.reduced ? "10px 'Segoe UI', Roboto, sans-serif" : "10px monospace";
+  ctx.fillStyle = state.ui.reduced ? "#d7dce2" : "#cfe8ff";
+  ctx.fillText(`R$ ${fmt(state.money)}`, 6, 12);
+  ctx.fillText(`IPS ${fmt(getIPS())}`, 6, 24);
+  ctx.fillStyle = state.ui.reduced ? "#b7c0cc" : "#73ffa5";
+  ctx.fillText(`Clique ${fmt(getClickValue())}`, 6, 36);
+  ctx.fillStyle = state.ui.reduced ? "#b7c0cc" : "#ffd75a";
+  ctx.fillText(`Reputação x${state.prestige.mult.toFixed(2)}`, 6, 48);
+
+  if(state.market.mode!=="normal"){
+    ctx.fillStyle = state.ui.reduced
+      ? "rgba(120,140,160,0.08)"
+      : (state.market.mode==="bull" ? "rgba(115,255,165,0.15)":"rgba(255,120,120,0.12)");
+    ctx.fillRect(0,0,BASE_W,BASE_H);
+    ctx.fillStyle = state.ui.reduced ? "#aab2bf" : (state.market.mode==="bull" ? "#73ffa5" : "#ff8a8a");
+    const label = state.ui.reduced ? `${state.market.mode.toUpperCase()} ${Math.ceil(state.market.ttl)}s` :
+                                     `${state.market.mode==="bull"?"🐂 BULL":"🐻 BEAR"} ${Math.ceil(state.market.ttl)}s`;
+    ctx.fillText(label, BASE_W-100, 12);
+  }
+}
+
+/* =======================
+   TICKER + VELAS
+======================= */
+const ticker = [];
+const TICKER_SYMBOLS = ["ABEV3","PETR4","VALE3","BOVA11","ITUB4","BBAS3","MGLU3","WINFUT","DOLFUT","SMLL11","TESOURO","FII11","NASDAQ","S&P","DAX","NIKKEI"];
+for(let i=0;i<14;i++){ ticker.push({ x: rand()*360, y: 170 + (i%2?0:1), sym: TICKER_SYMBOLS[Math.floor(rand()*TICKER_SYMBOLS.length)], up: rand()>0.45 }); }
+
+const candleStrip = { y0:162, y1:178, speed: 20 };
+const candles = [];
+const candleWidth = 5; const candleGap = 2; const candlePeriod = 0.7;
+let candleTimer = 0;
+
+function genInitialCandles(){
+  candles.length=0; state.price = 100;
+  for(let i=0;i<80;i++){ newCandle(true); candles[candles.length-1].x = BASE_W - (80-i)*(candleWidth+candleGap); }
+}
+function driftByMarket(){ if(state.market.mode==="bull") return 0.20; if(state.market.mode==="bear") return -0.15; return 0.02; }
+function newCandle(initial=false){
+  const lastClose = candles.length ? candles[candles.length-1].close : state.price;
+  const open = lastClose;
+  const drift = driftByMarket();
+  const noise = (rand()-0.5)*2 * 0.8;
+  let delta = open * (drift*0.01 + noise*0.01);
+  const close = Math.max(1, open + delta);
+  const high = Math.max(open, close) + Math.abs(noise)*0.6;
+  const low  = Math.min(open, close) - Math.abs(noise)*0.6;
+  state.price = close;
+  const x = initial ? 0 : BASE_W + candleWidth;
+  candles.push({open,high,low,close,x});
+}
+function drawCandlesStrip(dt){
+  for(const c of candles){ c.x -= candleStrip.speed*dt; }
+  while(candles.length && candles[0].x < -candleWidth-2){ candles.shift(); }
+  candleTimer += dt; if(candleTimer>=candlePeriod){ candleTimer=0; newCandle(); }
+  let minP=Infinity, maxP=-Infinity;
+  for(const c of candles){ if(c.high>maxP) maxP=c.high; if(c.low<minP) minP=c.low; }
+  if(!isFinite(minP)||!isFinite(maxP) || minP===maxP){ minP=state.price-1; maxP=state.price+1; }
+  const y0=candleStrip.y0, y1=candleStrip.y1;
+  function map(p){ return y1 - (p-minP)/(maxP-minP) * (y1-y0-2); }
+  // strip diferente no modo reduzido
+  ctx.fillStyle= state.ui.reduced ? "#101620" : "#081634"; ctx.fillRect(0, y0-1, BASE_W, (y1-y0)+2);
+  const gridCol = state.ui.reduced ? "#1a2330" : "#0f1e44";
+  for(let x=0; x<BASE_W; x+=16){ pxRect(x, y0-1, 1, (y1-y0)+2, gridCol); }
+  for(const c of candles){
+    const col = state.ui.reduced
+      ? (c.close>=c.open ? "#9bb0c8" : "#8b9aae")
+      : (c.close>=c.open ? "#73ffa5" : "#ff8a8a");
+    const x = Math.round(c.x); const yHigh = Math.round(map(c.high)); const yLow = Math.round(map(c.low));
+    const yOpen = Math.round(map(c.open)); const yClose = Math.round(map(c.close));
+    pxRect(x + Math.floor(candleWidth/2), yHigh, 1, Math.max(1, yLow - yHigh), col);
+    const top = Math.min(yOpen, yClose); const h = Math.max(1, Math.abs(yClose - yOpen));
+    pxRect(x, top, candleWidth, h, col);
+  }
+}
+function drawConsole(){
+  pxRect(0,160,BASE_W,20, state.ui.reduced ? "#0f1620" : "#07132c");
+  drawCandlesStrip(dt);
+  ctx.font = state.ui.reduced ? "7px 'Segoe UI', Roboto, sans-serif" : "7px monospace";
+  if(state.ui.reduced){
+    ctx.fillStyle="#9fb3c8";
+    const line = `Relatório: IPS ${fmt(getIPS())} | Clique ${fmt(getClickValue())} | Rep x${state.prestige.mult.toFixed(2)}`;
+    ctx.fillText(line, 6, 172);
+  }else{
+    ctx.fillStyle="#9fd3ff"; ctx.fillText("TICKER>", 4, 172);
+    for(const t of ticker){
+      t.x -= 0.4; if(t.x<-60){ t.x=BASE_W+rand()*60; t.sym = TICKER_SYMBOLS[Math.floor(rand()*TICKER_SYMBOLS.length)]; t.up = rand()>0.5; }
+      const col = t.up? "#73ffa5":"#ff8a8a";
+      ctx.fillStyle=col; ctx.fillText(`${t.sym} ${t.up? "▲":"▼"} ${(1+(rand()*0.006)).toFixed(3)}`, Math.round(t.x), 172 + (t.y%2));
+    }
+  }
+  const bx=110, by=96, bw=100, bh=24;
+  pxRect(bx-1,by-1,bw+2,bh+2, state.ui.reduced ? "#1a2230" : "#16305c");
+  pxRect(bx,by,bw,bh, state.ui.reduced ? "#0f1620" : "#0b1535");
+  const edge = state.ui.reduced ? "#2a3648" : "#2a6a52";
+  pxRect(bx,by,bw,1,edge); pxRect(bx,by,1,bh,edge);
+  ctx.fillStyle= state.ui.reduced ? "#d7dce2" : "#cfe8ff";
+  ctx.font = state.ui.reduced ? "9px 'Segoe UI', Roboto, sans-serif" : "9px monospace";
+  const label = state.ui.reduced ? "EXECUTAR" : "TRADE!";
+  const tw = ctx.measureText(label).width;
+  ctx.fillText(label, Math.floor(bx + (bw - tw)/2), by+14);
+}
+
+/* =======================
+   EVENTOS DE MERCADO
+======================= */
+function updateMarket(dt){
+  if(state.market.ttl>0){
+    state.market.ttl -= dt;
+    if(state.market.ttl<=0){
+      state.market.mode="normal"; state.market.multIPS=1; state.market.multClick=1;
+      showToast("Mercado normalizado."); if(!state.ui.reduced) beep(880,0.04,"triangle",0.1);
+    }
+  } else {
+    state.market.next -= dt;
+    if(state.market.next<=0){
+      state.market.next = 30 + rand()*60;
+      if(rand()<0.5){
+        const bull = rand()<0.55;
+        state.market.mode = bull?"bull":"bear";
+        state.market.multIPS = bull? 1.25 : 0.85;
+        state.market.multClick = bull? 1.10 : 1.05;
+        state.market.ttl = 35 + rand()*40;
+        state._flagSawEvent = true;
+        showToast(bull? "Bull market! IPS ↑":"Bear market! IPS ↓");
+        if(!state.ui.reduced){
+          particleBurst(BASE_W/2, 40, 40, bull?"#73ffa5":"#ff8a8a");
+          beep(bull? 1300:500, 0.08, "square", 0.12);
+        }
+        updateAchievementsBadges();
+      }
+    }
+  }
+}
+
+/* =======================
+   LOOP
+======================= */
+let dt=0;
+function tick(now){
+  dt = Math.min(0.1, (now - lastTime)/1000); lastTime = now;
+  const inc = getIPS()*dt; if(inc>0){ state.money += inc; }
+  updateMarket(dt);
+
+  setBaseTransform();
+  ctx.clearRect(0,0,BASE_W,BASE_H);
+  drawSky(); drawStars();
+  const sh = computeShake(dt); setShakeTransform(sh.dx, sh.dy);
+  drawBuildings(); setBaseTransform();
+  drawHUD(); drawConsole();
+  drawFloaters(dt); drawParticles(dt);
+
+  if((now|0)%200<16) refreshUI(false);
+  requestAnimationFrame(tick);
+}
+
+/* =======================
+   TOAST (remove emojis no modo reduzido)
+======================= */
+let toastTmt=null;
+function stripEmoji(s){ return s.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu,"").trim(); }
+function showToast(msg, ms=2600){
+  if(state.ui.reduced) msg = stripEmoji(msg);
+  toastEl.textContent = msg; toastEl.style.display = "block";
+  clearTimeout(toastTmt); toastTmt = setTimeout(()=> toastEl.style.display="none", ms);
+}
+
+/* =======================
+   MENU
+======================= */
+function showMenu(hasSave){
+  menuOverlay.style.display="flex";
+  continueBtn.disabled = !hasSave;
+  menuSoundTgl.checked = state.sound; menuCrtTgl.checked = state.crt;
+  continueBtn.onclick = ()=>{
+    state.sound = menuSoundTgl.checked; state.crt = menuCrtTgl.checked;
+    document.getElementById("soundTgl").checked = state.sound;
+    document.getElementById("crtTgl").checked = state.crt;
+    document.getElementById("stageWrap").classList.toggle("crt", state.crt);
+    save(); hideMenu();
+  };
+  newGameBtn.onclick = ()=>{
+    const keep = confirm("Deseja manter a Reputação ao iniciar um Novo Jogo?\nOK = Manter Reputação\nCancelar = Zerar tudo");
+    localStorage.removeItem(SAVE_KEY);
+    state.sound = menuSoundTgl.checked; state.crt = menuCrtTgl.checked;
+    softReset(keep);
+    hideMenu();
+  };
+}
+function hideMenu(){ menuOverlay.style.display="none"; }
+
+/* =======================
+   INIT
+======================= */
+function init(){
+  setSmoothing(true);
+  resizeCanvas();
+  document.getElementById("soundTgl").checked = state.sound;
+  document.getElementById("crtTgl").checked = state.crt;
+  document.getElementById("stageWrap").classList.toggle("crt", state.crt);
+  renderAssets(); renderUpgrades(); renderAchievements();
+  refreshUI(true);
+  setInterval(()=>save(false), 10000);
+  genInitialCandles();
+  applyUIMode();
+  requestAnimationFrame((t)=>{ lastTime=t; requestAnimationFrame(tick); });
+}
+window.addEventListener("load", ()=>{
+  window.addEventListener("pointerdown", ()=>{ if(state.sound){ try{ if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } }, {once:true});
+  const hadSave = load();
+  menuSoundTgl.checked = state.sound; menuCrtTgl.checked = state.crt;
+  init();
+  showMenu(hadSave);
+});
+
+/* =======================
+   INPUT
+======================= */
+canvas.addEventListener("click", (ev)=>{
+  const rect = canvas.getBoundingClientRect();
+  const cx = (ev.clientX - rect.left) * (BASE_W / rect.width);
+  const cy = (ev.clientY - rect.top) * (BASE_H / rect.height);
+  const val = getClickValue();
+  state.money += val; state.totalEarned += val; state.stats.clicks++;
+  spawnFloat(`+${fmt(val)}`, cx, cy);
+  screenShake(2, 100);
+  if(!state.ui.reduced) particleBurst(cx, cy, 18, "#73ffa5");
+  if(!state.ui.reduced) beep(880, 0.05, "square", 0.1);
+  updateAchievementsBadges();
+});
+
+/* =======================
+   ATALHOS
+======================= */
+document.addEventListener("keydown",(e)=>{
+  if(e.key==="s"){ save(true); }
+  if(e.key==="p"){ doPrestige(); }
+  if(e.key==="m"){ state.sound=!state.sound; document.getElementById("soundTgl").checked=state.sound; showToast(`Som ${state.sound?"ativado":"desativado"}`); save(); }
+  if(e.key==="`"){ state.ui.reduced=!state.ui.reduced; applyUIMode(); } // atalho para alternar modo
+});
+</script>
+<style id="ppg-platform-style">
+:root{--ppg-ui-bg:rgba(10,13,28,.88);--ppg-ui-fg:#f7f5ff;--ppg-ui-line:rgba(255,255,255,.15);--ppg-ui-accent:#a875ff;--ppg-ui-accent2:#35e6ca}
+#ppg-toolbar{position:fixed;z-index:2147483000;top:10px;right:10px;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;max-width:min(92vw,620px);font-family:Inter,"Segoe UI",system-ui,sans-serif!important}
+#ppg-toolbar button,#ppg-toolbar a{min-height:34px!important;padding:7px 10px!important;margin:0!important;border:1px solid var(--ppg-ui-line)!important;border-radius:10px!important;background:var(--ppg-ui-bg)!important;color:var(--ppg-ui-fg)!important;font:700 12px/1 Inter,"Segoe UI",system-ui,sans-serif!important;text-decoration:none!important;text-transform:none!important;letter-spacing:0!important;box-shadow:0 8px 25px rgba(0,0,0,.22)!important;cursor:pointer!important;backdrop-filter:blur(10px);transform:none!important}
+#ppg-toolbar button:hover,#ppg-toolbar a:hover{border-color:var(--ppg-ui-accent2)!important;filter:brightness(1.12)!important}
+.ppg-modal{position:fixed;z-index:2147483640;inset:0;display:none;place-items:center;padding:18px;background:rgba(2,3,12,.78);backdrop-filter:blur(8px);font-family:Inter,"Segoe UI",system-ui,sans-serif!important}.ppg-modal.open{display:grid}.ppg-card{width:min(560px,96vw);max-height:min(80vh,720px);overflow:auto;padding:22px;border:1px solid rgba(255,255,255,.16);border-radius:20px;background:linear-gradient(145deg,#14162b,#0a0d1b);color:#f8f7ff;text-align:left;box-shadow:0 30px 90px #0009}.ppg-card h2{margin:0 0 8px!important;color:#d9c7ff!important;font:800 clamp(22px,4vw,30px)/1.1 Inter,"Segoe UI",system-ui,sans-serif!important}.ppg-card h3{margin:17px 0 6px!important;color:#63ecd6!important;font:800 14px/1.2 Inter,"Segoe UI",system-ui,sans-serif!important;text-transform:uppercase;letter-spacing:.08em}.ppg-card p,.ppg-card li{color:#d7d9e7!important;font:400 14px/1.55 Inter,"Segoe UI",system-ui,sans-serif!important}.ppg-card .ppg-credit{margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.12);font-weight:800;color:#fff!important}.ppg-close{float:right;border:0!important;background:#282c48!important;color:white!important;border-radius:9px!important;padding:7px 10px!important;cursor:pointer!important}.ppg-record-list{display:grid;gap:8px;margin-top:12px}.ppg-record{display:grid;grid-template-columns:34px 1fr auto;gap:8px;padding:10px;border-radius:12px;background:#ffffff0b;border:1px solid #ffffff10;align-items:center}.ppg-record small{color:#989db7}.ppg-empty{padding:14px;border:1px dashed #ffffff2a;border-radius:12px;color:#aeb3c8}
+body.ppg-light{background-color:#edf1f8!important;color:#182038!important}body.ppg-light :is(.menu-card,.card,.panel,.toolbar,.stats,.help,.bet-panel,.track-card,.game-container){filter:brightness(1.08) saturate(.92)}body.ppg-dark{color-scheme:dark}
+@media(max-width:720px){#ppg-toolbar{top:6px;right:6px}#ppg-toolbar button,#ppg-toolbar a{padding:6px 8px!important;font-size:11px!important}.ppg-card{padding:17px}}
+</style><script id="ppg-platform-script">
+(()=>{'use strict';
+const CFG={"id": "idle_trader", "name": "Império Financeiro 8-bit", "emoji": "📈", "desc": "Idle game de ativos, upgrades, prestígio e eventos de mercado.", "how": "Clique no palco para gerar renda, compre ativos para renda passiva, adquira upgrades e use o prestígio quando estiver pronto para recomeçar mais forte.", "tip": "No começo, compare custo e ganho por segundo. Depois, prestígio cedo demais é ansiedade; tarde demais é apego.", "metric": "Maior patrimônio", "unit": "", "mode": "max"};
+const STATS_KEY='ppg_minigames_stats_v1', PREF_KEY='ppg_platform_prefs_v1', REC_KEY='ppg_records_'+CFG.id;
+const $=s=>document.querySelector(s), num=v=>{const m=String(v??'').replace(/\s/g,'').replace(/\.(?=\d{3}(\D|$))/g,'').replace(',','.').match(/-?\d+(?:\.\d+)?/);return m?+m[0]:null};
+const money=v=>{const s=String(v??'').replace(/R\$|◈|Créditos?|Banca:|💰/gi,'').trim();let m=s.match(/(-?[\d.,]+)\s*(K|M|B|T|Qa|Qi|Sx|Sp|Oc|No|Dc)?/i);if(!m)return null;let n=num(m[1]);const u=(m[2]||'').toLowerCase(),map={k:1e3,m:1e6,b:1e9,t:1e12,qa:1e15,qi:1e18,sx:1e21,sp:1e24,oc:1e27,no:1e30,dc:1e33};return n*(map[u]||1)};
+window.__ppgHelpers={num,money};
+function readJSON(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}}function writeJSON(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
+function dayKey(d=new Date()){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}function dayDiff(a,b){const A=new Date(a+'T12:00:00'),B=new Date(b+'T12:00:00');return Math.round((B-A)/86400000)}
+let all=readJSON(STATS_KEY,{}),st=all[CFG.id]||{starts:0,totalSeconds:0,longestStreak:0,currentStreak:0,lastDay:null};const today=dayKey();st.starts=(st.starts||0)+1;if(st.lastDay!==today){const dd=st.lastDay?dayDiff(st.lastDay,today):99;st.currentStreak=dd===1?(st.currentStreak||0)+1:1;st.longestStreak=Math.max(st.longestStreak||0,st.currentStreak);st.lastDay=today}st.lastStarted=Date.now();all[CFG.id]=st;writeJSON(STATS_KEY,all);
+let lastTick=performance.now();function flushTime(){const now=performance.now(),d=Math.max(0,(now-lastTick)/1000);lastTick=now;all=readJSON(STATS_KEY,{});const x=all[CFG.id]||st;x.totalSeconds=(x.totalSeconds||0)+d;x.lastPlayed=Date.now();all[CFG.id]=x;writeJSON(STATS_KEY,all)}setInterval(flushTime,5000);addEventListener('pagehide',flushTime);document.addEventListener('visibilitychange',()=>{if(document.hidden)flushTime();else lastTick=performance.now()});
+let prefs=readJSON(PREF_KEY,{theme:'dark',sound:true});document.body.classList.toggle('ppg-light',prefs.theme==='light');document.body.classList.toggle('ppg-dark',prefs.theme!=='light');
+const toolbar=document.createElement('nav');toolbar.id='ppg-toolbar';toolbar.innerHTML=`<button id="ppg-theme" title="Alternar modo claro/escuro">${prefs.theme==='light'?'🌙 Escuro':'☀️ Claro'}</button><button id="ppg-sound" title="Som e música">${prefs.sound?'🔊 Som':'🔇 Som'}</button><button id="ppg-records">🏆 Recordes</button><button id="ppg-about">ⓘ Sobre</button><a href="menu_minigames.html" id="ppg-menu">↩ Menu de Mini Games</a>`;document.body.appendChild(toolbar);
+const modal=document.createElement('div');modal.className='ppg-modal';modal.id='ppg-modal';modal.innerHTML=`<div class="ppg-card"><button class="ppg-close" aria-label="Fechar">✕</button><div id="ppg-modal-body"></div></div>`;document.body.appendChild(modal);const body=$('#ppg-modal-body');function open(html){body.innerHTML=html;modal.classList.add('open')}function close(){modal.classList.remove('open')}modal.addEventListener('click',e=>{if(e.target===modal||e.target.closest('.ppg-close'))close()});addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+$('#ppg-about').onclick=()=>open(`<h2>${CFG.name}</h2><p>${CFG.desc}</p><h3>Como jogar</h3><p>${CFG.how}</p><h3>Dica de estratégia</h3><p>${CFG.tip}</p><p class="ppg-credit">Produção: Projeto Primata Games em 2026.</p>`);
+$('#ppg-theme').onclick=()=>{prefs.theme=prefs.theme==='light'?'dark':'light';writeJSON(PREF_KEY,prefs);document.body.classList.toggle('ppg-light',prefs.theme==='light');document.body.classList.toggle('ppg-dark',prefs.theme==='dark');$('#ppg-theme').textContent=prefs.theme==='light'?'🌙 Escuro':'☀️ Claro';sfx(520,.05)};
+// Áudio procedural comum: garante BGM + SFX sem arquivos externos.
+let ac=null,master=null,music=null,beat=0;function initAudio(){if(ac)return;ac=new (window.AudioContext||window.webkitAudioContext)();master=ac.createGain();master.gain.value=prefs.sound?.12:0;master.connect(ac.destination)}function tone(f,d=.08,type='sine',vol=.08,when=0){if(!prefs.sound)return;initAudio();const t=ac.currentTime+when,o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(master);o.start(t);o.stop(t+d)}function sfx(f=420,d=.045){tone(f,d,'triangle',.11)}function startBgm(){if(music||!prefs.sound)return;initAudio();music=setInterval(()=>{if(document.hidden||!prefs.sound)return;const seq=[110,138.59,164.81,220,196,164.81,146.83,123.47],f=seq[beat++%seq.length];tone(f,.16,'triangle',.025);if(beat%4===1)tone(f/2,.1,'sine',.018)},360)}function stopBgm(){clearInterval(music);music=null}function unlock(){initAudio();ac?.resume();if(prefs.sound)startBgm()}addEventListener('pointerdown',unlock,{once:true});addEventListener('keydown',unlock,{once:true});document.addEventListener('click',e=>{if(e.target.closest('button,a,input,select'))sfx(380+Math.random()*80,.035)},true);
+$('#ppg-sound').onclick=e=>{e.stopPropagation();prefs.sound=!prefs.sound;writeJSON(PREF_KEY,prefs);initAudio();master.gain.setTargetAtTime(prefs.sound?.12:0,ac.currentTime,.02);if(prefs.sound){ac.resume();startBgm();sfx(660,.08)}else stopBgm();$('#ppg-sound').textContent=prefs.sound?'🔊 Som':'🔇 Som'};
+// Ranking local por sessão. A mesma sessão é atualizada em vez de poluir o top 5 com cada incremento.
+const sessionId=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7);function formatValue(v){if(v==null)return '—';if(Math.abs(v)>=1e9)return v.toLocaleString('pt-BR',{notation:'compact',maximumFractionDigits:2})+CFG.unit;return (Number.isInteger(v)?v:v.toFixed(2).replace('.',','))+CFG.unit}function metric(){try{const num=window.__ppgHelpers.num,money=window.__ppgHelpers.money;return money(document.querySelector('#moneyBadge')?.textContent)}catch{return null}}function upsert(v){if(v==null||!Number.isFinite(v)||(CFG.mode==='min'&&v<=0))return;let r=readJSON(REC_KEY,[]),me=r.find(x=>x.sessionId===sessionId);if(me){const better=CFG.mode==='min'?v<me.value:v>me.value;if(!better)return;me.value=v;me.at=Date.now()}else r.push({sessionId,value:v,at:Date.now()});r.sort((a,b)=>CFG.mode==='min'?a.value-b.value:b.value-a.value);writeJSON(REC_KEY,r.slice(0,5))}setInterval(()=>upsert(metric()),800);addEventListener('pagehide',()=>upsert(metric()));
+function renderRecords(){const r=readJSON(REC_KEY,[]);const list=r.length?`<div class="ppg-record-list">${r.map((x,i)=>`<div class="ppg-record"><b>#${i+1}</b><span><strong>${formatValue(x.value)}</strong><br><small>${new Date(x.at).toLocaleDateString('pt-BR')}</small></span><small>${CFG.metric}</small></div>`).join('')}</div>`:`<div class="ppg-empty">Ainda não há marca registrada neste navegador. Jogue uma partida e ela aparece aqui.</div>`;open(`<h2>Recordes locais</h2><p>Top 5 persistente deste jogo, salvo somente neste navegador.</p>${list}`)}$('#ppg-records').onclick=renderRecords;
+})();
+</script>
+</body>
+</html>

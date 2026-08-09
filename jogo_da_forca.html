@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forca Neon</title>
+  <style>
+    :root {
+      --neon-a: #28E0B5;
+      --neon-b: #6C4CFF;
+      --neon-a-rgb: 40, 224, 181;
+      --neon-b-rgb: 108, 76, 255;
+      --text-color: #002776;
+      --white: #ffffff;
+      --dark-bg: #222;
+      --dark-header: #111;
+      --dark-text: #eee;
+      --dark-button: #444;
+      --dark-hint: #333;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: var(--neon-a);
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      color: var(--text-color);
+      text-align: center;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      background-color: var(--neon-b);
+      padding: 10px 0;
+      flex-wrap: wrap;
+    }
+
+    .header-container img {
+      height: 50px;
+    }
+
+    h1 {
+      color: var(--white);
+      margin: 0;
+      font-size: 1.5rem;
+    }
+
+    #game-container {
+      padding: 15px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #word-display {
+      font-size: 1.5em;
+      margin: 15px 0;
+      letter-spacing: 5px;
+      word-break: break-all;
+    }
+
+    #keyboard {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 800px;
+      margin: 0 auto;
+      gap: 5px;
+      padding: 5px;
+    }
+
+    #keyboard button {
+      margin: 0;
+      padding: 8px 12px;
+      font-size: 16px;
+      cursor: pointer;
+      min-width: 30px;
+      border: none;
+      border-radius: 4px;
+      background-color: var(--neon-b);
+      color: var(--white);
+      transition: all 0.2s;
+    }
+
+    #keyboard button:hover:not(.used) {
+      background-color: #003d7a;
+    }
+
+    #keyboard button.used {
+      background-color: #ccc;
+      color: #666;
+      cursor: not-allowed;
+    }
+
+    #hint, #timer, #ranking, #message {
+      font-size: 1.2em;
+      margin: 10px 0;
+    }
+
+    #hint-container {
+      display: flex;
+      flex-direction: column-reverse;
+      align-items: center;
+      margin: 10px 0;
+    }
+
+    .hint-item {
+      background-color: rgba(var(--neon-b-rgb), 0.1);
+      padding: 8px 15px;
+      border-radius: 5px;
+      margin: 3px 0;
+      width: fit-content;
+      max-width: 90%;
+      border-left: 4px solid var(--neon-b);
+    }
+
+    .buttons-container {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 10px 0;
+    }
+
+    .buttons-container button {
+      font-size: 1.1em;
+      padding: 8px 15px;
+      margin: 0;
+      cursor: pointer;
+      background-color: var(--neon-b);
+      color: var(--white);
+      border: none;
+      border-radius: 5px;
+      transition: all 0.2s;
+    }
+
+    .buttons-container button:hover {
+      background-color: #003d7a;
+    }
+
+    canvas {
+      display: block;
+      margin: 10px auto;
+      max-width: 100%;
+      height: auto;
+    }
+
+    .credits {
+      font-style: italic;
+      margin-top: 20px;
+      font-size: 0.9em;
+    }
+
+    /* Dark mode styles */
+    .dark-mode {
+      background-color: var(--dark-bg);
+      color: var(--dark-text);
+    }
+
+    .dark-mode .header-container {
+      background-color: var(--dark-header);
+    }
+
+    .dark-mode .buttons-container button,
+    .dark-mode #keyboard button:not(.used) {
+      background-color: var(--dark-button);
+    }
+
+    .dark-mode .hint-item {
+      background-color: var(--dark-hint);
+      color: var(--dark-text);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 600px) {
+      #word-display {
+        font-size: 1.2em;
+        letter-spacing: 3px;
+      }
+
+      #keyboard button {
+        padding: 6px 10px;
+        font-size: 14px;
+        min-width: 25px;
+      }
+
+      .buttons-container button {
+        font-size: 1em;
+        padding: 6px 12px;
+      }
+
+      #hint, #timer, #ranking, #message {
+        font-size: 1em;
+      }
+
+      .header-container {
+        padding: 8px 0;
+      }
+
+      .header-container img {
+        height: 40px;
+      }
+
+      h1 {
+        font-size: 1.3rem;
+      }
+    }
+
+    @media (max-width: 400px) {
+      #keyboard {
+        gap: 3px;
+      }
+
+      #keyboard button {
+        padding: 5px 8px;
+        font-size: 12px;
+        min-width: 22px;
+      }
+
+      .buttons-container {
+        gap: 5px;
+      }
+
+      .buttons-container button {
+        font-size: 0.9em;
+        padding: 5px 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header-container">
+    
+    <h1>FORCA NEON</h1>
+  </div>
+  <div id="game-container">
+    <div id="word-display"></div>
+    <div id="hint">Dicas:</div>
+    <div id="hint-container"></div>
+    <div id="timer">Tempo: <span id="time">0.0</span> segundos</div>
+    <div id="keyboard"></div>
+    <div class="buttons-container">
+      <button id="hint-button" onclick="showHint()">Pedir dica</button>
+      <button id="reset-button" onclick="startGame()">Novo Jogo</button>
+      <button id="dark-mode-button" onclick="toggleDarkMode()">Modo Escuro</button>
+      <button id="back-button" onclick="window.history.back()">Voltar</button>
+    </div>
+    <canvas id="hangmanCanvas" width="200" height="200"></canvas>
+    <div id="message"></div>
+    <div id="ranking">
+      <h3>Top 5 mais rápidos:</h3>
+      <ol id="ranking-list"></ol>
+    </div>
+    <div class="credits">FORCA NEON · Projeto Primata Games · 2026</div>
+  </div>
+  <script>
+    const wordsWithHints = [
+      { word: "agência", hints: ["Unidade de atendimento bancário", "Pode ser digital", "Está no cartão"] },
+      { word: "cheque", hints: ["Forma de pagamento", "Pode ser sustado", "Exige compensação"] },
+      { word: "poupança", hints: ["Tipo de conta", "Rendimento baixo", "Isento de IR"] },
+      { word: "empréstimo", hints: ["Dinheiro que se devolve com juros", "Tem parcelas", "Banco oferece"] },
+      { word: "pix", hints: ["Transferência instantânea", "Grátis", "Usa chave"] },
+      { word: "saldo", hints: ["Valor disponível", "Consulta no app", "Pode estar negativo"] },
+      { word: "limite", hints: ["Valor máximo disponível", "Relacionado ao crédito", "Banco define"] },
+      { word: "extrato", hints: ["Histórico de movimentações", "Mostra débitos e créditos", "Pode ser impresso"] },
+      { word: "investimento", hints: ["Aplicação financeira", "Visa lucro", "Pode ter risco"] },
+      { word: "banco", hints: ["Instituição financeira", "Guarda dinheiro", "Oferece serviços"] },
+      { word: "ted", hints: ["Transferência eletrônica", "Entrega no mesmo dia", "Custava R$ 10 até 2020"] },
+      { word: "doc", hints: ["Transferência tradicional", "Processada no dia útil seguinte", "Valor máximo de R$ 4.999,99"] },
+      { word: "febraban", hints: ["Federação dos bancos", "Define códigos bancários", "Padroniza documentos"] },
+      { word: "cobrança", hints: ["Recebimento de valores", "Pode ser boleto ou cartão", "Departamento de crédito"] },
+      { word: "chequespecial", hints: ["Crédito rotativo", "Juros elevados", "Uso emergencial"] },
+      { word: "portabilidade", hints: ["Mudança de dívida", "Transferência de crédito", "Busca melhores taxas"] },
+      { word: "consignado", hints: ["Desconto em folha", "Taxas reduzidas", "Para servidores públicos"] },
+      { word: "capitalização", hints: ["Títulos com sorteio", "Resgate programado", "Não é investimento"] },
+      { word: "homebroker", hints: ["Plataforma de investimentos", "Opera na bolsa", "Autoatendimento"] },
+      { word: "liquidez", hints: ["Facilidade de resgate", "Conversão em dinheiro", "D+0 ou D+1"] },
+      { word: "rendafixa", hints: ["Previsibilidade de retorno", "CDB, LCI, LCA", "Risco controlado"] },
+      { word: "rendavariável", hints: ["Ações, fundos imobiliários", "Sem garantia de retorno", "Potencial alto ganho"] },
+      { word: "cdb", hints: ["Certificado de depósito", "Rendimento baseado em CDI", "Protegido pelo FGC"] },
+      { word: "lci", hints: ["Crédito imobiliário", "Isento de IR", "Liquidez apenas no vencimento"] },
+      { word: "lca", hints: ["Crédito do agronegócio", "Isenção fiscal", "Financia produtores rurais"] },
+      { word: "fundo", hints: ["Carteira coletiva", "Administrado por gestor", "Cotas de participação"] },
+      { word: "tesourodireto", hints: ["Títulos públicos", "R$ 1,00 para investir", "Selic, IPCA, Prefixado"] },
+      { word: "fgts", hints: ["Conta vinculada", "Saque em situações especiais", "Recursos do trabalhador"] },
+      { word: "inss", hints: ["Previdência social", "Aposentadoria, auxílio-doença", "Contribuição obrigatória"] },
+      { word: "câmbio", hints: ["Operações com moedas", "Compra/venda de dólar", "Taxa de conversão"] },
+      { word: "seguro", hints: ["Proteção contra riscos", "Vida, automóvel, residencial", "Prêmio periódico"] },
+      { word: "previdência", hints: ["Planejamento futuro", "Complementar à aposentadoria", "PGBL ou VGBL"] },
+      { word: "consórcio", hints: ["Aquisição planejada", "Grupo de cotistas", "Sorteios mensais"] },
+      { word: "selic", hints: ["Taxa básica de juros", "Definida pelo Copom", "Referência para investimentos"] },
+      { word: "cdi", hints: ["Certificado de depósito interbancário", "Base para renda fixa", "Taxa entre bancos"] },
+      { word: "ipca", hints: ["Índice oficial de inflação", "Ajuste monetário", "Referência para investimentos"] },
+      { word: "iof", hints: ["Imposto sobre operações financeiras", "Decrescente no tempo", "Cobrado em empréstimos"] },
+      { word: "cpmf", hints: ["Imposto extinto", "Cobrado sobre movimentações", "Fundo da saúde"] },
+      { word: "darf", hints: ["Documento de arrecadação", "Pagamento de tributos federais", "Código de barras"] },
+      { word: "mei", hints: ["Microempreendedor individual", "Isenção tributária", "Limite de faturamento"] },
+      { word: "simples", hints: ["Regime tributário", "Unificação de impostos", "Para pequenas empresas"] },
+      { word: "pronaf", hints: ["Agricultura familiar", "Financiamento subsidiado", "Governo federal"] },
+      { word: "fgi", hints: ["Garantia de investimentos", "Proteção para projetos", "Risco compartilhado"] },
+      { word: "cartão", hints: ["Meio de pagamento", "Débito ou crédito", "Bandeiras Visa/Master"] },
+      { word: "débito", hints: ["Pagamento na hora", "Desconta da conta corrente", "Transação online"] },
+      { word: "crédito", hints: ["Pagamento parcelado", "Fatura mensal", "Juros rotativos"] },
+      { word: "fatura", hints: ["Resumo de gastos", "Vencimento mensal", "Pagamento mínimo"] },
+      { word: "anuidade", hints: ["Taxa anual", "Manutenção de cartão", "Isenção por gastos"] },
+      { word: "cashback", hints: ["Dinheiro de volta", "Percentual das compras", "Benefício de cartão"] },
+      { word: "milhas", hints: ["Programa de fidelidade", "Troca por passagens", "Acúmulo por gastos"] },
+      { word: "token", hints: ["Segurança digital", "Gera senhas temporárias", "Autenticação em transações"] },
+      { word: "biometria", hints: ["Reconhecimento físico", "Digital facial", "Acesso seguro"] },
+      { word: "certificado", hints: ["Segurança digital", "Criptografia avançada", "Validado pela ICP-Brasil"] },
+      { word: "blockchain", hints: ["Tecnologia de registro", "Imutável e descentralizado", "Base de criptomoedas"] },
+      { word: "criptomoeda", hints: ["Moeda digital", "Bitcoin, Ethereum", "Volatilidade alta"] },
+      { word: "openbanking", hints: ["Compartilhamento de dados", "Autorização do cliente", "Serviços integrados"] },
+      { word: "pix", hints: ["Transferência instantânea", "Disponível 24/7", "Chave personalizada"] },
+      { word: "qrcode", hints: ["Código de barras 2D", "Pagamento por aproximação", "Leitura por celular"] },
+      { word: "nfc", hints: ["Comunicação por campo próximo", "Tecnologia contactless", "Pagamentos sem contato"] },
+      { word: "fintech", hints: ["Startup financeira", "Inovação tecnológica", "Concorrência com bancos"] },
+      { word: "esg", hints: ["Critérios ambientais/sociais", "Investimentos responsáveis", "Governança corporativa"] },
+      { word: "sustentabilidade", hints: ["Práticas ecológicas", "Responsabilidade social", "Longo prazo"] },
+      { word: "auditoria", hints: ["Verificação de processos", "Conformidade normativa", "Controles internos"] },
+      { word: "compliance", hints: ["Conformidade regulatória", "Prevenção a fraudes", "Programa de integridade"] },
+      { word: "risco", hints: ["Exposição a perdas", "Crédito, mercado, operacional", "Gestão especializada"] },
+      { word: "rating", hints: ["Classificação de crédito", "Nota de risco", "Agências especializadas"] },
+      { word: "fidc", hints: ["Fundo de direitos creditórios", "Investimento em recebíveis", "Renda fixa"] },
+      { word: "debênture", hints: ["Título de dívida", "Emitido por empresas", "Renda fixa privada"] },
+      { word: "cota", hints: ["Parcela de fundo", "Direito patrimonial", "Negociável"] },
+      { word: "dividendo", hints: ["Distribuição de lucros", "Para acionistas", "Isento de IR até limite"] },
+      { word: "custeio", hints: ["Crédito para produção", "Insumos agrícolas", "Antecipação de recursos"] },
+      { word: "investimento", hints: ["Aplicação de recursos", "Expansão de negócios", "Ativos produtivos"] },
+      { word: "leasing", hints: ["Arrendamento mercantil", "Equipamentos/veículos", "Opção de compra"] },
+      { word: "factoring", hints: ["Antecipação de recebíveis", "Cessão de créditos", "Capital de giro"] },
+      { word: "capital", hints: ["Recursos financeiros", "Patrimônio líquido", "Base para operações"] },
+      { word: "giro", hints: ["Recurso circulante", "Financia operações diárias", "Curto prazo"] },
+      { word: "ativo", hints: ["Bens e direitos", "Recursos aplicados", "Geração de resultados"] },
+      { word: "passivo", hints: ["Obrigações financeiras", "Dívidas e compromissos", "Fontes de recursos"] },
+      { word: "patrimônio", hints: ["Ativo menos passivo", "Riqueza líquida", "Recursos próprios"] },
+      { word: "balanço", hints: ["Demonstração contábil", "Situação patrimonial", "Balanço patrimonial"] },
+      { word: "fluxo", hints: ["Movimentação financeira", "Entradas e saídas", "Caixa operacional"] },
+      { word: "lucro", hints: ["Resultado positivo", "Receitas menos despesas", "Distribuível ou retido"] },
+      { word: "prejuízo", hints: ["Resultado negativo", "Despesas maiores que receitas", "Compensação fiscal"] },
+      { word: "depreciação", hints: ["Desgaste de ativos", "Redução valor contábil", "Despesa não-caixa"] },
+      { word: "amortização", hints: ["Pagamento de dívida", "Redução do principal", "Sistema SAC ou Price"] },
+      { word: "tac", hints: ["Taxa de abertura de crédito", "Custo inicial", "Empréstimos e financiamentos"] },
+      { word: "cet", hints: ["Custo efetivo total", "Taxa real da operação", "Inclui todos os encargos"] },
+      { word: "encargo", hints: ["Custos financeiros", "Juros, tarifas, impostos", "Componente do CET"] },
+      { word: "parcela", hints: ["Pagamento parcial", "Prestação mensal", "Amortização + juros"] },
+      { word: "carência", hints: ["Período sem pagamento", "Só juros ou integral", "Início do financiamento"] },
+      { word: "vencimento", hints: ["Data de pagamento", "Final do ciclo", "Fatura ou boleto"] },
+      { word: "multa", hints: ["Penalidade por atraso", "Percentual sobre o valor", "Após vencimento"] },
+      { word: "mora", hints: ["Juros por atraso", "Percentual mensal", "Encargo financeiro"] },
+      { word: "desconto", hints: ["Redução de valor", "Pagamento antecipado", "Boleto bancário"] },
+      { word: "protesto", hints: ["Ato formal de inadimplência", "Cartório de protestos", "Restrição cadastral"] },
+      { word: "sustação", hints: ["Impedimento de protesto", "Pagamento antes do registro", "Evitar restrições"] },
+      { word: "renegociação", hints: ["Reestruturação de dívida", "Novas condições", "Alongamento de prazo"] },
+      { word: "recuperação", hints: ["Reorganização financeira", "Processo judicial", "Empresas em dificuldade"] },
+      { word: "falência", hints: ["Fim das atividades", "Liquidação de ativos", "Situação irreversível"] },
+      { word: "calote", hints: ["Inadimplemento deliberado", "Descumprimento contratual", "Não pagamento"] },
+      { word: "inadimplência", hints: ["Atraso no pagamento", "Restrição cadastral", "SPC/Serasa"] },
+      { word: "score", hints: ["Pontuação de crédito", "0 a 1000 pontos", "Comportamento de pagamento"] },
+      { word: "cadastro", hints: ["Registro de clientes", "Histórico financeiro", "Restrições pendentes"] },
+      { word: "serasa", hints: ["Bureau de crédito", "Consulta cadastral", "Proteção ao crédito"] },
+      { word: "spc", hints: ["Serviço de proteção ao crédito", "Histórico negativo", "Restrição comercial"] },
+      { word: "boletim", hints: ["Informe de restrições", "Consulta cadastral", "SPC/Serasa"] },
+      { word: "reabilitação", hints: ["Regularização cadastral", "Remoção de restrições", "Quitação de dívidas"] },
+      { word: "penhora", hints: ["Bloqueio judicial", "Bens como garantia", "Execução de dívida"] },
+      { word: "caução", hints: ["Garantia real", "Depósito em dinheiro", "Operações específicas"] },
+      { word: "fiança", hints: ["Garantia pessoal", "Responsabilidade solidária", "Terceiro como avalista"] },
+      { word: "fidúcia", hints: ["Garantia por confiança", "Propriedade resolúvel", "Contrato fiduciário"] },
+      { word: "bens", hints: ["Ativos garantidores", "Móveis ou imóveis", "Penhor ou hipoteca"] },
+      { word: "dívida", hints: ["Obrigação financeira", "Valor a pagar", "Principal + juros"] },
+      { word: "credor", hints: ["Quem empresta", "Detentor do crédito", "Recebedor de valores"] },
+      { word: "devedor", hints: ["Quem deve", "Contraente do empréstimo", "Obrigado a pagar"] },
+      { word: "mutuário", hints: ["Receptor do empréstimo", "Contrato de mútuo", "Devedor principal"] },
+      { word: "mutuante", hints: ["Quem empresta recursos", "Banco ou instituição", "Credor no mútuo"] },
+      { word: "contrato", hints: ["Acordo formal", "Direitos e obrigações", "Documento assinado"] },
+      { word: "cláusula", hints: ["Disposição contratual", "Condição específica", "Parte do contrato"] },
+      { word: "adesão", hints: ["Contrato padronizado", "Aceite das condições", "Sem negociação"] },
+      { word: "adesão", hints: ["Contrato padronizado", "Aceite das condições", "Sem negociação"] },
+      { word: "assinatura", hints: ["Formalização do contrato", "Reconhecimento de firma", "Compromisso legal"] },
+      { word: "proposta", hints: ["Oferta formal", "Antecedente do contrato", "Condições comerciais"] },
+      { word: "aceite", hints: ["Concordância com proposta", "Formalização do negócio", "Manifestação positiva"] },
+      { word: "política", hints: ["Diretrizes institucionais", "Normas de conduta", "Crédito ou investimentos"] },
+      { word: "norma", hints: ["Regra operacional", "Compliance regulatório", "Padrão a seguir"] },
+      { word: "regulamento", hints: ["Conjunto de normas", "Disciplina operações", "Aprovado pelo BACEN"] },
+      { word: "circular", hints: ["Comunicação oficial", "BACEN ou Febraban", "Instruções normativas"] },
+      { word: "resolução", hints: ["Norma do BACEN", "Força de lei", "Regula instituições"] },
+      { word: "lei", hints: ["Disposição legal", "Código de defesa do consumidor", "Lei bancária"] },
+      { word: "jurisprudência", hints: ["Interpretação judicial", "Decisões reiteradas", "Guia para casos similares"] },
+      { word: "processo", hints: ["Demanda judicial", "Ação contra banco", "Litígios bancários"] },
+      { word: "automação", hints: ["Processos automatizados", "Redução de erros", "Atendimento eletrônico"] },
+      { word: "digital", hints: ["Canais online", "Internet banking, aplicativo", "Sem agência física"] },
+      { word: "online", hints: ["Operações pela internet", "Tempo real", "Autoatendimento"] },
+      { word: "presencial", hints: ["Atendimento físico", "Balcão da agência", "Com gerente"] },
+      { word: "gerente", hints: ["Executivo de conta", "Relação com cliente", "Vendas e negociações"] },
+      { word: "caixa", hints: ["Funcionário de agência", "Operações de tesouraria", "Pagamentos e recebimentos"] },
+      { word: "tesouraria", hints: ["Gestão de recursos", "Fluxo de caixa", "Operações financeiras"] },
+      { word: "backoffice", hints: ["Área de apoio", "Processamento operacional", "Sem contato com cliente"] },
+      { word: "callcenter", hints: ["Central de atendimento", "Telefone ou chat", "Suporte ao cliente"] },
+      { word: "sac", hints: ["Serviço de atendimento", "Reclamações e informações", "Canal oficial"] },
+      { word: "ouvidoria", hints: ["Instância superior", "Não-resolução pelo SAC", "Mediação de conflitos"] },
+      { word: "reclamação", hints: ["Insatisfação do cliente", "Registro no SAC", "Resolução em prazos"] },
+      { word: "elogio", hints: ["Reconhecimento positivo", "Feedback de satisfação", "Registro no sistema"] },
+      { word: "sugestão", hints: ["Ideia de melhoria", "Contribuição do cliente", "Processo de inovação"] },
+      { word: "treinamento", hints: ["Capacitação de funcionários", "Novos produtos/normas", "Desenvolvimento"] },
+      { word: "capacitação", hints: ["Aperfeiçoamento profissional", "Cursos e certificações", "Requisito funcional"] },
+      { word: "certificação", hints: ["Comprovação de conhecimento", "Exames profissionais", "CPA-20, CEA, CFG"] },
+      { word: "produto", hints: ["Solução financeira", "Conta, empréstimo, investimento", "Ofertado ao cliente"] },
+      { word: "serviço", hints: ["Atividade intangível", "Pagamentos, transferências", "Prestação ao cliente"] },
+      { word: "carteira", hints: ["Portfólio de produtos", "Clientes sob gestão", "Relação de investimentos"] },
+      { word: "perfil", hints: ["Avaliação de cliente", "Conservador, moderado, arrojado", "Para investimentos"] },
+      { word: "conservador", hints: ["Baixa tolerância a risco", "Prefere renda fixa", "Segurança acima de retorno"] },
+      { word: "moderado", hints: ["Risco equilibrado", "Mistura renda fixa e variável", "Busca retorno moderado"] },
+      { word: "arrojado", hints: ["Alta tolerância a risco", "Foco em renda variável", "Busca máximo retorno"] },
+      { word: "objetivo", hints: ["Meta financeira", "Aposentadoria, casa própria", "Prazos definidos"] },
+      { word: "planejamento", hints: ["Estratégia financeira", "Orçamento e metas", "Longo prazo"] },
+      { word: "orçamento", hints: ["Controle de receitas/despesas", "Planejamento mensal", "Equilíbrio financeiro"] },
+      { word: "reserva", hints: ["Fundo emergencial", "Liquidez imediata", "3 a 6 meses de despesas"] },
+      { word: "emergência", hints: ["Imprevistos financeiros", "Desemprego, saúde", "Uso da reserva"] },
+      { word: "aposentadoria", hints: ["Cessão de atividades", "Renda programada", "INSS ou complementar"] },
+      { word: "educação", hints: ["Investimento em conhecimento", "Faculdade, cursos", "Financiamento estudantil"] },
+      { word: "imóvel", hints: ["Bem imobiliário", "Casa, apartamento, terreno", "Financiamento longo"] },
+      { word: "automóvel", hints: ["Veículo automotor", "Carro, moto, caminhão", "Financiamento de 12-60 meses"] },
+      { word: "viagem", hints: ["Gasto com turismo", "Passagens, hospedagem", "Seguro específico"] },
+      { word: "casamento", hints: ["Cerimônia nupcial", "Custos elevados", "Financiamento pessoal"] },
+      { word: "herança", hints: ["Sucessão patrimonial", "Transferência de bens", "ITCMD devido"] },
+      { word: "doação", hints: ["Transferência gratuita", "Ato de liberalidade", "Pode ter impostos"] },
+      { word: "imposto", hints: ["Tributo obrigatório", "IR, IOF, IPTU", "Despesa não-optativa"] },
+      { word: "tributo", hints: ["Obrigação pecuniária", "Impostos, taxas, contribuições", "Exação governamental"] },
+      { word: "isenção", hints: ["Dispensa de pagamento", "Casos específicos", "Idosos, doenças graves"] },
+      { word: "desconto", hints: ["Redução de valor", "Pagamento antecipado", "Benefício comercial"] },
+      { word: "promoção", hints: ["Oferta temporária", "Condições especiais", "Atração de clientes"] },
+      { word: "vantagem", hints: ["Benefício adicional", "Programas de fidelidade", "Diferencial competitivo"] },
+      { word: "fidelidade", hints: ["Lealdade do cliente", "Programas de recompensa", "Milhas, cashback"] },
+      { word: "relacionamento", hints: ["Gestão de clientes", "Segmentação por valor", "Canais preferenciais"] },
+      { word: "preferencial", hints: ["Atendimento diferenciado", "Salas exclusivas", "Clientes de alto valor"] },
+      { word: "private", hints: ["Alto patrimônio", "Atendimento personalizado", "Produtos exclusivos"] },
+      { word: "personnalite", hints: ["Segmento premium do BB", "Atendimento diferenciado", "Clientes com mais de R$ 500 mil"] },
+      { word: "ouro", hints: ["Metal precioso", "Investimento de reserva", "Proteção contra inflação"] },
+      { word: "prata", hints: ["Metal industrial", "Commodity negociada", "Investimento alternativo"] },
+      { word: "commodity", hints: ["Matéria-prima negociada", "Soja, petróleo, minério", "Contratos futuros"] },
+      { word: "futuro", hints: ["Contrato derivativo", "Compra/venda a termo", "Bolsa de mercadorias"] },
+      { word: "opção", hints: ["Direito de compra/venda", "Prêmio pago", "Prazo determinado"] },
+      { word: "swap", hints: ["Troca de fluxos financeiros", "Proteção contra variações", "Juros ou câmbio"] },
+      { word: "derivativo", hints: ["Contrato derivado", "Futuros, opções, swaps", "Hedge ou especulação"] },
+      { word: "hedge", hints: ["Proteção contra riscos", "Operações de contrapartida", "Trava de preços"] },
+      { word: "arbitragem", hints: ["Lucro sem risco", "Diferença de preços", "Mercados diferentes"] },
+      { word: "especulação", hints: ["Busca de lucro", "Exposição a riscos", "Operações arriscadas"] },
+      { word: "volatilidade", hints: ["Oscilação de preços", "Medida de risco", "Alta em crises"] },
+      { word: "liquidação", hints: ["Encerramento de posição", "Pagamento de contrato", "Fim da operação"] },
+      { word: "bolsa", hints: ["Mercado organizado", "Negociação de ativos", "B3 no Brasil"] },
+      { word: "b3", hints: ["Bolsa brasileira", "Fusão BM&F/Bovespa", "Ações, futuros, opções"] },
+      { word: "índice", hints: ["Indicador de desempenho", "Ibovespa, S&P500", "Carteira teórica"] },
+      { word: "ibovespa", hints: ["Principal índice brasileiro", "Reflete Bovespa", "Ações mais negociadas"] },
+      { word: "ações", hints: ["Parte do capital social", "Negociadas em bolsa", "Renda variável"] },
+      { word: "ordinárias", hints: ["Ações com voto", "ON: direito pleno", "Participação acionária"] },
+      { word: "preferenciais", hints: ["Ações sem voto", "PN: preferência dividendos", "Maior liquidez"] },
+      { word: "unit", hints: ["Cesta de ações", "ON + PN em mesmo papel", "Negociação combinada"] },
+      { word: "tagalong", hints: ["Proteção a minoritários", "Venda com mesmo preço", "Direito de venda"] },
+      { word: "follow", hints: ["Oferta subsequente", "Novas ações emitidas", "Diluição acionária"] },
+      { word: "ipo", hints: ["Oferta pública inicial", "Estreia na bolsa", "Captação de recursos"] },
+      { word: "ecm", hints: ["Mercado de capitais", "Emissão de ações", "IPO, follow-on"] },
+      { word: "dcm", hints: ["Mercado de dívida", "Emissão de títulos", "Debêntures, comerciais"] },
+      { word: "debênture", hints: ["Título de dívida corporativa", "Renda fixa privada", "Garantias definidas"] },
+      { word: "comercial", hints: ["Papel de curto prazo", "CP, RDB", "Emitido por empresas"] },
+      { word: "nota", hints: ["Título de dívida", "CPN, CRI, CRA", "Securitização"] },
+      { word: "securitização", hints: ["Titularização de créditos", "Transformação em títulos", "Venda a investidores"] },
+      { word: "lastro", hints: ["Garantia real", "Créditos securitizados", "Ativos subjacentes"] },
+      { word: "subjacente", hints: ["Ativo de referência", "Base para derivativo", "Ação, índice, commodity"] },
+      { word: "mercado", hints: ["Ambiente de negócios", "Primário ou secundário", "Oferta e demanda"] },
+      { word: "primário", hints: ["Emissão inicial", "Captação direta", "Lançamento de ativos"] },
+      { word: "secundário", hints: ["Revenda de ativos", "Negociação entre investidores", "Liquidez diária"] },
+      { word: "lote", hints: ["Quantidade padrão", "100 ações no Brasil", "Negociação em bolsa"] },
+      { word: "fração", hints: ["Parte de lote", "Menos de 100 ações", "Mercado fracionário"] },
+      { word: "liquidez", hints: ["Facilidade de negociação", "Volume diário", "Spread reduzido"] },
+      { word: "volume", hints: ["Quantidade negociada", "Indicador de liquidez", "R$ ou número de ativos"] },
+      { word: "book", hints: ["Livro de ofertas", "Ordens de compra/venda", "Profundidade do mercado"] },
+      { word: "ordem", hints: ["Instrução de negociação", "Compra ou venda", "Preço específico ou mercado"] },
+      { word: "mercado", hints: ["Ordem a preço corrente", "Execução imediata", "Melhor oferta disponível"] },
+      { word: "limitada", hints: ["Ordem com preço definido", "Execução ao preço ou melhor", "Controle de custo"] },
+      { word: "fundamentos", hints: ["Análise de balanços", "Indicadores financeiros", "Lucro, dívida, crescimento"] },
+      { word: "bolha", hints: ["Valorização especulativa", "Preços desconectados da realidade", "Risco de estouro"] },
+      { word: "crash", hints: ["Queda brusca do mercado", "Pânico generalizado", "Venda em massa"] },
+      { word: "recuperação", hints: ["Retomada após queda", "Volta aos patamares anteriores", "Reação positiva"] },
+      { word: "crise", hints: ["Período de instabilidade", "2008, 2014-2016", "Risco sistêmico"] },
+      { word: "crédito", hints: ["Concessão de recursos", "Análise de risco", "Operações bancárias principais"] },
+      { word: "risco", hints: ["Possibilidade de perda", "Classificação de clientes", "AA, A, B, C, D, E, H"] },
+      { word: "rating", hints: ["Classificação de risco", "S&P, Moody's, Fitch", "Grau de investimento"] },
+      { word: "grau", hints: ["Nível de investimento", "Baixo risco", "AAA a BBB-"] },
+      { word: "especulativo", hints: ["Alto risco", "Junk bonds", "BB+ para baixo"] },
+      { word: "recuperação", hints: ["Recuperação de crédito", "Cobrança de dívidas", "Departamento especializado"] },
+      { word: "cobrança", hints: ["Atividade de recebimento", "Inadimplentes", "Judicial ou extrajudicial"] },
+      { word: "judicial", hints: ["Ação na justiça", "Execução de dívida", "Protesto, penhora"] },
+      { word: "extrajudicial", hints: ["Acordo direto", "Reestruturação", "Sem intervenção judicial"] },
+      { word: "acordo", hints: ["Negociação de dívida", "Descontos e parcelamento", "Quitação facilitada"] },
+      { word: "desconto", hints: ["Redução de valores", "Liquidação antecipada", "Incentivo ao pagamento"] },
+
+      { word: "parcelamento", hints: ["Pagamento fracionado", "Prazos estendidos", "Quitação gradual"] },
+      { word: "renegociação", hints: ["Novas condições contratuais", "Alongamento de prazo", "Redução de juros"] },
+      { word: "quitação", hints: ["Liquidação total", "Liberação de garantias", "Encerramento de dívida"] },
+      { word: "baixa", hints: ["Encerramento cadastral", "Regularização do nome", "Fim da obrigação"] },
+      { word: "habitação", hints: ["Financiamento imobiliário", "Minha Casa Minha Vida", "Sistema financeiro"] },
+      { word: "sfh", hints: ["Sistema Financeiro Habitacional", "Poupança vinculada", "Taxas reguladas"] },
+      { word: "sistema", hints: ["Conjunto integrado", "Processos e recursos", "Operacional bancário"] },
+      { word: "core", hints: ["Sistema central", "Processamento transacional", "Backend bancário"] },
+      { word: "legado", hints: ["Sistemas antigos", "Tecnologia defasada", "Desafio de migração"] },
+      { word: "nuvem", hints: ["Computação em cloud", "Armazenamento remoto", "Redução de custos"] },
+      { word: "bigdata", hints: ["Análise de grandes volumes", "Comportamento de clientes", "Tomada de decisão"] },
+      { word: "inteligência", hints: ["Business Intelligence", "Relatórios gerenciais", "KPIs de desempenho"] },
+      { word: "kpi", hints: ["Indicador-chave", "Medição de resultados", "Eficiência, rentabilidade"] },
+      { word: "roi", hints: ["Retorno sobre investimento", "Relação lucro/custo", "Eficácia de projetos"] },
+      { word: "receita", hints: ["Entradas financeiras", "Juros, tarifas, serviços", "Faturamento bancário"] },
+      { word: "despesa", hints: ["Custos operacionais", "Pessoal, tecnologia, marketing", "Redução de lucro"] },
+      { word: "lucro", hints: ["Resultado positivo", "Receitas menos despesas", "Distribuição aos acionistas"] },
+      { word: "prejuízo", hints: ["Resultado negativo", "Despesas maiores que receitas", "Prejuízo contábil"] },
+      { word: "patrimônio", hints: ["Recursos próprios", "Ativo menos passivo", "Base de capital"] },
+      { word: "ativo", hints: ["Bens e direitos", "Empréstimos, investimentos", "Aplicações financeiras"] },
+      { word: "passivo", hints: ["Obrigações", "Depósitos, captações", "Recursos de terceiros"] },
+      { word: "balanço", hints: ["Demonstração contábil", "Posição patrimonial", "Balanço patrimonial"] },
+      { word: "demonstração", hints: ["Relatório financeiro", "DRE, fluxo de caixa", "Informações contábeis"] },
+      { word: "auditoria", hints: ["Verificação contábil", "Conformidade fiscal", "Relatório independente"] },
+      { word: "fiscal", hints: ["Tributário", "Impostos e obrigações", "Controle pela Receita"] },
+      { word: "contábil", hints: ["Registro de transações", "Escrituração formal", "Balanços e demonstrações"] },
+      { word: "custódia", hints: ["Guarda de ativos", "Títulos e valores", "Serviço terceirizado"] },
+      { word: "clearing", hints: ["Compensação de operações", "Liquidação financeira", "Câmara de compensação"] },
+      { word: "liquidação", hints: ["Efetivação de pagamentos", "Transferência de recursos", "Finalização de operação"] },
+      { word: "compensação", hints: ["Acerto de transações", "Cheques, boletos", "Sistema CIP"] },
+      { word: "cip", hints: ["Câmara Interbancária de Pagamentos", "Compensação de cheques", "Processamento centralizado"] },
+      { word: "bacenjud", hints: ["Sistema do Banco Central", "Bloqueio judicial de valores", "Execuções fiscais"] },
+      { word: "sistema", hints: ["Conjunto integrado", "Processos e recursos", "Operacional bancário"] },
+      { word: "contingência", hints: ["Plano alternativo", "Falhas operacionais", "Backup de sistemas"] },
+      { word: "backup", hints: ["Cópia de segurança", "Recuperação de dados", "Prevenção de perdas"] },
+      { word: "criptografia", hints: ["Proteção de dados", "Codificação avançada", "Segurança da informação"] },
+      { word: "firewall", hints: ["Barreira de segurança", "Filtro de acesso", "Proteção contra invasões"] },
+      { word: "vírus", hints: ["Ameaça digital", "Malware prejudicial", "Antivírus necessário"] },
+      { word: "phishing", hints: ["Golpe eletrônico", "Fraude por e-mail/site falso", "Captura de dados"] },
+      { word: "fraude", hints: ["Ilícito financeiro", "Clonagem, falsificação", "Prejuízo ao banco/cliente"] },
+      { word: "lavagem", hints: ["Ocultação de origem ilícita", "Dinheiro do crime", "Lei 9.613/98"] },
+      { word: "kyc", hints: ["Conheça seu cliente", "Procedimento de identificação", "Prevenção a fraudes"] },
+      { word: "aml", hints: ["Anti-money laundering", "Combate à lavagem", "Monitoramento transacional"] },
+      { word: "compliance", hints: ["Conformidade normativa", "Prevenção a ilícitos", "Área essencial bancária"] },
+      { word: "governança", hints: ["Boas práticas administrativas", "Transparência e ética", "Controles internos"] },
+      { word: "ética", hints: ["Conduta profissional", "Valores institucionais", "Código de conduta"] },
+      { word: "sustentabilidade", hints: ["Responsabilidade socioambiental", "Práticas ESG", "Relatório anual"] },
+      { word: "relatório", hints: ["Demonstrativo público", "Informações financeiras e ESG", "Divulgação anual"] },
+      { word: "stakeholder", hints: ["Partes interessadas", "Clientes, acionistas, comunidade", "Engajamento constante"] },
+      { word: "missão", hints: ["Razão de existir", "Propósito institucional", "Declaração formal"] },
+      { word: "visão", hints: ["Objetivo futuro", "Aspiração estratégica", "Longo prazo"] },
+      { word: "valores", hints: ["Princípios norteadores", "Ética, transparência, inovação", "Cultura organizacional"] },
+      { word: "cultura", hints: ["Comportamento organizacional", "Valores compartilhados", "Clima corporativo"] },
+      { word: "clima", hints: ["Ambiente de trabalho", "Satisfação dos funcionários", "Pesquisas periódicas"] },
+      { word: "endomarketing", hints: ["Comunicação interna", "Engajamento de colaboradores", "Valorização do time"] },
+      { word: "colaborador", hints: ["Funcionário", "Recurso mais importante", "Capital humano"] },
+      { word: "capital", hints: ["Recursos financeiros", "Patrimônio líquido", "Base para operações"] },
+      { word: "humano", hints: ["Pessoas da organização", "Talento e conhecimento", "Diferencial competitivo"] },
+      { word: "treinamento", hints: ["Desenvolvimento profissional", "Cursos e capacitação", "Melhoria contínua"] },
+      { word: "capacitação", hints: ["Aperfeiçoamento de habilidades", "Preparação para funções", "Programas internos"] },
+      { word: "carreira", hints: ["Trajetória profissional", "Plano de desenvolvimento", "Oportunidades internas"] },
+      { word: "plano", hints: ["Estratégia definida", "Carreira, sucessão, negócios", "Documento formal"] },
+      { word: "sucessão", hints: ["Substituição de cargos", "Planejamento de liderança", "Continuidade do negócio"] },
+      { word: "liderança", hints: ["Habilidade de gestão", "Influência positiva", "Motivação de equipes"] },
+      { word: "gestão", hints: ["Administração de recursos", "Pessoas, processos, produtos", "Maximização de resultados"] },
+      { word: "resultado", hints: ["Desempenho mensurado", "Financeiro, satisfação, mercado", "Objetivo principal"] },
+      { word: "desempenho", hints: ["Performance", "Avaliação de metas", "Indicadores de sucesso"] },
+      { word: "meta", hints: ["Objetivo quantitativo", "Prazos definidos", "Acompanhamento gerencial"] },
+      { word: "indicador", hints: ["Medida de performance", "KPIs estratégicos", "Monitoramento constante"] },
+      { word: "relatório", hints: ["Documento analítico", "Consolidação de informações", "Mensal, trimestral, anual"] },
+      { word: "reunião", hints: ["Encontro formal", "Alinhamento de equipe", "Agenda definida"] },
+      { word: "comitê", hints: ["Grupo decisório", "Crédito, risco, auditoria", "Reuniões periódicas"] },
+      { word: "funcionário", hints: ["Colaborador", "Mais de 80 mil", "Principal ativo"] },
+      { word: "concursado", hints: ["Acesso por concurso público", "Estabilidade após 3 anos", "Carreira bancária"] },
+      { word: "carreira", hints: ["Plano de desenvolvimento", "Técnico, gerencial, executivo", "Remuneração competitiva"] },
+      { word: "remuneração", hints: ["Salário e benefícios", "PLR, assistência médica", "Pacote compensatório"] },
+      { word: "plr", hints: ["Participação nos lucros", "Distribuição anual", "Vinculada a resultados"] },
+      { word: "benefício", hints: ["Vantagens não-salariais", "Vale-refeição, previdência", "Qualidade de vida"] },
+      { word: "colaboração", hints: ["Trabalho conjunto", "Compartilhamento de conhecimento", "Resultados sinérgicos"] },
+      { word: "sinergia", hints: ["Resultado combinado", "2+2=5", "Vantagem cooperativa"] },
+      { word: "mercado", hints: ["Ambiente de atuação", "Concorrência, clientes, reguladores", "Dinâmica constante"] },
+      { word: "estratégia", hints: ["Plano de ação", "Longo prazo", "Sustentação competitiva"] }
+    ];
+
+    let wordObj, word, guessedLetters = [], wrongLetters = [], usedHintsCount = 0;
+    let gameOver = false, timer = null, startTime = null, finalTime = 0;
+
+    const wordDisplay = document.getElementById("word-display");
+    const keyboard = document.getElementById("keyboard");
+    const hintContainer = document.getElementById("hint-container");
+    const timeDisplay = document.getElementById("time");
+    const messageEl = document.getElementById("message");
+    const canvas = document.getElementById("hangmanCanvas");
+    const ctx = canvas.getContext("2d");
+    const darkModeButton = document.getElementById("dark-mode-button");
+
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+      if (document.body.classList.contains('dark-mode')) {
+        darkModeButton.textContent = 'Modo Claro';
+      } else {
+        darkModeButton.textContent = 'Modo Escuro';
+      }
+      drawHangman(wrongLetters.length);
+    }
+
+    function chooseWord() {
+      wordObj = wordsWithHints[Math.floor(Math.random() * wordsWithHints.length)];
+      word = wordObj.word.toUpperCase();
+    }
+
+    function updateWordDisplay() {
+      wordDisplay.textContent = word.split('').map(l => guessedLetters.includes(l) ? l : '_').join(' ');
+    }
+
+    function drawHangman(errors) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = document.body.classList.contains('dark-mode') ? "#eee" : "#002776";
+      if (errors > 0) ctx.strokeRect(20, 180, 100, 10);
+      if (errors > 1) ctx.beginPath(), ctx.moveTo(70, 180), ctx.lineTo(70, 20), ctx.stroke();
+      if (errors > 2) ctx.beginPath(), ctx.moveTo(70, 20), ctx.lineTo(140, 20), ctx.stroke();
+      if (errors > 3) ctx.beginPath(), ctx.moveTo(140, 20), ctx.lineTo(140, 40), ctx.stroke();
+      if (errors > 4) ctx.beginPath(), ctx.arc(140, 50, 10, 0, Math.PI * 2), ctx.stroke();
+      if (errors > 5) ctx.beginPath(), ctx.moveTo(140, 60), ctx.lineTo(140, 100), ctx.stroke();
+      if (errors > 6) ctx.beginPath(), ctx.moveTo(140, 70), ctx.lineTo(120, 90), ctx.stroke();
+      if (errors > 7) ctx.beginPath(), ctx.moveTo(140, 70), ctx.lineTo(160, 90), ctx.stroke();
+      if (errors > 8) ctx.beginPath(), ctx.moveTo(140, 100), ctx.lineTo(120, 130), ctx.stroke();
+      if (errors > 9) ctx.beginPath(), ctx.moveTo(140, 100), ctx.lineTo(160, 130), ctx.stroke();
+    }
+
+    function updateMessage(msg) {
+      messageEl.textContent = msg;
+    }
+
+    function handleLetterClick(letter, button) {
+      if (gameOver || guessedLetters.includes(letter) || wrongLetters.includes(letter)) return;
+      
+      const variations = getLetterVariations(letter);
+      const found = variations.some(v => word.includes(v));
+      
+      button.classList.add('used');
+      
+      if (found) {
+        variations.forEach(v => {
+          if (word.includes(v) && !guessedLetters.includes(v)) {
+            guessedLetters.push(v);
+          }
+        });
+        updateWordDisplay();
+        if (checkWin()) {
+          gameOver = true;
+          stopTimer();
+          finalTime = parseFloat(timeDisplay.textContent);
+          updateMessage(`Parabéns! Você acertou a palavra "${word}".`);
+          askForNameAndSave();
+        }
+      } else {
+        wrongLetters.push(letter);
+        drawHangman(wrongLetters.length);
+        if (wrongLetters.length >= 10) {
+          gameOver = true;
+          stopTimer();
+          updateMessage(`Fim de jogo! A palavra era "${word}".`);
+        }
+      }
+    }
+
+    function getLetterVariations(letter) {
+      const variations = {
+        'A': ['A', 'Á', 'À', 'Â', 'Ã'],
+        'E': ['E', 'É', 'Ê'],
+        'I': ['I', 'Í'],
+        'O': ['O', 'Ó', 'Ô', 'Õ'],
+        'U': ['U', 'Ú'],
+        'C': ['C', 'Ç']
+      };
+      return variations[letter] || [letter];
+    }
+
+    function checkWin() {
+      return word.split('').every(l => guessedLetters.includes(l));
+    }
+
+    function showHint() {
+      if (usedHintsCount < wordObj.hints.length) {
+        const hintElement = document.createElement('div');
+        hintElement.className = 'hint-item';
+        hintElement.textContent = wordObj.hints[usedHintsCount];
+        hintContainer.prepend(hintElement);
+        usedHintsCount++;
+        
+        if (usedHintsCount >= wordObj.hints.length) {
+          document.getElementById('hint-button').style.display = 'none';
+        }
+      }
+    }
+
+    function createKeyboard() {
+      const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      keyboard.innerHTML = '';
+      alphabet.split('').forEach(letter => {
+        const btn = document.createElement('button');
+        btn.textContent = letter;
+        btn.onclick = () => handleLetterClick(letter, btn);
+        keyboard.appendChild(btn);
+      });
+    }
+
+    function handleKeyPress(e) {
+      if (!/^[a-z]$/i.test(e.key)) return;
+      const letter = e.key.toUpperCase();
+      const btn = Array.from(keyboard.children).find(b => b.textContent === letter);
+      if (btn) btn.click();
+    }
+
+    function startTimer() {
+      startTime = Date.now();
+      timer = setInterval(() => {
+        const seconds = ((Date.now() - startTime) / 1000).toFixed(1);
+        timeDisplay.textContent = seconds;
+      }, 100);
+    }
+
+    function stopTimer() {
+      clearInterval(timer);
+    }
+
+    function getRanking() {
+      return JSON.parse(localStorage.getItem('hangmanRanking') || '[]');
+    }
+
+    function saveRanking(ranking) {
+      localStorage.setItem('hangmanRanking', JSON.stringify(ranking));
+    }
+
+    function renderRanking() {
+      const list = document.getElementById("ranking-list");
+      const ranking = getRanking();
+      list.innerHTML = ranking.map(r => `<li>${r.name} - ${r.time.toFixed(1)}s - Palavra: ${r.word}, Dicas: ${r.hints}, Erros: ${r.wrongAttempts}</li>`).join('');
+    }
+
+    function askForNameAndSave() {
+      let playerName = prompt("Você fez um recorde! Digite seu nome:");
+      if (!playerName || playerName.trim() === "") playerName = "Anônimo";
+
+      const record = {
+        name: playerName.trim(),
+        time: finalTime,
+        word: word,
+        hints: usedHintsCount,
+        wrongAttempts: wrongLetters.length
+      };
+
+      const ranking = getRanking();
+      ranking.push(record);
+      ranking.sort((a, b) => a.time - b.time);
+      if (ranking.length > 5) ranking.length = 5;
+      saveRanking(ranking);
+      renderRanking();
+    }
+
+    function startGame() {
+      chooseWord();
+      guessedLetters = [];
+      wrongLetters = [];
+      usedHintsCount = 0;
+      gameOver = false;
+      hintContainer.innerHTML = "";
+      updateMessage("");
+      createKeyboard();
+      updateWordDisplay();
+      drawHangman(0);
+      renderRanking();
+      stopTimer();
+      timeDisplay.textContent = "0.0";
+      startTimer();
+      
+      document.getElementById('hint-button').style.display = 'inline-block';
+    }
+
+    document.addEventListener('keydown', handleKeyPress);
+    window.onload = startGame;
+  </script>
+<style id="ppg-platform-style">
+:root{--ppg-ui-bg:rgba(10,13,28,.88);--ppg-ui-fg:#f7f5ff;--ppg-ui-line:rgba(255,255,255,.15);--ppg-ui-accent:#a875ff;--ppg-ui-accent2:#35e6ca}
+#ppg-toolbar{position:fixed;z-index:2147483000;top:10px;right:10px;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;max-width:min(92vw,620px);font-family:Inter,"Segoe UI",system-ui,sans-serif!important}
+#ppg-toolbar button,#ppg-toolbar a{min-height:34px!important;padding:7px 10px!important;margin:0!important;border:1px solid var(--ppg-ui-line)!important;border-radius:10px!important;background:var(--ppg-ui-bg)!important;color:var(--ppg-ui-fg)!important;font:700 12px/1 Inter,"Segoe UI",system-ui,sans-serif!important;text-decoration:none!important;text-transform:none!important;letter-spacing:0!important;box-shadow:0 8px 25px rgba(0,0,0,.22)!important;cursor:pointer!important;backdrop-filter:blur(10px);transform:none!important}
+#ppg-toolbar button:hover,#ppg-toolbar a:hover{border-color:var(--ppg-ui-accent2)!important;filter:brightness(1.12)!important}
+.ppg-modal{position:fixed;z-index:2147483640;inset:0;display:none;place-items:center;padding:18px;background:rgba(2,3,12,.78);backdrop-filter:blur(8px);font-family:Inter,"Segoe UI",system-ui,sans-serif!important}.ppg-modal.open{display:grid}.ppg-card{width:min(560px,96vw);max-height:min(80vh,720px);overflow:auto;padding:22px;border:1px solid rgba(255,255,255,.16);border-radius:20px;background:linear-gradient(145deg,#14162b,#0a0d1b);color:#f8f7ff;text-align:left;box-shadow:0 30px 90px #0009}.ppg-card h2{margin:0 0 8px!important;color:#d9c7ff!important;font:800 clamp(22px,4vw,30px)/1.1 Inter,"Segoe UI",system-ui,sans-serif!important}.ppg-card h3{margin:17px 0 6px!important;color:#63ecd6!important;font:800 14px/1.2 Inter,"Segoe UI",system-ui,sans-serif!important;text-transform:uppercase;letter-spacing:.08em}.ppg-card p,.ppg-card li{color:#d7d9e7!important;font:400 14px/1.55 Inter,"Segoe UI",system-ui,sans-serif!important}.ppg-card .ppg-credit{margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.12);font-weight:800;color:#fff!important}.ppg-close{float:right;border:0!important;background:#282c48!important;color:white!important;border-radius:9px!important;padding:7px 10px!important;cursor:pointer!important}.ppg-record-list{display:grid;gap:8px;margin-top:12px}.ppg-record{display:grid;grid-template-columns:34px 1fr auto;gap:8px;padding:10px;border-radius:12px;background:#ffffff0b;border:1px solid #ffffff10;align-items:center}.ppg-record small{color:#989db7}.ppg-empty{padding:14px;border:1px dashed #ffffff2a;border-radius:12px;color:#aeb3c8}
+body.ppg-light{background-color:#edf1f8!important;color:#182038!important}body.ppg-light :is(.menu-card,.card,.panel,.toolbar,.stats,.help,.bet-panel,.track-card,.game-container){filter:brightness(1.08) saturate(.92)}body.ppg-dark{color-scheme:dark}
+@media(max-width:720px){#ppg-toolbar{top:6px;right:6px}#ppg-toolbar button,#ppg-toolbar a{padding:6px 8px!important;font-size:11px!important}.ppg-card{padding:17px}}
+</style><script id="ppg-platform-script">
+(()=>{'use strict';
+const CFG={"id": "forca_neon", "name": "Forca Neon", "emoji": "🔤", "desc": "Forca temática com dicas progressivas e ranking por tempo.", "how": "Escolha letras para revelar a palavra antes de completar o boneco. Você pode pedir dicas, mas tente economizá-las.", "tip": "Teste primeiro vogais e consoantes frequentes. Palavras longas entregam bastante informação quando uma letra aparece várias vezes.", "metric": "Vitórias rápidas", "unit": " s", "mode": "min"};
+const STATS_KEY='ppg_minigames_stats_v1', PREF_KEY='ppg_platform_prefs_v1', REC_KEY='ppg_records_'+CFG.id;
+const $=s=>document.querySelector(s), num=v=>{const m=String(v??'').replace(/\s/g,'').replace(/\.(?=\d{3}(\D|$))/g,'').replace(',','.').match(/-?\d+(?:\.\d+)?/);return m?+m[0]:null};
+const money=v=>{const s=String(v??'').replace(/R\$|◈|Créditos?|Banca:|💰/gi,'').trim();let m=s.match(/(-?[\d.,]+)\s*(K|M|B|T|Qa|Qi|Sx|Sp|Oc|No|Dc)?/i);if(!m)return null;let n=num(m[1]);const u=(m[2]||'').toLowerCase(),map={k:1e3,m:1e6,b:1e9,t:1e12,qa:1e15,qi:1e18,sx:1e21,sp:1e24,oc:1e27,no:1e30,dc:1e33};return n*(map[u]||1)};
+window.__ppgHelpers={num,money};
+function readJSON(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}}function writeJSON(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
+function dayKey(d=new Date()){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}function dayDiff(a,b){const A=new Date(a+'T12:00:00'),B=new Date(b+'T12:00:00');return Math.round((B-A)/86400000)}
+let all=readJSON(STATS_KEY,{}),st=all[CFG.id]||{starts:0,totalSeconds:0,longestStreak:0,currentStreak:0,lastDay:null};const today=dayKey();st.starts=(st.starts||0)+1;if(st.lastDay!==today){const dd=st.lastDay?dayDiff(st.lastDay,today):99;st.currentStreak=dd===1?(st.currentStreak||0)+1:1;st.longestStreak=Math.max(st.longestStreak||0,st.currentStreak);st.lastDay=today}st.lastStarted=Date.now();all[CFG.id]=st;writeJSON(STATS_KEY,all);
+let lastTick=performance.now();function flushTime(){const now=performance.now(),d=Math.max(0,(now-lastTick)/1000);lastTick=now;all=readJSON(STATS_KEY,{});const x=all[CFG.id]||st;x.totalSeconds=(x.totalSeconds||0)+d;x.lastPlayed=Date.now();all[CFG.id]=x;writeJSON(STATS_KEY,all)}setInterval(flushTime,5000);addEventListener('pagehide',flushTime);document.addEventListener('visibilitychange',()=>{if(document.hidden)flushTime();else lastTick=performance.now()});
+let prefs=readJSON(PREF_KEY,{theme:'dark',sound:true});document.body.classList.toggle('ppg-light',prefs.theme==='light');document.body.classList.toggle('ppg-dark',prefs.theme!=='light');
+const toolbar=document.createElement('nav');toolbar.id='ppg-toolbar';toolbar.innerHTML=`<button id="ppg-theme" title="Alternar modo claro/escuro">${prefs.theme==='light'?'🌙 Escuro':'☀️ Claro'}</button><button id="ppg-sound" title="Som e música">${prefs.sound?'🔊 Som':'🔇 Som'}</button><button id="ppg-records">🏆 Recordes</button><button id="ppg-about">ⓘ Sobre</button><a href="menu_minigames.html" id="ppg-menu">↩ Menu de Mini Games</a>`;document.body.appendChild(toolbar);
+const modal=document.createElement('div');modal.className='ppg-modal';modal.id='ppg-modal';modal.innerHTML=`<div class="ppg-card"><button class="ppg-close" aria-label="Fechar">✕</button><div id="ppg-modal-body"></div></div>`;document.body.appendChild(modal);const body=$('#ppg-modal-body');function open(html){body.innerHTML=html;modal.classList.add('open')}function close(){modal.classList.remove('open')}modal.addEventListener('click',e=>{if(e.target===modal||e.target.closest('.ppg-close'))close()});addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+$('#ppg-about').onclick=()=>open(`<h2>${CFG.name}</h2><p>${CFG.desc}</p><h3>Como jogar</h3><p>${CFG.how}</p><h3>Dica de estratégia</h3><p>${CFG.tip}</p><p class="ppg-credit">Produção: Projeto Primata Games em 2026.</p>`);
+$('#ppg-theme').onclick=()=>{prefs.theme=prefs.theme==='light'?'dark':'light';writeJSON(PREF_KEY,prefs);document.body.classList.toggle('ppg-light',prefs.theme==='light');document.body.classList.toggle('ppg-dark',prefs.theme==='dark');$('#ppg-theme').textContent=prefs.theme==='light'?'🌙 Escuro':'☀️ Claro';sfx(520,.05)};
+// Áudio procedural comum: garante BGM + SFX sem arquivos externos.
+let ac=null,master=null,music=null,beat=0;function initAudio(){if(ac)return;ac=new (window.AudioContext||window.webkitAudioContext)();master=ac.createGain();master.gain.value=prefs.sound?.12:0;master.connect(ac.destination)}function tone(f,d=.08,type='sine',vol=.08,when=0){if(!prefs.sound)return;initAudio();const t=ac.currentTime+when,o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(master);o.start(t);o.stop(t+d)}function sfx(f=420,d=.045){tone(f,d,'triangle',.11)}function startBgm(){if(music||!prefs.sound)return;initAudio();music=setInterval(()=>{if(document.hidden||!prefs.sound)return;const seq=[110,138.59,164.81,220,196,164.81,146.83,123.47],f=seq[beat++%seq.length];tone(f,.16,'triangle',.025);if(beat%4===1)tone(f/2,.1,'sine',.018)},360)}function stopBgm(){clearInterval(music);music=null}function unlock(){initAudio();ac?.resume();if(prefs.sound)startBgm()}addEventListener('pointerdown',unlock,{once:true});addEventListener('keydown',unlock,{once:true});document.addEventListener('click',e=>{if(e.target.closest('button,a,input,select'))sfx(380+Math.random()*80,.035)},true);
+$('#ppg-sound').onclick=e=>{e.stopPropagation();prefs.sound=!prefs.sound;writeJSON(PREF_KEY,prefs);initAudio();master.gain.setTargetAtTime(prefs.sound?.12:0,ac.currentTime,.02);if(prefs.sound){ac.resume();startBgm();sfx(660,.08)}else stopBgm();$('#ppg-sound').textContent=prefs.sound?'🔊 Som':'🔇 Som'};
+// Ranking local por sessão. A mesma sessão é atualizada em vez de poluir o top 5 com cada incremento.
+const sessionId=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7);function formatValue(v){if(v==null)return '—';if(Math.abs(v)>=1e9)return v.toLocaleString('pt-BR',{notation:'compact',maximumFractionDigits:2})+CFG.unit;return (Number.isInteger(v)?v:v.toFixed(2).replace('.',','))+CFG.unit}function metric(){try{const num=window.__ppgHelpers.num,money=window.__ppgHelpers.money;return (()=>{const t=document.querySelector('#message')?.textContent||'';const tm=document.querySelector('#time');return /parab|acert|venceu|ganhou/i.test(t)&&tm?num(tm.textContent):null})()}catch{return null}}function upsert(v){if(v==null||!Number.isFinite(v)||(CFG.mode==='min'&&v<=0))return;let r=readJSON(REC_KEY,[]),me=r.find(x=>x.sessionId===sessionId);if(me){const better=CFG.mode==='min'?v<me.value:v>me.value;if(!better)return;me.value=v;me.at=Date.now()}else r.push({sessionId,value:v,at:Date.now()});r.sort((a,b)=>CFG.mode==='min'?a.value-b.value:b.value-a.value);writeJSON(REC_KEY,r.slice(0,5))}setInterval(()=>upsert(metric()),800);addEventListener('pagehide',()=>upsert(metric()));
+function renderRecords(){const r=readJSON(REC_KEY,[]);const list=r.length?`<div class="ppg-record-list">${r.map((x,i)=>`<div class="ppg-record"><b>#${i+1}</b><span><strong>${formatValue(x.value)}</strong><br><small>${new Date(x.at).toLocaleDateString('pt-BR')}</small></span><small>${CFG.metric}</small></div>`).join('')}</div>`:`<div class="ppg-empty">Ainda não há marca registrada neste navegador. Jogue uma partida e ela aparece aqui.</div>`;open(`<h2>Recordes locais</h2><p>Top 5 persistente deste jogo, salvo somente neste navegador.</p>${list}`)}$('#ppg-records').onclick=renderRecords;
+})();
+</script>
+</body>
+</html>
