@@ -1,4 +1,4 @@
-name: Import Quickplay V13
+name: Publish Quickplay V13
 
 on:
   push:
@@ -8,8 +8,12 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: quickplay-v13-publish
+  cancel-in-progress: false
+
 jobs:
-  import:
+  publish:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -17,28 +21,61 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Reassemble and extract V13
+      - name: Reassemble and validate V13
         shell: bash
         run: |
           set -euo pipefail
           cat import-v13/part-* | base64 --decode > /tmp/quickplay-v13.zip
+          echo 'cb52610191c033261b9fe8249f9a0b2249e627bf6990b5e6aab3f2163762bf42  /tmp/quickplay-v13.zip' | sha256sum -c -
           unzip -t /tmp/quickplay-v13.zip
           rm -rf /tmp/quickplay-v13
           mkdir -p /tmp/quickplay-v13
           unzip -q /tmp/quickplay-v13.zip -d /tmp/quickplay-v13
-          test -d /tmp/quickplay-v13/minigames_revisados
-          cp -a /tmp/quickplay-v13/minigames_revisados/. ./
+          ROOT=/tmp/quickplay-v13/minigames_revisados
+          test -d "$ROOT"
+          test "$(find "$ROOT" -maxdepth 1 -type f | wc -l)" -eq 22
+
+      - name: Publish clean site tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT=/tmp/quickplay-v13/minigames_revisados
+          expected=(
+            memory_genius.html foguetinho.html tron.html pong.html corrida_de_cavalos.html
+            pixel_bomberman.html salve_os_gatinhos.html click_speed.html the_worm.html sudoku.html
+            idle_trader.html jogo_da_velha.html campo_minado.html jogo_da_forca.html dropworks.html
+            kombo_blocks.html advinhe_o_numero.html bow_and_arrow.html torre_de_hanoi.html
+            leaping_into_life.html menu_minigames.html LEIA-ME.txt
+          )
+          for file in "${expected[@]}"; do test -s "$ROOT/$file"; done
+          games=(
+            memory_genius.html foguetinho.html tron.html pong.html corrida_de_cavalos.html
+            pixel_bomberman.html salve_os_gatinhos.html click_speed.html the_worm.html sudoku.html
+            idle_trader.html jogo_da_velha.html campo_minado.html jogo_da_forca.html dropworks.html
+            kombo_blocks.html advinhe_o_numero.html bow_and_arrow.html torre_de_hanoi.html
+            leaping_into_life.html
+          )
+          for game in "${games[@]}"; do
+            grep -Fq "$game" "$ROOT/menu_minigames.html"
+            grep -Fq 'menu_minigames.html' "$ROOT/$game"
+          done
+          find . -maxdepth 1 -type f -delete
+          cp -a "$ROOT"/. ./
+          cp menu_minigames.html index.html
           rm -rf import-v13
-          rm -f .github/workflows/import-v13.yml
+          rm -f .github/workflows/import-v13.yml .github/workflows/import-v13-fallback.yml
           rmdir .github/workflows 2>/dev/null || true
           rmdir .github 2>/dev/null || true
+          test "$(find . -maxdepth 1 -type f | wc -l)" -eq 23
+          test -f index.html
+          test -f menu_minigames.html
 
-      - name: Commit imported collection
+      - name: Commit published site
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'Projeto Primata Games'
           git config user.email 'guilhermesteiglederdias@gmail.com'
           git add -A
-          git commit -m 'Import Quickplay Collection V13'
+          git commit -m 'Publish Quickplay Collection V13 on GitHub Pages'
           git push origin HEAD:main
