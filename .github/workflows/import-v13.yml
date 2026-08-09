@@ -3,7 +3,8 @@ name: Publish Quickplay V13
 on:
   push:
     paths:
-      - 'import-v13/fix008-26'
+      - '.github/workflows/import-v13.yml'
+      - 'import-v13/repair17-2'
 
 permissions:
   contents: write
@@ -36,7 +37,14 @@ jobs:
             cat import-v13/part-005
             cat import-v13/part-006
             cat import-v13/part-007
-            cat import-v13/fix008-*
+            for n in $(seq -w 0 26); do
+              case "$n" in
+                12) cat import-v13/repair12-* ;;
+                13) cat import-v13/repair13-* ;;
+                17) cat import-v13/repair17-* ;;
+                *) cat "import-v13/fix008-$n" ;;
+              esac
+            done
           } | base64 --decode > /tmp/quickplay-v13.zip
           echo 'cb52610191c033261b9fe8249f9a0b2249e627bf6990b5e6aab3f2163762bf42  /tmp/quickplay-v13.zip' | sha256sum -c -
           unzip -t /tmp/quickplay-v13.zip
