@@ -1,7 +1,9 @@
 name: Import Quickplay V13
 
 on:
-  workflow_dispatch:
+  push:
+    paths:
+      - 'import-v13/part-020'
 
 permissions:
   contents: write
@@ -10,4 +12,33 @@ jobs:
   import:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Bootstrap placeholder; payload pending"
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Reassemble and extract V13
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat import-v13/part-* | base64 --decode > /tmp/quickplay-v13.zip
+          unzip -t /tmp/quickplay-v13.zip
+          rm -rf /tmp/quickplay-v13
+          mkdir -p /tmp/quickplay-v13
+          unzip -q /tmp/quickplay-v13.zip -d /tmp/quickplay-v13
+          test -d /tmp/quickplay-v13/minigames_revisados
+          cp -a /tmp/quickplay-v13/minigames_revisados/. ./
+          rm -rf import-v13
+          rm -f .github/workflows/import-v13.yml
+          rmdir .github/workflows 2>/dev/null || true
+          rmdir .github 2>/dev/null || true
+
+      - name: Commit imported collection
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'Projeto Primata Games'
+          git config user.email 'guilhermesteiglederdias@gmail.com'
+          git add -A
+          git commit -m 'Import Quickplay Collection V13'
+          git push origin HEAD:main
