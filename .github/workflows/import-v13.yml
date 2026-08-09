@@ -3,7 +3,7 @@ name: Publish Quickplay V13
 on:
   push:
     paths:
-      - 'import-v13/part-020'
+      - 'import-v13/part-030'
 
 permissions:
   contents: write
