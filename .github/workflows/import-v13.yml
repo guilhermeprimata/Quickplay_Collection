@@ -3,7 +3,7 @@ name: Import Quickplay V13
 on:
   push:
     paths:
-      - 'import-v13/part-022'
+      - 'import-v13/part-020'
 
 permissions:
   contents: write
