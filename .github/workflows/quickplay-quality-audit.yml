@@ -22,7 +22,7 @@ jobs:
       - name: Commit validation reports when changed
         shell: bash
         run: |
-          if git diff --quiet -- QUALITY_VALIDATION.md QUALITY_AUDIT_AUTOMATED.md; then
+          if [ -z "$(git status --porcelain -- QUALITY_VALIDATION.md QUALITY_AUDIT_AUTOMATED.md)" ]; then
             echo "Validation reports unchanged."
             exit 0
           fi
