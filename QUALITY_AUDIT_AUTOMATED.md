@@ -12,7 +12,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 | `dropworks.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 142090 |
 | `foguetinho.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 36681 |
 | `idle_trader.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 60743 |
-| `jogo_da_forca.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 65661 |
+| `jogo_da_forca.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 58973 |
 | `jogo_da_velha.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 26063 |
 | `kombo_blocks.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 116039 |
 | `leaping_into_life.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 30589 |
@@ -27,7 +27,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 
 ## Automated findings
 
-- Platform layer not v2: `advinhe_o_numero.html`, `campo_minado.html`, `corrida_de_cavalos.html`, `dropworks.html`, `idle_trader.html`, `jogo_da_forca.html`, `jogo_da_velha.html`, `kombo_blocks.html`, `pong.html`, `sudoku.html`, `torre_de_hanoi.html`
+- Platform layer not v2: `advinhe_o_numero.html`, `campo_minado.html`, `corrida_de_cavalos.html`, `dropworks.html`, `idle_trader.html`, `jogo_da_velha.html`, `kombo_blocks.html`, `pong.html`, `sudoku.html`, `torre_de_hanoi.html`
 - No native pause signal: none
 - No native restart/new-game signal: none
 - Canvas + keyboard but no native touch signal: none
@@ -287,39 +287,35 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 
 ### `jogo_da_forca.html`
 **Control flow signals**
-- `L275: function restart(){if(paused)setPaused(false);if(typeof window.PPGGameRestart==='function'){window.PPGGameRestart();return}location.reload()}`
-- `L766: function startTimer() {`
-- `L812: function startGame() {`
-- `L831: document.addEventListener('keydown', handleKeyPress);`
+- `L169: function audio(){if(!ac)ac=new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();return ac}`
+- `L177: function startBgm(){`
+- `L185: addEventListener('pointerdown',()=>{if(prefs.sound&&!preview)audio()},{once:true,passive:true});`
+- `L231: keyboard.addEventListener('pointerdown',()=>{if(prefs.sound&&!preview)audio()},{passive:true});`
+- `L255: function startGame(){`
+- `L295: function setPaused(next){`
+- `L300: addEventListener('keydown',e=>{`
+- `L318: function recordStart(){`
 **Gameplay tuning signals**
-- `L246: const qs=new URLSearchParams(location.search);if(qs.get('preview')==='1'||qs.has('preview'))return;`
-- `L256: window.setTimeout=(fn,ms,...args)=>{if(typeof fn!=='function')return nativeSetTimeout(fn,ms,...args);const run=()=>{if(paused)return nativeSetTimeout(run,50);fn(...args)};return nativeSetTimeout(run,ms)};`
-- `L321: { word: "ted", hints: ["Transferência eletrônica", "Entrega no mesmo dia", "Custava R$ 10 até 2020"] },`
-- `L322: { word: "doc", hints: ["Transferência tradicional", "Processada no dia útil seguinte", "Valor máximo de R$ 4.999,99"] },`
-- `L330: { word: "liquidez", hints: ["Facilidade de resgate", "Conversão em dinheiro", "D+0 ou D+1"] },`
-- `L337: { word: "tesourodireto", hints: ["Títulos públicos", "R$ 1,00 para investir", "Selic, IPCA, Prefixado"] },`
-- `L367: { word: "pix", hints: ["Transferência instantânea", "Disponível 24/7", "Chave personalizada"] },`
-- `L368: { word: "qrcode", hints: ["Código de barras 2D", "Pagamento por aproximação", "Leitura por celular"] },`
-- `L412: { word: "score", hints: ["Pontuação de crédito", "0 a 1000 pontos", "Comportamento de pagamento"] },`
-- `L459: { word: "certificação", hints: ["Comprovação de conhecimento", "Exames profissionais", "CPA-20, CEA, CFG"] },`
-- `L470: { word: "reserva", hints: ["Fundo emergencial", "Liquidez imediata", "3 a 6 meses de despesas"] },`
-- `L475: { word: "automóvel", hints: ["Veículo automotor", "Carro, moto, caminhão", "Financiamento de 12-60 meses"] },`
-- `L490: { word: "personnalite", hints: ["Segmento premium do BB", "Atendimento diferenciado", "Clientes com mais de R$ 500 mil"] },`
-- `L503: { word: "bolsa", hints: ["Mercado organizado", "Negociação de ativos", "B3 no Brasil"] },`
-- `L504: { word: "b3", hints: ["Bolsa brasileira", "Fusão BM&F/Bovespa", "Ações, futuros, opções"] },`
-- `L505: { word: "índice", hints: ["Indicador de desempenho", "Ibovespa, S&P500", "Carteira teórica"] },`
-- `L525: { word: "lote", hints: ["Quantidade padrão", "100 ações no Brasil", "Negociação em bolsa"] },`
-- `L526: { word: "fração", hints: ["Parte de lote", "Menos de 100 ações", "Mercado fracionário"] },`
-- `L537: { word: "crise", hints: ["Período de instabilidade", "2008, 2014-2016", "Risco sistêmico"] },`
-- `L590: { word: "lavagem", hints: ["Ocultação de origem ilícita", "Dinheiro do crime", "Lei 9.613/98"] },`
-- `L622: { word: "funcionário", hints: ["Colaborador", "Mais de 80 mil", "Principal ativo"] },`
-- `L623: { word: "concursado", hints: ["Acesso por concurso público", "Estabilidade após 3 anos", "Carreira bancária"] },`
-- `L629: { word: "sinergia", hints: ["Resultado combinado", "2+2=5", "Vantagem cooperativa"] },`
-- `L634: let wordObj, word, guessedLetters = [], wrongLetters = [], usedHintsCount = 0;`
-- `L635: let gameOver = false, timer = null, startTime = null, finalTime = 0;`
-- `L669: if (errors > 0) ctx.strokeRect(20, 180, 100, 10);`
-- `L670: if (errors > 1) ctx.beginPath(), ctx.moveTo(70, 180), ctx.lineTo(70, 20), ctx.stroke();`
-- `L671: if (errors > 2) ctx.beginPath(), ctx.moveTo(70, 20), ctx.lineTo(140, 20), ctx.stroke();`
+- `L114: const RECORD_KEY='forca_neon_records_v2', PREF_KEY='ppg_platform_prefs_v2', PREF_OLD='ppg_platform_prefs_v1', STATS_KEY='ppg_minigames_stats_v1';`
+- `L176: function sfx(kind){const m={tap:[420,.05,'square',.025],good:[660,.09,'triangle',.045],bad:[150,.12,'sawtooth',.035],win:[880,.18,'triangle',.05],lose:[110,.22,'sawtooth',.04],hint:[520,.09,'sine',.035]};tone(...(m[kind]||m.tap))}`
+- `L180: bgmTimer=setInterval(()=>{if(!paused&&!document.hidden){tone(notes[i++%notes.length],.22,'sine',.012);}},780);`
+- `L187: let current=-1, word='', guesses=new Set(), wrong=new Set(), hintsUsed=0, gameOver=false, startAt=0, pauseAt=0, pausedTotal=0, paused=false, recent=[];`
+- `L209: return Math.max(0,(now-startAt-pausedTotal-frozen)/1000);`
+- `L241: if(paused||gameOver||hintsUsed>=3)return;`
+- `L243: t('hint1',{category:DATA.categories[locale][ci]}),`
+- `L244: t('hint2',{related:DATA.words[locale][ri]}),`
+- `L245: t('hint3',{count:chars.length,first:chars[0]||''})`
+- `L248: if(hintsUsed>=3)$('#hintBtn').disabled=true;`
+- `L256: current=chooseIndex();word=DATA.words[locale][current];guesses=new Set();wrong=new Set();hintsUsed=0;gameOver=false;paused=false;pausedTotal=0;pauseAt=0;startAt=Date.now();`
+- `L258: mistakesEl.textContent='0';timeEl.textContent='0.0';msg.textContent='';msg.className='message';hintList.innerHTML='';$('#hintBtn').disabled=false;`
+- `L268: for(const r of rows){const li=document.createElement('li');li.innerHTML='<strong>${escapeHtml(r.name)}</strong> · ${Number(r.time).toFixed(1)}s · ${t('hintsUsed')}: ${r.hints} · ${t('mistakes')}: ${r.errors}';ranking.append(li)}`
+- `L273: const would=[...arr,candidate].sort((a,b)=>a.time-b.time||a.hints-b.hints||a.errors-b.errors).slice(0,5).includes(candidate);`
+- `L276: arr.push(candidate);arr.sort((a,b)=>a.time-b.time||a.hints-b.hints||a.errors-b.errors);all[locale]=arr.slice(0,5);writeJSON(RECORD_KEY,all);renderRanking();`
+- `L297: paused=next;if(paused){pauseAt=Date.now();$('#pauseOverlay').classList.add('open');sfx('tap')}else{pausedTotal+=Date.now()-pauseAt;pauseAt=0;$('#pauseOverlay').classList.remove('open')}`
+- `L312: recordsBtn.onclick=()=>{const rows=localeRecords();openModal('<h2>${t('recordsTitle')}</h2>${rows.length?'<ol>${rows.map(r=>'<li><strong>${escapeHtml(r.name)}</strong> · ${Number(r.time).toFixed(1)}s · ${t('hintsUsed')}: ${r.hints} · ${t('mistakes')}: ${r.errors}</li>').join('')}</ol>':'<p>${t('noRecords')}</p>'}')};`
+- `L320: s.starts=(s.starts||0)+1;const d=today();if(s.lastDay!==d){s.currentStreak=s.lastDay&&dayDiff(d,s.lastDay)===1?(s.currentStreak||0)+1:1;s.longestStreak=Math.max(s.longestStreak||0,s.currentStreak);s.lastDay=d}`
+- `L325: const now=performance.now(),dt=(!document.hidden&&!paused)?Math.max(0,(now-statsLast)/1000):0;statsLast=now;if(!dt)return;`
+- `L328: setInterval(()=>{if(!paused&&!gameOver)timeEl.textContent=elapsed().toFixed(1);flushStats()},100);`
 
 ### `jogo_da_velha.html`
 **Control flow signals**

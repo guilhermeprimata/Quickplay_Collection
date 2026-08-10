@@ -12,7 +12,7 @@ Validation executed with Node.js syntax checking for every inline JavaScript blo
 | `dropworks.html` | 2 | 0 | ✅ | ✅ |
 | `foguetinho.html` | 3 | 0 | ✅ | ✅ |
 | `idle_trader.html` | 3 | 0 | ✅ | ✅ |
-| `jogo_da_forca.html` | 3 | 0 | ✅ | ✅ |
+| `jogo_da_forca.html` | 1 | 0 | ✅ | ✅ |
 | `jogo_da_velha.html` | 3 | 0 | ✅ | ✅ |
 | `kombo_blocks.html` | 2 | 0 | ✅ | ✅ |
 | `leaping_into_life.html` | 2 | 0 | ✅ | ✅ |
