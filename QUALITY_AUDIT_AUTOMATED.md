@@ -18,7 +18,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 | `leaping_into_life.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 30589 |
 | `memory_genius.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 52123 |
 | `pixel_bomberman.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 32269 |
-| `pong.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 40055 |
+| `pong.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 42892 |
 | `salve_os_gatinhos.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 34941 |
 | `sudoku.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 28422 |
 | `the_worm.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 31378 |
@@ -445,12 +445,13 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 **Control flow signals**
 - `L31: let state='menu',last=0,serveTimer=0,shake=0,flash=0,elapsed=0,audio=null,musicStep=0,musicTimer=0,musicMorph=.25,musicMorphTarget=.25,morphTimer=9;`
 - `L69: function resetEffects(){for(const s of ['player','ai'])for(const k of Object.keys(effects[s]))effects[s][k]=0;slowmoTimer=0;tripleTimer=0;player.shield=ai.shield=0;updatePaddleSizes()}`
-- `L83: function cycleDifficulty(){difficultyIndex=(difficultyIndex+1)%difficulties.length;document.querySelector('#difficultyBtn').textContent='IA: ${difficulties[difficultyIndex].name}';tone(520+difficultyIndex*90,.07);if(state==='playing'){ai.fatigue=Math.min(ai.fatigue,difficulties[difficultyIndex].fatigueCap);serve(ball.vx<0?-1:1)}}`
-- `L139: function togglePause(){if(state==='playing')state='paused';else if(state==='paused'){state='playing';last=performance.now()}document.querySelector('#pauseBtn').textContent=state==='paused'?'CONTINUAR':'PAUSAR'}function toggleSound(){setSoundEnabled(!soundEnabled)}`
+- `L87: function cycleMode(){gameMode=gameMode==='ai'?'pvp':'ai';ai.fatigue=0;ai.fatigueNotice=0;ai.mode=gameMode==='pvp'?'human':'recover';pointerTarget=null;refreshModeUI();tone(gameMode==='pvp'?760:560,.08,'square',.045);if(state==='playing'||state==='paused')reset()}`
+- `L88: function cycleDifficulty(){if(gameMode==='pvp')return;difficultyIndex=(difficultyIndex+1)%difficulties.length;document.querySelector('#difficultyBtn').textContent='IA: ${difficulties[difficultyIndex].name}';tone(520+difficultyIndex*90,.07);if(state==='playing'){ai.fatigue=Math.min(ai.fatigue,difficulties[difficultyIndex].fatigueCap);serve(ball.vx<0?-1:1)}}`
+- `L127: function togglePause(){if(state==='playing')state='paused';else if(state==='paused'){state='playing';last=performance.now()}document.querySelector('#pauseBtn').textContent=state==='paused'?'CONTINUAR':'PAUSAR'}function toggleSound(){setSoundEnabled(!soundEnabled)}`
 **Gameplay tuning signals**
 - `L30: const W=960,H=540,WIN=10,BASE_SPEED=410,MAX_SPEED=930,BASE_H=124;`
 - `L31: let state='menu',last=0,serveTimer=0,shake=0,flash=0,elapsed=0,audio=null,musicStep=0,musicTimer=0,musicMorph=.25,musicMorphTarget=.25,morphTimer=9;`
-- `L32: let arcadeScore=0,centerCombo=0,comboPeak=0,powerup=null,powerupTimer=6.5,slowmoTimer=0,tripleTimer=0,labelSerial=0,pointerTarget=null;`
+- `L32: let arcadeScore=0,centerCombo=0,comboPeak=0,p2ArcadeScore=0,p2CenterCombo=0,p2ComboPeak=0,powerup=null,powerupTimer=6.5,slowmoTimer=0,tripleTimer=0,labelSerial=0,pointerTarget=null,gameMode='ai';`
 - `L36: const player={side:'player',x:34,y:H/2-BASE_H/2,w:18,h:BASE_H,vy:0,score:0,shield:0};`
 - `L37: const ai={side:'ai',x:W-52,y:H/2-BASE_H/2,w:18,h:BASE_H,vy:0,score:0,shield:0,target:H/2,reaction:0,mode:'recover',confidence:0,lastSeen:null,shotMemory:[0,0,0],rallyHits:0,fatigue:0,fatigueNotice:0};`
 - `L38: const effects={player:{smash:0,big:0,immune:0,jam:0,shrink:0,overdrive:0},ai:{smash:0,big:0,immune:0,jam:0,shrink:0,overdrive:0}};`
@@ -468,14 +469,14 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 - `L69: function resetEffects(){for(const s of ['player','ai'])for(const k of Object.keys(effects[s]))effects[s][k]=0;slowmoTimer=0;tripleTimer=0;player.shield=ai.shield=0;updatePaddleSizes()}`
 - `L72: function comboMultiplier(n=centerCombo){return Math.min(5,1+Math.floor(Math.max(0,n-1)/2)*.5)}`
 - `L73: function cashCombo(reason='BREAK'){if(centerCombo>=2){const mult=comboMultiplier(centerCombo),bonus=Math.round(centerCombo*mult*35);arcadeScore+=bonus;label('${reason} • COMBO ${centerCombo}x = +${bonus}',W/2,H*.34,'#ff70df',23,1.35);burst(W/2,H*.38,'#ff70df',18,150)}centerCombo=0}`
-- `L75: function hitBoost(side){return effects[side].smash>0?1.30:1}`
-- `L76: function normalizeBallSpeed(b){if(!b.lastHitter)return;const desired=b.baseSpeed*hitBoost(b.lastHitter),mag=Math.hypot(b.vx,b.vy)||1,ratio=desired/mag;b.vx*=ratio;b.vy*=ratio}`
-- `L79: function predictIntercept(obs){if(!obs||obs.vx<=0)return H/2;const travel=(ai.x-ball.r-obs.x)/Math.max(1,obs.vx);return reflectY(obs.y+obs.vy*Math.max(0,travel),ball.r)}`
-- `L82: function rememberPlayerShot(){const zone=ball.y<H/3?0:ball.y>H*2/3?2:1;ai.shotMemory[zone]=Math.min(12,ai.shotMemory[zone]+1);for(let i=0;i<3;i++)if(i!==zone)ai.shotMemory[i]*=.94}`
-- `L83: function cycleDifficulty(){difficultyIndex=(difficultyIndex+1)%difficulties.length;document.querySelector('#difficultyBtn').textContent='IA: ${difficulties[difficultyIndex].name}';tone(520+difficultyIndex*90,.07);if(state==='playing'){ai.fatigue=Math.min(ai.fatigue,difficulties[difficultyIndex].fatigueCap);serve(ball.vx<0?-1:1)}}`
-- `L90: life:{name:'EXTRA LIFE',short:'♥',color:'#ff7ac6',dur:0,kind:'life'},`
-- `L91: shrink:{name:'SHRINK RIVAL',short:'-SZ',color:'#ff934d',dur:9,kind:'enemy',key:'shrink'},`
-- `L92: jam:{name:'RIVAL JAM',short:'JAM',color:'#ff4df3',dur:8,kind:'enemy',key:'jam'},`
+- `L75: function p2ComboMultiplier(n=p2CenterCombo){return Math.min(5,1+Math.floor(Math.max(0,n-1)/2)*.5)}`
+- `L76: function cashP2Combo(reason='BREAK'){if(p2CenterCombo>=2){const mult=p2ComboMultiplier(p2CenterCombo),bonus=Math.round(p2CenterCombo*mult*35);p2ArcadeScore+=bonus;label('${reason} • P2 COMBO ${p2CenterCombo}x = +${bonus}',W/2,H*.39,'#ffd34d',22,1.25);burst(W/2,H*.41,'#ffd34d',16,150)}p2CenterCombo=0}`
+- `L78: function hitBoost(side){return effects[side].smash>0?1.30:1}`
+- `L79: function normalizeBallSpeed(b){if(!b.lastHitter)return;const desired=b.baseSpeed*hitBoost(b.lastHitter),mag=Math.hypot(b.vx,b.vy)||1,ratio=desired/mag;b.vx*=ratio;b.vy*=ratio}`
+- `L82: function predictIntercept(obs){if(!obs||obs.vx<=0)return H/2;const travel=(ai.x-ball.r-obs.x)/Math.max(1,obs.vx);return reflectY(obs.y+obs.vy*Math.max(0,travel),ball.r)}`
+- `L85: function rememberPlayerShot(){const zone=ball.y<H/3?0:ball.y>H*2/3?2:1;ai.shotMemory[zone]=Math.min(12,ai.shotMemory[zone]+1);for(let i=0;i<3;i++)if(i!==zone)ai.shotMemory[i]*=.94}`
+- `L87: function cycleMode(){gameMode=gameMode==='ai'?'pvp':'ai';ai.fatigue=0;ai.fatigueNotice=0;ai.mode=gameMode==='pvp'?'human':'recover';pointerTarget=null;refreshModeUI();tone(gameMode==='pvp'?760:560,.08,'square',.045);if(state==='playing'||state==='paused')reset()}`
+- `L88: function cycleDifficulty(){if(gameMode==='pvp')return;difficultyIndex=(difficultyIndex+1)%difficulties.length;document.querySelector('#difficultyBtn').textContent='IA: ${difficulties[difficultyIndex].name}';tone(520+difficultyIndex*90,.07);if(state==='playing'){ai.fatigue=Math.min(ai.fatigue,difficulties[difficultyIndex].fatigueCap);serve(ball.vx<0?-1:1)}}`
 
 ### `salve_os_gatinhos.html`
 **Control flow signals**
