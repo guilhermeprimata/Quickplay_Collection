@@ -105,6 +105,9 @@ if "Tone.start()" in text:
             raise SystemExit("campo_minado.html: resize anchor missing after obsolete sound listener")
         text = text[:start] + text[end:]
 
+    # A later setup comment also mentioned the old variable; remove comment-only leftovers.
+    text = re.sub(r'^\s*//.*toggleSoundBtn.*\n', '', text, flags=re.M)
+
     if "Tone." in text or "toggleSoundBtn" in text or 'id="toggle-sound-btn"' in text or "updateSoundButtonText" in text:
         leftovers=[]
         if "Tone." in text: leftovers.append("Tone")
