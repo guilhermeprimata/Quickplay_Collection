@@ -425,7 +425,6 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <button id="toggle-flag-btn">Marcar Cocô (🚩)</button>
 <button id="reset-all-btn">Resetar Tudo</button>
 <button id="dark-mode-btn">Modo Escuro</button>
-<button id="toggle-sound-btn">Som: On</button> <!-- Novo botão de som -->
 <button id="back-btn">Voltar</button>
 </div>
 <div class="credits-container">
@@ -463,91 +462,66 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
         // const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'; // Não mais necessário para ranking local
         let userId; 
         
-        // --- Sound Synthesis (Tone.js) ---
+        // --- Sound Synthesis (self-contained WebAudio) ---
         let soundsReady = false;
-        let clickSound, flagSound, bombSound, winSound, gameOverSound; 
-        let animationFrameId; // Para controlar o loop de animação
-        let soundEnabled = localStorage.getItem('soundEnabled') === 'false' ? false : true; // Estado inicial do som
+        let audioCtx = null;
+        let sfxMaster = null;
+        let animationFrameId;
+
+        function soundAllowed() {
+            try {
+                const prefs = JSON.parse(localStorage.getItem('ppg_platform_prefs_v1') || '{}');
+                return prefs.sound !== false;
+            } catch (_) {
+                return true;
+            }
+        }
 
         async function initSounds() {
-            if (soundsReady) return;
-            try {
-                await Tone.start(); 
-                console.log("Audio Context started by Tone.js");
-
-                clickSound = new Tone.Synth({
-                    oscillator: { type: "sine" },
-                    envelope: { attack: 0.005, decay: 0.1, sustain: 0.01, release: 0.1 }
-                }).toDestination();
-                
-                flagSound = new Tone.Synth({
-                    oscillator: { type: "triangle" },
-                    envelope: { attack: 0.01, decay: 0.05, sustain: 0.02, release: 0.1 }
-                }).toDestination();
-
-                bombSound = new Tone.NoiseSynth({
-                    noise: { type: "pink" },
-                    envelope: { attack: 0.001, decay: 0.8, sustain: 0, release: 0.7 } 
-                }).toDestination();
-                bombSound.volume.value = -8; 
-
-                winSound = new Tone.PolySynth(Tone.Synth, {
-                    oscillator: { type: "sine" },
-                    envelope: { attack: 0.05, decay: 0.2, sustain: 0.1, release: 0.2 }
-                }).toDestination();
-                winSound.volume.value = -12; 
-
-                gameOverSound = new Tone.PolySynth(Tone.Synth, {
-                    oscillator: { type: "sawtooth" }, 
-                    envelope: { attack: 0.1, decay: 0.5, sustain: 0.2, release: 1.0 } 
-                }).toDestination();
-                gameOverSound.volume.value = -10; 
-                
-                soundsReady = true;
-                console.log("Sounds initialized.");
-            } catch (e) {
-                console.error("Error starting Tone.js or initializing sounds:", e);
+            if (!audioCtx) {
+                const AudioCtor = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtor) return;
+                audioCtx = new AudioCtor();
+                sfxMaster = audioCtx.createGain();
+                sfxMaster.gain.value = 0.18;
+                sfxMaster.connect(audioCtx.destination);
             }
+            if (audioCtx.state === 'suspended') await audioCtx.resume();
+            soundsReady = true;
         }
-        
+
+        function synthTone(freq, duration = 0.08, type = 'sine', volume = 0.10, delay = 0, endFreq = null) {
+            if (!soundsReady || !audioCtx || !soundAllowed()) return;
+            const t = audioCtx.currentTime + delay;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, t);
+            if (endFreq) osc.frequency.exponentialRampToValueAtTime(Math.max(25, endFreq), t + duration);
+            gain.gain.setValueAtTime(Math.max(0.0001, volume), t);
+            gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+            osc.connect(gain);
+            gain.connect(sfxMaster);
+            osc.start(t);
+            osc.stop(t + duration + 0.02);
+        }
+
         function playClickSound() {
-            if (soundsReady && clickSound && soundEnabled) { // Verifica soundEnabled
-                clickSound.triggerAttackRelease("C5", "8n", Tone.now());
-            }
+            synthTone(520, 0.055, 'sine', 0.075, 0, 610);
         }
         function playFlagSound() {
-            if (soundsReady && flagSound && soundEnabled) { // Verifica soundEnabled
-                flagSound.triggerAttackRelease("E5", "16n", Tone.now());
-            }
+            synthTone(660, 0.075, 'triangle', 0.095, 0, 820);
         }
         function playBombSound() {
-            if (soundsReady && bombSound && soundEnabled) { // Verifica soundEnabled
-                bombSound.triggerAttackRelease("1.5", Tone.now()); 
-            }
+            synthTone(105, 0.42, 'sawtooth', 0.16, 0, 42);
+            synthTone(62, 0.55, 'square', 0.08, 0.025, 30);
         }
-
-        // Melodia de vitória (4 segundos)
         function playWinSound() {
-            if (soundsReady && winSound && soundEnabled) { // Verifica soundEnabled
-                const now = Tone.now();
-                winSound.triggerAttackRelease(["C4", "E4", "G4", "C5"], "8n", now);
-                winSound.triggerAttackRelease(["D4", "F#4", "A4", "D5"], "8n", now + 0.4);
-                winSound.triggerAttackRelease(["E4", "G#4", "B4", "E5"], "8n", now + 0.8);
-                winSound.triggerAttackRelease(["F#4", "A4", "C#5", "F#5"], "8n", now + 1.2);
-                winSound.triggerAttackRelease(["G5", "B5", "D6"], "8n", now + 2.0);
-                winSound.triggerAttackRelease(["C6"], "2n", now + 2.5); 
-            }
+            [523.25,659.25,783.99,1046.5].forEach((f,i)=>synthTone(f,0.20,'triangle',0.085,i*0.12));
+            synthTone(1318.51,0.38,'sine',0.075,0.54);
         }
-
-        // Melodia de Game Over (3 segundos)
         function playGameOverSound() {
-            if (soundsReady && gameOverSound && soundEnabled) { // Verifica soundEnabled
-                const now = Tone.now();
-                gameOverSound.triggerAttackRelease(["C4", "C#3", "G3"], "8n", now); 
-                gameOverSound.triggerAttackRelease(["B3", "F3", "A#2"], "8n", now + 0.5); 
-                gameOverSound.triggerAttackRelease(["A3", "E3", "G#2"], "8n", now + 1.0); 
-                gameOverSound.triggerAttackRelease(["D2"], "1n", now + 1.8); 
-            }
+            [392,329.63,261.63,196].forEach((f,i)=>synthTone(f,0.30,'sawtooth',0.065,i*0.18,f*0.72));
         }
 
 
@@ -612,7 +586,6 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
         const darkModeBtn = document.getElementById('dark-mode-btn');
         const backBtn = document.getElementById('back-btn');
         const toggleFlagBtn = document.getElementById('toggle-flag-btn');
-        const toggleSoundBtn = document.getElementById('toggle-sound-btn'); // Novo elemento
 
         const nameModal = document.getElementById('nameModal');
         const playerNameInput = document.getElementById('playerNameInput');
@@ -1067,7 +1040,6 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
             flagMode = false;
             toggleFlagBtn.classList.remove('active-flag-mode');
             toggleFlagBtn.textContent = 'Marcar Cocô (🚩)';
-            updateSoundButtonText(); // Atualiza o texto do botão de som
 
             stopTimer();
             secondsPassed = 0;
@@ -1149,17 +1121,6 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
             toggleFlagBtn.classList.toggle('active-flag-mode', flagMode);
             toggleFlagBtn.textContent = flagMode ? 'Revelar Célula (🧽)' : 'Marcar Cocô (🚩)';
         });
-
-        // Event listener para o novo botão de som
-        toggleSoundBtn.addEventListener('click', () => {
-            soundEnabled = !soundEnabled;
-            localStorage.setItem('soundEnabled', soundEnabled); // Salva a preferência
-            updateSoundButtonText();
-        });
-
-        function updateSoundButtonText() {
-            toggleSoundBtn.textContent = `Som: ${soundEnabled ? 'On' : 'Off'}`;
-        }
 
         window.addEventListener('resize', () => {
             calculateCellSize();
@@ -1307,7 +1268,6 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
             // Adiciona event listener para o novo botão de som
             // Já adicionado acima, mas mantido aqui para clareza da ordem de inicialização
-            // toggleSoundBtn.addEventListener('click', () => { ... }); 
             
             initGame(); // Inicia o jogo
         })();

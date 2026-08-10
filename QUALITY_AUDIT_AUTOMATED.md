@@ -6,7 +6,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 |---|---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|---:|
 | `advinhe_o_numero.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 22595 |
 | `bow_and_arrow.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 52399 |
-| `campo_minado.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 69007 |
+| `campo_minado.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 66729 |
 | `click_speed.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 32779 |
 | `corrida_de_cavalos.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 45176 |
 | `dropworks.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 142090 |
@@ -17,7 +17,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 | `kombo_blocks.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 116039 |
 | `leaping_into_life.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 30589 |
 | `memory_genius.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 52123 |
-| `pixel_bomberman.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 32275 |
+| `pixel_bomberman.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 32269 |
 | `pong.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 25605 |
 | `salve_os_gatinhos.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 34941 |
 | `sudoku.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 28422 |
@@ -91,45 +91,45 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 **Control flow signals**
 - `L357: window.Tone={Synth,PolySynth,NoiseSynth,start:async()=>{const A=get();if(A.state==='suspended')await A.resume()},now:()=>get().currentTime,get context(){return get()}};`
 - `L398: function restart(){if(paused)setPaused(false);if(typeof window.PPGGameRestart==='function'){window.PPGGameRestart();return}location.reload()}`
-- `L543: function playGameOverSound() {`
-- `L1029: function startTimer() {`
-- `L1088: canvas.addEventListener('click', (event) => {`
-- `L1123: newGameBtn.addEventListener('click', initGame);`
-- `L1125: resetAllBtn.addEventListener('click', () => {`
-- `L1129: confirmResetBtn.addEventListener('click', async () => {`
-- `L1134: cancelResetBtn.addEventListener('click', () => {`
-- `L1138: darkModeBtn.addEventListener('click', () => {`
-- `L1143: backBtn.addEventListener('click', () => {`
-- `L1147: toggleFlagBtn.addEventListener('click', () => {`
+- `L489: if (audioCtx.state === 'suspended') await audioCtx.resume();`
+- `L523: function playGameOverSound() {`
+- `L1002: function startTimer() {`
+- `L1060: canvas.addEventListener('click', (event) => {`
+- `L1095: newGameBtn.addEventListener('click', initGame);`
+- `L1097: resetAllBtn.addEventListener('click', () => {`
+- `L1101: confirmResetBtn.addEventListener('click', async () => {`
+- `L1106: cancelResetBtn.addEventListener('click', () => {`
+- `L1110: darkModeBtn.addEventListener('click', () => {`
+- `L1115: backBtn.addEventListener('click', () => {`
 **Gameplay tuning signals**
 - `L369: const qs=new URLSearchParams(location.search);if(qs.get('preview')==='1'||qs.has('preview'))return;`
 - `L379: window.setTimeout=(fn,ms,...args)=>{if(typeof fn!=='function')return nativeSetTimeout(fn,ms,...args);const run=()=>{if(paused)return nativeSetTimeout(run,50);fn(...args)};return nativeSetTimeout(run,ms)};`
-- `L492: bombSound.volume.value = -8;`
-- `L525: bombSound.triggerAttackRelease("1.5", Tone.now());`
-- `L583: this.radius = Math.random() * 3 + 1;`
-- `L593: this.alpha -= 1 / this.life;`
-- `L601: ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);`
-- `L638: const availableWidth = Math.min(600, window.innerWidth - padding);`
-- `L641: const canvasMaxWidth = Math.min(availableWidth, 560);`
-- `L651: while (bombsToPlace > 0) {`
-- `L690: if (nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE && board[nr][nc].isBomb) {`
-- `L728: createExplosionParticles(col * cellSize + cellSize / 2, row * cellSize + cellSize / 2);`
-- `L743: if (board[row][col].adjacentBombs === 0) {`
-- `L861: } else if (cell.adjacentBombs > 0) {`
-- `L866: ctx.fillText(cell.adjacentBombs.toString(), x + cellSize / 2, y + cellSize / 2 + 2);`
-- `L914: ctx.lineWidth = Math.max(1.4, cellSize * 0.04);`
-- `L930: ctx.shadowBlur = Math.max(3, cellSize * 0.10);`
-- `L934: ctx.lineWidth = Math.max(1.2, cellSize * 0.03);`
-- `L972: ctx.shadowBlur = Math.max(8, cellSize * 0.18);`
-- `L978: ctx.lineWidth = Math.max(1.2, cellSize * 0.03);`
-- `L984: ctx.lineWidth = Math.max(2, cellSize * 0.06);`
-- `L989: ctx.lineWidth = Math.max(1, cellSize * 0.025);`
-- `L1016: if (particles[i].life <= 0) {`
-- `L1053: adjacentBombs: 0,`
-- `L1074: timerEl.textContent = 'Tempo: 0s';`
-- `L1180: if (scores.length > 0) {`
-- `L1182: scores.slice(0, 5).forEach((score, index) => {`
-- `L1184: li.textContent = '${index + 1}. ${score.name}: ${score.time}s';`
+- `L500: if (endFreq) osc.frequency.exponentialRampToValueAtTime(Math.max(25, endFreq), t + duration);`
+- `L501: gain.gain.setValueAtTime(Math.max(0.0001, volume), t);`
+- `L557: this.radius = Math.random() * 3 + 1;`
+- `L567: this.alpha -= 1 / this.life;`
+- `L575: ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);`
+- `L611: const availableWidth = Math.min(600, window.innerWidth - padding);`
+- `L614: const canvasMaxWidth = Math.min(availableWidth, 560);`
+- `L624: while (bombsToPlace > 0) {`
+- `L663: if (nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE && board[nr][nc].isBomb) {`
+- `L701: createExplosionParticles(col * cellSize + cellSize / 2, row * cellSize + cellSize / 2);`
+- `L716: if (board[row][col].adjacentBombs === 0) {`
+- `L834: } else if (cell.adjacentBombs > 0) {`
+- `L839: ctx.fillText(cell.adjacentBombs.toString(), x + cellSize / 2, y + cellSize / 2 + 2);`
+- `L887: ctx.lineWidth = Math.max(1.4, cellSize * 0.04);`
+- `L903: ctx.shadowBlur = Math.max(3, cellSize * 0.10);`
+- `L907: ctx.lineWidth = Math.max(1.2, cellSize * 0.03);`
+- `L945: ctx.shadowBlur = Math.max(8, cellSize * 0.18);`
+- `L951: ctx.lineWidth = Math.max(1.2, cellSize * 0.03);`
+- `L957: ctx.lineWidth = Math.max(2, cellSize * 0.06);`
+- `L962: ctx.lineWidth = Math.max(1, cellSize * 0.025);`
+- `L989: if (particles[i].life <= 0) {`
+- `L1026: adjacentBombs: 0,`
+- `L1046: timerEl.textContent = 'Tempo: 0s';`
+- `L1141: if (scores.length > 0) {`
+- `L1143: scores.slice(0, 5).forEach((score, index) => {`
+- `L1145: li.textContent = '${index + 1}. ${score.name}: ${score.time}s';`
 
 ### `click_speed.html`
 **Control flow signals**
