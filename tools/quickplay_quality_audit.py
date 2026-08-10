@@ -14,29 +14,61 @@ FEATURES = {
     "audio": [r"audiocontext", r"webkitAudioContext", r"\bbgm\b", r"\bsfx\b"],
     "storage": [r"localStorage"],
     "i18n": [r"i18n", r"locale", r"languages?", r"pt-BR", r"zh-CN"],
-    "about": [r"ppg-about", r"\bsobre\b"],
-    "records": [r"ppg-records", r"leaderboard", r"recordes", r"high.?score"],
-    "menu": [r"menu_minigames\.html", r"Mini Games"],
-    "theme": [r"ppg-theme", r"modo claro", r"dark mode", r"theme"],
-    "sound_toggle": [r"ppg-sound", r"Som ON", r"Som OFF", r"mute"],
 }
 
 TUNING_RE = re.compile(
-    r"(?i)(difficulty|dificuldade|speed|veloc|enemy|inimig|spawn|gravity|gap|lives|vidas|timer|tempo|interval|cooldown|level|fase|target|alvo|score|pontos|ai\b|chance|probab|damage|dano|health|vida|max|min|threshold|combo|bomb|explos|block|obst|supply|reserve|water|fluid)"
+    r"(?i)(difficulty|dificuldade|speed|veloc|enemy|inimig|spawn|gravity|gap|lives|vidas|timer|tempo|interval|cooldown|level|fase|phase|target|alvo|score|pontos|ai\b|chance|probab|damage|dano|health|life\b|vida|max|min|threshold|combo|bomb|explos|block|obst|supply|reserve|water|fluid|odds|bet|bank|prestige|hint|attempt|tentativ|remove|regen|wind|boost|accel|drag|reaction|error|hp|radius|range)"
 )
+CONTROL_RE = re.compile(r"(?i)(function\s+\w*(pause|resume|reset|restart|start|new|gameover)|\b(state|gameState)\s*=|addEventListener\([^\n]*(keydown|pointer|touch|click))")
 
 
 def has_any(text: str, pats: list[str]) -> bool:
     return any(re.search(p, text, re.I) for p in pats)
 
 
-def snippets(lines: list[str], limit: int = 14) -> list[str]:
-    out: list[str] = []
-    for n, line in enumerate(lines, 1):
-        s = line.strip()
-        if not s or len(s) > 260:
+def core_text(text: str) -> str:
+    return text.split('<style id="ppg-platform-style">', 1)[0]
+
+
+def script_lines(text: str):
+    core = core_text(text)
+    inside = False
+    for n, line in enumerate(core.splitlines(), 1):
+        low = line.lower()
+        if "<script" in low:
+            inside = True
+            after = line.split(">", 1)[1] if ">" in line else ""
+            if after.strip():
+                yield n, after.strip()
             continue
-        if TUNING_RE.search(s) and re.search(r"\d", s):
+        if "</script" in low:
+            before = line.split("</script", 1)[0].strip()
+            if inside and before:
+                yield n, before
+            inside = False
+            continue
+        if inside:
+            yield n, line.strip()
+
+
+def tuning_snippets(text: str, limit: int = 28) -> list[str]:
+    out = []
+    for n, s in script_lines(text):
+        if not s or len(s) > 360 or not re.search(r"\d", s):
+            continue
+        if TUNING_RE.search(s):
+            out.append(f"L{n}: {s}")
+            if len(out) >= limit:
+                break
+    return out
+
+
+def control_snippets(text: str, limit: int = 12) -> list[str]:
+    out = []
+    for n, s in script_lines(text):
+        if not s or len(s) > 360:
+            continue
+        if CONTROL_RE.search(s):
             out.append(f"L{n}: {s}")
             if len(out) >= limit:
                 break
@@ -49,10 +81,6 @@ def ppg_version(text: str) -> str:
     if "ppg-platform-script" in text:
         return "v1"
     return "none"
-
-
-def core_text(text: str) -> str:
-    return text.split('<style id="ppg-platform-style">', 1)[0]
 
 
 def native_pause(text: str) -> bool:
@@ -73,19 +101,17 @@ def main() -> None:
     details = []
     for path in games:
         text = path.read_text(encoding="utf-8", errors="replace")
-        lines = text.splitlines()
         flags = {k: has_any(text, v) for k, v in FEATURES.items()}
         pv = ppg_version(text)
         np = native_pause(text)
         nr = native_restart(text)
         nt = native_touch(text)
-        canvas = "<canvas" in text.lower()
-        interactive_keys = flags["keyboard"]
+        core = core_text(text)
+        canvas = "<canvas" in core.lower()
+        interactive_keys = has_any(core, FEATURES["keyboard"])
         touch_need = canvas and interactive_keys and not nt
-        rows.append(
-            (path.name, pv, np, nr, nt, touch_need, flags["audio"], flags["storage"], flags["i18n"], len(text))
-        )
-        details.append((path.name, snippets(lines)))
+        rows.append((path.name, pv, np, nr, nt, touch_need, flags["audio"], flags["storage"], flags["i18n"], len(text)))
+        details.append((path.name, control_snippets(text), tuning_snippets(text)))
 
     out = []
     out.append("# Quickplay Collection — automated quality audit\n")
@@ -107,16 +133,21 @@ def main() -> None:
     out.append(f"- No native restart/new-game signal: {', '.join(f'`{x}`' for x in no_restart) or 'none'}")
     out.append(f"- Canvas + keyboard but no native touch signal: {', '.join(f'`{x}`' for x in touch_gaps) or 'none'}")
 
-    out.append("\n## Balance/tuning candidates\n")
-    out.append("These are the first numeric lines in each game touching difficulty-related concepts, to make the manual balancing pass faster.\n")
-    for name, hits in details:
+    out.append("\n## Per-game controls and balance candidates\n")
+    for name, controls, tuning in details:
         out.append(f"### `{name}`")
-        if hits:
-            for hit in hits:
-                clean = hit.replace("`", "'")
-                out.append(f"- `{clean}`")
+        out.append("**Control flow signals**")
+        if controls:
+            for hit in controls:
+                out.append(f"- `{hit.replace(chr(96), chr(39))}`")
         else:
-            out.append("- No compact numeric tuning line detected by the heuristic.")
+            out.append("- No compact control-flow signal detected.")
+        out.append("**Gameplay tuning signals**")
+        if tuning:
+            for hit in tuning:
+                out.append(f"- `{hit.replace(chr(96), chr(39))}`")
+        else:
+            out.append("- No compact tuning signal detected.")
         out.append("")
 
     report = ROOT / "QUALITY_AUDIT_AUTOMATED.md"
