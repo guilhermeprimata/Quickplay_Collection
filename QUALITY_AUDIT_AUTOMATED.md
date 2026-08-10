@@ -18,7 +18,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 | `leaping_into_life.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 30589 |
 | `memory_genius.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 52123 |
 | `pixel_bomberman.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 32269 |
-| `pong.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 25605 |
+| `pong.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 39485 |
 | `salve_os_gatinhos.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 34941 |
 | `sudoku.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 28422 |
 | `the_worm.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 31378 |
@@ -443,39 +443,39 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 
 ### `pong.html`
 **Control flow signals**
-- `L30: const W=960,H=540,WIN=10;let state='menu',last=0,serveTimer=0,shake=0,flash=0,elapsed=0,muted=false,audio=null,musicStep=0,musicTimer=0;`
-- `L49: function reset(){player.score=ai.score=0;player.y=ai.y=H/2-62;player.vy=ai.vy=0;ai.target=H/2;ai.shotMemory=[0,0,0];elapsed=0;serve(Math.random()<.5?-1:1);state='playing';overlay.classList.add('hidden');last=performance.now();initAudio();audio?.resume()}`
-- `L50: function end(win){state='gameover';sfx(win?'score':'lose');oTitle.textContent=win?'VOCÊ VENCEU!':'CPU VENCEU';oText.innerHTML='Placar ${player.score} × ${ai.score}<br>Tempo: ${elapsed.toFixed(1)}s';document.querySelector('#startBtn').textContent='JOGAR NOVAMENTE';overlay.classList.remove('hidden')}`
-- `L85: function cycleDifficulty(){difficultyIndex=(difficultyIndex+1)%difficulties.length;document.querySelector('#difficultyBtn').textContent='IA: ${difficulties[difficultyIndex].name}';tone(520+difficultyIndex*90,.07);if(state==='playing')serve(ball.vx<0?-1:1)}`
+- `L31: let state='menu',last=0,serveTimer=0,shake=0,flash=0,elapsed=0,audio=null,musicStep=0,musicTimer=0,musicMorph=.25,musicMorphTarget=.25,morphTimer=9;`
+- `L69: function resetEffects(){for(const s of ['player','ai'])for(const k of Object.keys(effects[s]))effects[s][k]=0;slowmoTimer=0;tripleTimer=0;player.shield=ai.shield=0;updatePaddleSizes()}`
+- `L83: function cycleDifficulty(){difficultyIndex=(difficultyIndex+1)%difficulties.length;document.querySelector('#difficultyBtn').textContent='IA: ${difficulties[difficultyIndex].name}';tone(520+difficultyIndex*90,.07);if(state==='playing'){ai.fatigue=Math.min(ai.fatigue,difficulties[difficultyIndex].fatigueCap);serve(ball.vx<0?-1:1)}}`
+- `L118: function togglePause(){if(state==='playing')state='paused';else if(state==='paused'){state='playing';last=performance.now()}document.querySelector('#pauseBtn').textContent=state==='paused'?'CONTINUAR':'PAUSAR'}function toggleSound(){setSoundEnabled(!soundEnabled)}`
 **Gameplay tuning signals**
-- `L30: const W=960,H=540,WIN=10;let state='menu',last=0,serveTimer=0,shake=0,flash=0,elapsed=0,muted=false,audio=null,musicStep=0,musicTimer=0;`
-- `L32: const player={x:34,y:H/2-62,w:18,h:124,vy:0,score:0};`
-- `L34: const ai={x:W-52,y:H/2-62,w:18,h:124,vy:0,score:0,target:H/2,reaction:0,mode:'recover',confidence:0,lastSeen:null,shotMemory:[0,0,0],rallyHits:0};`
-- `L36: {name:'CASUAL',reaction:.19,error:58,maxSpeed:350,accel:1450,lookAhead:.75,adapt:0},`
-- `L37: {name:'ESTRATEGISTA',reaction:.125,error:34,maxSpeed:430,accel:1900,lookAhead:1,adapt:.42},`
-- `L38: {name:'MESTRE',reaction:.080,error:18,maxSpeed:505,accel:2450,lookAhead:1,adapt:.72}`
-- `L39: ];let difficultyIndex=1;`
-- `L40: const ball={x:W/2,y:H/2,r:10,vx:0,vy:0,speed:430,trail:[]};`
-- `L45: function sfx(name){if(name==='hit'){tone(230,.05,'square',.07);tone(460,.04,'square',.035,.025)}if(name==='wall')tone(150,.04,'triangle',.045);if(name==='score'){tone(330,.09);tone(494,.12,'square',.06,.08)}if(name==='lose'){tone(180,.12,'sawtooth',.05);tone(110,.2,'sawtooth',.05,.1)}}`
-- `L46: function music(dt){if(muted||!audio||state!=='playing')return;musicTimer-=dt;if(musicTimer<=0){const seq=[110,0,165,0,147,0,196,220];const f=seq[musicStep++%seq.length];if(f)tone(f,.11,'triangle',.018);musicTimer=.18}}`
-- `L47: function burst(x,y,color,n=12){for(let i=0;i<n;i++)particles.push({x,y,vx:rnd(-190,190),vy:rnd(-190,190),life:rnd(.25,.65),max:.65,color,size:rnd(2,6)})}`
-- `L48: function serve(dir=Math.random()<.5?-1:1){ball.x=W/2;ball.y=H/2;ball.speed=430;ai.rallyHits=0;ai.mode='recover';const ang=rnd(-.55,.55);ball.vx=Math.cos(ang)*ball.speed*dir;ball.vy=Math.sin(ang)*ball.speed;ball.trail=[];serveTimer=.65}`
-- `L49: function reset(){player.score=ai.score=0;player.y=ai.y=H/2-62;player.vy=ai.vy=0;ai.target=H/2;ai.shotMemory=[0,0,0];elapsed=0;serve(Math.random()<.5?-1:1);state='playing';overlay.classList.add('hidden');last=performance.now();initAudio();audio?.resume()}`
-- `L50: function end(win){state='gameover';sfx(win?'score':'lose');oTitle.textContent=win?'VOCÊ VENCEU!':'CPU VENCEU';oText.innerHTML='Placar ${player.score} × ${ai.score}<br>Tempo: ${elapsed.toFixed(1)}s';document.querySelector('#startBtn').textContent='JOGAR NOVAMENTE';overlay.classList.remove('hidden')}`
-- `L56: function predictIntercept(obs){if(!obs||obs.vx<=0)return H/2;const travel=(ai.x-ball.r-obs.x)/Math.max(1,obs.vx);return reflectY(obs.y+obs.vy*Math.max(0,travel))}`
-- `L59: if(ai.reaction<=0){`
-- `L60: ai.reaction=d.reaction*rnd(.82,1.2);ai.lastSeen={x:ball.x,y:ball.y,vx:ball.vx,vy:ball.vy};`
-- `L64: const total=ai.shotMemory.reduce((a,b)=>a+b,0);let bias=0;`
-- `L65: if(total>2&&d.adapt){const dominant=ai.shotMemory.indexOf(Math.max(...ai.shotMemory));bias=(dominant-1)*18*d.adapt}`
-- `L67: const proximity=clamp((ai.x-ball.x)/W,0,1),rallyPenalty=Math.min(14,ai.rallyHits*1.4);`
-- `L68: const uncertainty=(d.error*proximity+rallyPenalty)*(Math.random()*2-1);`
-- `L69: ai.confidence=clamp(1-proximity*.55-rallyPenalty/60,.25,1);`
-- `L70: ai.target=clamp(impact+uncertainty+bias,ai.h*.35,H-ai.h*.35);`
-- `L74: const scorePressure=(player.score-ai.score)*7;ai.target=clamp(H/2+scorePressure,ai.h/2,H-ai.h/2);ai.confidence=.45;`
-- `L77: const center=ai.y+ai.h/2,diff=ai.target-center;`
-- `L79: const desired=clamp(diff*5.8,-d.maxSpeed,d.maxSpeed),delta=clamp(desired-ai.vy,-d.accel*dt,d.accel*dt);`
-- `L80: ai.vy+=delta;ai.vy*=Math.pow(.72,dt);if(Math.abs(diff)<5)ai.vy*=Math.pow(.05,dt);`
-- `L81: ai.y=clamp(ai.y+ai.vy*dt,0,H-ai.h);`
+- `L30: const W=960,H=540,WIN=10,BASE_SPEED=410,MAX_SPEED=930,BASE_H=124;`
+- `L31: let state='menu',last=0,serveTimer=0,shake=0,flash=0,elapsed=0,audio=null,musicStep=0,musicTimer=0,musicMorph=.25,musicMorphTarget=.25,morphTimer=9;`
+- `L32: let arcadeScore=0,centerCombo=0,comboPeak=0,powerup=null,powerupTimer=6.5,slowmoTimer=0,tripleTimer=0,labelSerial=0,pointerTarget=null;`
+- `L36: const player={side:'player',x:34,y:H/2-BASE_H/2,w:18,h:BASE_H,vy:0,score:0,shield:0};`
+- `L37: const ai={side:'ai',x:W-52,y:H/2-BASE_H/2,w:18,h:BASE_H,vy:0,score:0,shield:0,target:H/2,reaction:0,mode:'recover',confidence:0,lastSeen:null,shotMemory:[0,0,0],rallyHits:0,fatigue:0,fatigueNotice:0};`
+- `L38: const effects={player:{smash:0,big:0,immune:0,jam:0,shrink:0,overdrive:0},ai:{smash:0,big:0,immune:0,jam:0,shrink:0,overdrive:0}};`
+- `L40: {name:'CASUAL',reaction:.19,error:58,maxSpeed:350,accel:1450,adapt:0,fatigueCap:.40,fatigueRate:.0018},`
+- `L41: {name:'ESTRATEGISTA',reaction:.125,error:34,maxSpeed:430,accel:1900,adapt:.42,fatigueCap:.34,fatigueRate:.00155},`
+- `L42: {name:'MESTRE',reaction:.080,error:18,maxSpeed:505,accel:2450,adapt:.72,fatigueCap:.27,fatigueRate:.00125}`
+- `L43: ];let difficultyIndex=1;`
+- `L44: function makeBall(primary=true,x=W/2,y=H/2){return{x,y,r:10,vx:0,vy:0,baseSpeed:BASE_SPEED,trail:[],primary,lastHitter:null,hitPulse:0,id:Math.random().toString(36).slice(2)}}`
+- `L47: const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),rnd=(a,b)=>a+Math.random()*(b-a),choose=a=>a[(Math.random()*a.length)|0];`
+- `L50: function heatFor(b){return clamp((b.baseSpeed-BASE_SPEED)/(MAX_SPEED-BASE_SPEED),0,1)}`
+- `L52: function preservePaddleCenter(p,newH){const c=p.y+p.h/2;p.h=newH;p.y=clamp(c-p.h/2,0,H-p.h)}`
+- `L66: function burst(x,y,color,n=12,speed=190){for(let i=0;i<n;i++)particles.push({x,y,vx:rnd(-speed,speed),vy:rnd(-speed,speed),life:rnd(.25,.72),max:.72,color,size:rnd(2,6)})}`
+- `L67: function label(text,x,y,color='#fff',size=20,life=1.05){labels.push({id:labelSerial++,text,x,y,color,size,life,max:life,vy:rnd(-36,-24),wiggle:rnd(0,6.28),rot:rnd(-.05,.05)})}`
+- `L68: function serve(dir=Math.random()<.5?-1:1){ball=makeBall(true);balls=[ball];const ang=rnd(-.52,.52);ball.vx=Math.cos(ang)*ball.baseSpeed*dir;ball.vy=Math.sin(ang)*ball.baseSpeed;serveTimer=.65;ai.rallyHits=0;ai.mode='recover';powerup=null;powerupTimer=Math.max(powerupTimer,rnd(4.5,7.5));tripleTimer=0}`
+- `L69: function resetEffects(){for(const s of ['player','ai'])for(const k of Object.keys(effects[s]))effects[s][k]=0;slowmoTimer=0;tripleTimer=0;player.shield=ai.shield=0;updatePaddleSizes()}`
+- `L72: function comboMultiplier(n=centerCombo){return Math.min(5,1+Math.floor(Math.max(0,n-1)/2)*.5)}`
+- `L73: function cashCombo(reason='BREAK'){if(centerCombo>=2){const mult=comboMultiplier(centerCombo),bonus=Math.round(centerCombo*mult*35);arcadeScore+=bonus;label('${reason} • COMBO ${centerCombo}x = +${bonus}',W/2,H*.34,'#ff70df',23,1.35);burst(W/2,H*.38,'#ff70df',18,150)}centerCombo=0}`
+- `L75: function hitBoost(side){return effects[side].smash>0?1.30:1}`
+- `L76: function normalizeBallSpeed(b){if(!b.lastHitter)return;const desired=b.baseSpeed*hitBoost(b.lastHitter),mag=Math.hypot(b.vx,b.vy)||1,ratio=desired/mag;b.vx*=ratio;b.vy*=ratio}`
+- `L79: function predictIntercept(obs){if(!obs||obs.vx<=0)return H/2;const travel=(ai.x-ball.r-obs.x)/Math.max(1,obs.vx);return reflectY(obs.y+obs.vy*Math.max(0,travel),ball.r)}`
+- `L82: function rememberPlayerShot(){const zone=ball.y<H/3?0:ball.y>H*2/3?2:1;ai.shotMemory[zone]=Math.min(12,ai.shotMemory[zone]+1);for(let i=0;i<3;i++)if(i!==zone)ai.shotMemory[i]*=.94}`
+- `L83: function cycleDifficulty(){difficultyIndex=(difficultyIndex+1)%difficulties.length;document.querySelector('#difficultyBtn').textContent='IA: ${difficulties[difficultyIndex].name}';tone(520+difficultyIndex*90,.07);if(state==='playing'){ai.fatigue=Math.min(ai.fatigue,difficulties[difficultyIndex].fatigueCap);serve(ball.vx<0?-1:1)}}`
+- `L90: life:{name:'EXTRA LIFE',short:'♥',color:'#ff7ac6',dur:0,kind:'life'},`
+- `L91: shrink:{name:'SHRINK RIVAL',short:'-SZ',color:'#ff934d',dur:9,kind:'enemy',key:'shrink'},`
+- `L92: jam:{name:'RIVAL JAM',short:'JAM',color:'#ff4df3',dur:8,kind:'enemy',key:'jam'},`
 
 ### `salve_os_gatinhos.html`
 **Control flow signals**
