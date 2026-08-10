@@ -1,0 +1,31 @@
+name: Quickplay quality audit
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Generate audit
+        run: python tools/quickplay_quality_audit.py
+      - name: Commit audit report when changed
+        shell: bash
+        run: |
+          if git diff --quiet -- QUALITY_AUDIT_AUTOMATED.md && git ls-files --error-unmatch QUALITY_AUDIT_AUTOMATED.md >/dev/null 2>&1; then
+            echo "Audit report unchanged."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add QUALITY_AUDIT_AUTOMATED.md
+          git commit -m "update automated minigame quality audit [skip ci]"
+          git push
