@@ -85,30 +85,26 @@ if "Tone.start()" in text:
     )
     if count != 1:
         raise SystemExit("campo_minado.html: Tone.js block anchor mismatch")
-    text = text.replace('        const toggleSoundBtn = document.getElementById(\'toggle-sound-btn\'); // Novo elemento\n', '')
-    text = text.replace('            updateSoundButtonText(); // Atualiza o texto do botão de som\n', '')
-    text, count2 = re.subn(
-        r"\n        // Event listener para o novo botão de som\n        toggleSoundBtn\.addEventListener\('click', \(\) => \{.*?\n        \}\n",
+
+    # Remove all pieces of the obsolete secondary sound control. The PPG toolbar
+    # is already present and its persisted preference is read by soundAllowed().
+    text = re.sub(r'^\s*const toggleSoundBtn\s*=.*?;.*?\n', '', text, count=1, flags=re.M)
+    text = re.sub(r'^\s*updateSoundButtonText\(\);.*?\n', '', text, count=1, flags=re.M)
+    text = re.sub(
+        r"\n\s*// Event listener para o novo botão de som.*?(?=\n\s*window\.addEventListener\('resize')",
         "\n",
         text,
         count=1,
         flags=re.S,
     )
-    # Handle exact source shape if the broader regex above did not match through the helper.
-    if count2 == 0:
-        text = re.sub(
-            r"\n        // Event listener para o novo botão de som\n        toggleSoundBtn\.addEventListener\('click', \(\) => \{.*?\n        function updateSoundButtonText\(\) \{.*?\n        \}\n",
-            "\n",
-            text,
-            count=1,
-            flags=re.S,
-        )
-    # Remove the redundant in-game sound button; the collection toolbar remains the single sound control.
-    text = re.sub(r'\n<button id="toggle-sound-btn">Som: On</button>\s*<!-- Novo botão de som -->', '', text, count=1)
-    # If the first event regex removed only the listener, remove any orphan helper too.
-    text = re.sub(r"\n        function updateSoundButtonText\(\) \{.*?\n        \}\n", "\n", text, count=1, flags=re.S)
-    if "Tone." in text or "toggleSoundBtn" in text:
-        raise SystemExit("campo_minado.html: legacy sound dependency/control survived repair")
+    text = re.sub(r'\n\s*<button id="toggle-sound-btn">.*?</button>\s*(?:<!--.*?-->)?', '', text, count=1, flags=re.S)
+
+    if "Tone." in text or "toggleSoundBtn" in text or 'id="toggle-sound-btn"' in text:
+        leftovers=[]
+        if "Tone." in text: leftovers.append("Tone")
+        if "toggleSoundBtn" in text: leftovers.append("toggleSoundBtn")
+        if 'id="toggle-sound-btn"' in text: leftovers.append("toggle-sound-btn")
+        raise SystemExit("campo_minado.html: legacy sound dependency/control survived repair: " + ",".join(leftovers))
     path.write_text(text, encoding="utf-8")
     changed.append("campo_minado.html: replaced missing Tone.js runtime with WebAudio SFX and removed duplicate sound control")
 
