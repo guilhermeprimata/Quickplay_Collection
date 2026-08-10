@@ -34,8 +34,8 @@ const player={x:34,y:H/2-62,w:18,h:124,vy:0,score:0};
 const ai={x:W-52,y:H/2-62,w:18,h:124,vy:0,score:0,target:H/2,reaction:0,mode:'recover',confidence:0,lastSeen:null,shotMemory:[0,0,0],rallyHits:0};
 const difficulties=[
  {name:'CASUAL',reaction:.19,error:58,maxSpeed:350,accel:1450,lookAhead:.75,adapt:0},
- {name:'ESTRATEGISTA',reaction:.115,error:30,maxSpeed:445,accel:2050,lookAhead:1,adapt:.45},
- {name:'MESTRE',reaction:.072,error:15,maxSpeed:525,accel:2700,lookAhead:1,adapt:.75}
+ {name:'ESTRATEGISTA',reaction:.125,error:34,maxSpeed:430,accel:1900,lookAhead:1,adapt:.42},
+ {name:'MESTRE',reaction:.080,error:18,maxSpeed:505,accel:2450,lookAhead:1,adapt:.72}
 ];let difficultyIndex=1;
 const ball={x:W/2,y:H/2,r:10,vx:0,vy:0,speed:430,trail:[]};
 const overlay=document.querySelector('#overlay'),oTitle=document.querySelector('#overlayTitle'),oText=document.querySelector('#overlayText');
