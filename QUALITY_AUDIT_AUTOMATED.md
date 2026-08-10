@@ -18,7 +18,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 | `leaping_into_life.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 30589 |
 | `memory_genius.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 52123 |
 | `pixel_bomberman.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 32269 |
-| `pong.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 39485 |
+| `pong.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 40055 |
 | `salve_os_gatinhos.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 34941 |
 | `sudoku.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 28422 |
 | `the_worm.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 31378 |
@@ -446,7 +446,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 - `L31: let state='menu',last=0,serveTimer=0,shake=0,flash=0,elapsed=0,audio=null,musicStep=0,musicTimer=0,musicMorph=.25,musicMorphTarget=.25,morphTimer=9;`
 - `L69: function resetEffects(){for(const s of ['player','ai'])for(const k of Object.keys(effects[s]))effects[s][k]=0;slowmoTimer=0;tripleTimer=0;player.shield=ai.shield=0;updatePaddleSizes()}`
 - `L83: function cycleDifficulty(){difficultyIndex=(difficultyIndex+1)%difficulties.length;document.querySelector('#difficultyBtn').textContent='IA: ${difficulties[difficultyIndex].name}';tone(520+difficultyIndex*90,.07);if(state==='playing'){ai.fatigue=Math.min(ai.fatigue,difficulties[difficultyIndex].fatigueCap);serve(ball.vx<0?-1:1)}}`
-- `L118: function togglePause(){if(state==='playing')state='paused';else if(state==='paused'){state='playing';last=performance.now()}document.querySelector('#pauseBtn').textContent=state==='paused'?'CONTINUAR':'PAUSAR'}function toggleSound(){setSoundEnabled(!soundEnabled)}`
+- `L139: function togglePause(){if(state==='playing')state='paused';else if(state==='paused'){state='playing';last=performance.now()}document.querySelector('#pauseBtn').textContent=state==='paused'?'CONTINUAR':'PAUSAR'}function toggleSound(){setSoundEnabled(!soundEnabled)}`
 **Gameplay tuning signals**
 - `L30: const W=960,H=540,WIN=10,BASE_SPEED=410,MAX_SPEED=930,BASE_H=124;`
 - `L31: let state='menu',last=0,serveTimer=0,shake=0,flash=0,elapsed=0,audio=null,musicStep=0,musicTimer=0,musicMorph=.25,musicMorphTarget=.25,morphTimer=9;`
