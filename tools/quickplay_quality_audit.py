@@ -51,19 +51,20 @@ def ppg_version(text: str) -> str:
     return "none"
 
 
+def core_text(text: str) -> str:
+    return text.split('<style id="ppg-platform-style">', 1)[0]
+
+
 def native_pause(text: str) -> bool:
-    core = text.split('<style id="ppg-platform-style">', 1)[0]
-    return has_any(core, FEATURES["pause"])
+    return has_any(core_text(text), FEATURES["pause"])
 
 
 def native_restart(text: str) -> bool:
-    core = text.split('<style id="ppg-platform-style">', 1)[0]
-    return has_any(core, FEATURES["restart"])
+    return has_any(core_text(text), FEATURES["restart"])
 
 
 def native_touch(text: str) -> bool:
-    core = text.split('<style id="ppg-platform-style">', 1)[0]
-    return has_any(core, FEATURES["touch"])
+    return has_any(core_text(text), FEATURES["touch"])
 
 
 def main() -> None:
@@ -84,8 +85,7 @@ def main() -> None:
         rows.append(
             (path.name, pv, np, nr, nt, touch_need, flags["audio"], flags["storage"], flags["i18n"], len(text))
         )
-        hits = snippets(lines)
-        details.append((path.name, hits))
+        details.append((path.name, snippets(lines)))
 
     out = []
     out.append("# Quickplay Collection — automated quality audit\n")
@@ -112,7 +112,9 @@ def main() -> None:
     for name, hits in details:
         out.append(f"### `{name}`")
         if hits:
-            out.extend(f"- `{h.replace('`', "'")}`" for h in hits)
+            for hit in hits:
+                clean = hit.replace("`", "'")
+                out.append(f"- `{clean}`")
         else:
             out.append("- No compact numeric tuning line detected by the heuristic.")
         out.append("")
