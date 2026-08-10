@@ -16,7 +16,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Apply quality and balance pass
-        run: python tools/apply_quality_pass.py
+        run: python tools/run_quality_pass.py
       - name: Generate audit
         run: python tools/quickplay_quality_audit.py
       - name: Commit quality pass and reports when changed
