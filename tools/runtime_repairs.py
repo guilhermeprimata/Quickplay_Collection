@@ -86,24 +86,31 @@ if "Tone.start()" in text:
     if count != 1:
         raise SystemExit("campo_minado.html: Tone.js block anchor mismatch")
 
-    # Remove all pieces of the obsolete secondary sound control. The PPG toolbar
-    # is already present and its persisted preference is read by soundAllowed().
-    text = re.sub(r'^\s*const toggleSoundBtn\s*=.*?;.*?\n', '', text, count=1, flags=re.M)
-    text = re.sub(r'^\s*updateSoundButtonText\(\);.*?\n', '', text, count=1, flags=re.M)
-    text = re.sub(
-        r"\n\s*// Event listener para o novo botão de som.*?(?=\n\s*window\.addEventListener\('resize')",
-        "\n",
-        text,
-        count=1,
-        flags=re.S,
-    )
-    text = re.sub(r'\n\s*<button id="toggle-sound-btn">.*?</button>\s*(?:<!--.*?-->)?', '', text, count=1, flags=re.S)
+    # Remove the obsolete secondary sound control by stable surrounding anchors.
+    lines = []
+    for line in text.splitlines(keepends=True):
+        if "const toggleSoundBtn" in line:
+            continue
+        if "updateSoundButtonText();" in line:
+            continue
+        if 'id="toggle-sound-btn"' in line:
+            continue
+        lines.append(line)
+    text = "".join(lines)
 
-    if "Tone." in text or "toggleSoundBtn" in text or 'id="toggle-sound-btn"' in text:
+    start = text.find("        // Event listener para o novo botão de som")
+    if start >= 0:
+        end = text.find("        window.addEventListener('resize'", start)
+        if end < 0:
+            raise SystemExit("campo_minado.html: resize anchor missing after obsolete sound listener")
+        text = text[:start] + text[end:]
+
+    if "Tone." in text or "toggleSoundBtn" in text or 'id="toggle-sound-btn"' in text or "updateSoundButtonText" in text:
         leftovers=[]
         if "Tone." in text: leftovers.append("Tone")
         if "toggleSoundBtn" in text: leftovers.append("toggleSoundBtn")
         if 'id="toggle-sound-btn"' in text: leftovers.append("toggle-sound-btn")
+        if "updateSoundButtonText" in text: leftovers.append("updateSoundButtonText")
         raise SystemExit("campo_minado.html: legacy sound dependency/control survived repair: " + ",".join(leftovers))
     path.write_text(text, encoding="utf-8")
     changed.append("campo_minado.html: replaced missing Tone.js runtime with WebAudio SFX and removed duplicate sound control")
