@@ -18,7 +18,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 | `leaping_into_life.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 30589 |
 | `memory_genius.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 52123 |
 | `pixel_bomberman.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 32269 |
-| `pong.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 42892 |
+| `pong.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 43257 |
 | `salve_os_gatinhos.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 34941 |
 | `sudoku.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 28422 |
 | `the_worm.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 31378 |
@@ -443,40 +443,24 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 
 ### `pong.html`
 **Control flow signals**
-- `L31: let state='menu',last=0,serveTimer=0,shake=0,flash=0,elapsed=0,audio=null,musicStep=0,musicTimer=0,musicMorph=.25,musicMorphTarget=.25,morphTimer=9;`
-- `L69: function resetEffects(){for(const s of ['player','ai'])for(const k of Object.keys(effects[s]))effects[s][k]=0;slowmoTimer=0;tripleTimer=0;player.shield=ai.shield=0;updatePaddleSizes()}`
-- `L87: function cycleMode(){gameMode=gameMode==='ai'?'pvp':'ai';ai.fatigue=0;ai.fatigueNotice=0;ai.mode=gameMode==='pvp'?'human':'recover';pointerTarget=null;refreshModeUI();tone(gameMode==='pvp'?760:560,.08,'square',.045);if(state==='playing'||state==='paused')reset()}`
-- `L88: function cycleDifficulty(){if(gameMode==='pvp')return;difficultyIndex=(difficultyIndex+1)%difficulties.length;document.querySelector('#difficultyBtn').textContent='IA: ${difficulties[difficultyIndex].name}';tone(520+difficultyIndex*90,.07);if(state==='playing'){ai.fatigue=Math.min(ai.fatigue,difficulties[difficultyIndex].fatigueCap);serve(ball.vx<0?-1:1)}}`
-- `L127: function togglePause(){if(state==='playing')state='paused';else if(state==='paused'){state='playing';last=performance.now()}document.querySelector('#pauseBtn').textContent=state==='paused'?'CONTINUAR':'PAUSAR'}function toggleSound(){setSoundEnabled(!soundEnabled)}`
+- `L42: let state='menu',last=performance.now(),elapsed=0,serveTimer=.7,mode='ai',difficulty=1,seriesIndex=0,chaos=false,sudden=false;`
+- `L102: const modal=document.querySelector('#modal'),body=document.querySelector('#modalBody');function openModal(h){body.innerHTML=h;modal.classList.add('open')}function closeModal(){modal.classList.remove('open')}modal.addEventListener('click',e=>{if(e.target===modal||e.target.closest('.close'))closeModal()});`
 **Gameplay tuning signals**
-- `L30: const W=960,H=540,WIN=10,BASE_SPEED=410,MAX_SPEED=930,BASE_H=124;`
-- `L31: let state='menu',last=0,serveTimer=0,shake=0,flash=0,elapsed=0,audio=null,musicStep=0,musicTimer=0,musicMorph=.25,musicMorphTarget=.25,morphTimer=9;`
-- `L32: let arcadeScore=0,centerCombo=0,comboPeak=0,p2ArcadeScore=0,p2CenterCombo=0,p2ComboPeak=0,powerup=null,powerupTimer=6.5,slowmoTimer=0,tripleTimer=0,labelSerial=0,pointerTarget=null,gameMode='ai';`
-- `L36: const player={side:'player',x:34,y:H/2-BASE_H/2,w:18,h:BASE_H,vy:0,score:0,shield:0};`
-- `L37: const ai={side:'ai',x:W-52,y:H/2-BASE_H/2,w:18,h:BASE_H,vy:0,score:0,shield:0,target:H/2,reaction:0,mode:'recover',confidence:0,lastSeen:null,shotMemory:[0,0,0],rallyHits:0,fatigue:0,fatigueNotice:0};`
-- `L38: const effects={player:{smash:0,big:0,immune:0,jam:0,shrink:0,overdrive:0},ai:{smash:0,big:0,immune:0,jam:0,shrink:0,overdrive:0}};`
-- `L40: {name:'CASUAL',reaction:.19,error:58,maxSpeed:350,accel:1450,adapt:0,fatigueCap:.40,fatigueRate:.0018},`
-- `L41: {name:'ESTRATEGISTA',reaction:.125,error:34,maxSpeed:430,accel:1900,adapt:.42,fatigueCap:.34,fatigueRate:.00155},`
-- `L42: {name:'MESTRE',reaction:.080,error:18,maxSpeed:505,accel:2450,adapt:.72,fatigueCap:.27,fatigueRate:.00125}`
-- `L43: ];let difficultyIndex=1;`
-- `L44: function makeBall(primary=true,x=W/2,y=H/2){return{x,y,r:10,vx:0,vy:0,baseSpeed:BASE_SPEED,trail:[],primary,lastHitter:null,hitPulse:0,id:Math.random().toString(36).slice(2)}}`
-- `L47: const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),rnd=(a,b)=>a+Math.random()*(b-a),choose=a=>a[(Math.random()*a.length)|0];`
-- `L50: function heatFor(b){return clamp((b.baseSpeed-BASE_SPEED)/(MAX_SPEED-BASE_SPEED),0,1)}`
-- `L52: function preservePaddleCenter(p,newH){const c=p.y+p.h/2;p.h=newH;p.y=clamp(c-p.h/2,0,H-p.h)}`
-- `L66: function burst(x,y,color,n=12,speed=190){for(let i=0;i<n;i++)particles.push({x,y,vx:rnd(-speed,speed),vy:rnd(-speed,speed),life:rnd(.25,.72),max:.72,color,size:rnd(2,6)})}`
-- `L67: function label(text,x,y,color='#fff',size=20,life=1.05){labels.push({id:labelSerial++,text,x,y,color,size,life,max:life,vy:rnd(-36,-24),wiggle:rnd(0,6.28),rot:rnd(-.05,.05)})}`
-- `L68: function serve(dir=Math.random()<.5?-1:1){ball=makeBall(true);balls=[ball];const ang=rnd(-.52,.52);ball.vx=Math.cos(ang)*ball.baseSpeed*dir;ball.vy=Math.sin(ang)*ball.baseSpeed;serveTimer=.65;ai.rallyHits=0;ai.mode='recover';powerup=null;powerupTimer=Math.max(powerupTimer,rnd(4.5,7.5));tripleTimer=0}`
-- `L69: function resetEffects(){for(const s of ['player','ai'])for(const k of Object.keys(effects[s]))effects[s][k]=0;slowmoTimer=0;tripleTimer=0;player.shield=ai.shield=0;updatePaddleSizes()}`
-- `L72: function comboMultiplier(n=centerCombo){return Math.min(5,1+Math.floor(Math.max(0,n-1)/2)*.5)}`
-- `L73: function cashCombo(reason='BREAK'){if(centerCombo>=2){const mult=comboMultiplier(centerCombo),bonus=Math.round(centerCombo*mult*35);arcadeScore+=bonus;label('${reason} • COMBO ${centerCombo}x = +${bonus}',W/2,H*.34,'#ff70df',23,1.35);burst(W/2,H*.38,'#ff70df',18,150)}centerCombo=0}`
-- `L75: function p2ComboMultiplier(n=p2CenterCombo){return Math.min(5,1+Math.floor(Math.max(0,n-1)/2)*.5)}`
-- `L76: function cashP2Combo(reason='BREAK'){if(p2CenterCombo>=2){const mult=p2ComboMultiplier(p2CenterCombo),bonus=Math.round(p2CenterCombo*mult*35);p2ArcadeScore+=bonus;label('${reason} • P2 COMBO ${p2CenterCombo}x = +${bonus}',W/2,H*.39,'#ffd34d',22,1.25);burst(W/2,H*.41,'#ffd34d',16,150)}p2CenterCombo=0}`
-- `L78: function hitBoost(side){return effects[side].smash>0?1.30:1}`
-- `L79: function normalizeBallSpeed(b){if(!b.lastHitter)return;const desired=b.baseSpeed*hitBoost(b.lastHitter),mag=Math.hypot(b.vx,b.vy)||1,ratio=desired/mag;b.vx*=ratio;b.vy*=ratio}`
-- `L82: function predictIntercept(obs){if(!obs||obs.vx<=0)return H/2;const travel=(ai.x-ball.r-obs.x)/Math.max(1,obs.vx);return reflectY(obs.y+obs.vy*Math.max(0,travel),ball.r)}`
-- `L85: function rememberPlayerShot(){const zone=ball.y<H/3?0:ball.y>H*2/3?2:1;ai.shotMemory[zone]=Math.min(12,ai.shotMemory[zone]+1);for(let i=0;i<3;i++)if(i!==zone)ai.shotMemory[i]*=.94}`
-- `L87: function cycleMode(){gameMode=gameMode==='ai'?'pvp':'ai';ai.fatigue=0;ai.fatigueNotice=0;ai.mode=gameMode==='pvp'?'human':'recover';pointerTarget=null;refreshModeUI();tone(gameMode==='pvp'?760:560,.08,'square',.045);if(state==='playing'||state==='paused')reset()}`
-- `L88: function cycleDifficulty(){if(gameMode==='pvp')return;difficultyIndex=(difficultyIndex+1)%difficulties.length;document.querySelector('#difficultyBtn').textContent='IA: ${difficulties[difficultyIndex].name}';tone(520+difficultyIndex*90,.07);if(state==='playing'){ai.fatigue=Math.min(ai.fatigue,difficulties[difficultyIndex].fatigueCap);serve(ball.vx<0?-1:1)}}`
+- `L40: const W=960,H=540,WIN=10,BASE=400,MAX=965,BASE_H=122;`
+- `L41: const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),rnd=(a,b)=>a+Math.random()*(b-a),pick=a=>a[(Math.random()*a.length)|0],lerp=(a,b,t)=>a+(b-a)*t;`
+- `L42: let state='menu',last=performance.now(),elapsed=0,serveTimer=.7,mode='ai',difficulty=1,seriesIndex=0,chaos=false,sudden=false;`
+- `L43: const seriesOptions=[1,3,5],diffs=[{name:'CASUAL',reaction:.19,error:58,max:390,accel:1750,fatigueCap:.42,fatigueRate:.0019},{name:'ESTRATEGISTA',reaction:.125,error:34,max:470,accel:2200,fatigueCap:.35,fatigueRate:.0016},{name:'MESTRE',reaction:.08,error:19,max:550,accel:2850,fatigueCap:.28,fatigueRate:.0013}];`
+- `L46: const prefs=(()=>{try{return JSON.parse(localStorage.getItem('ppg_platform_prefs_v1'))||{}}catch{return {}}})();let soundOn=prefs.sound!==false,pointerTarget=null;if(prefs.theme==='light')document.body.classList.add('light');`
+- `L48: const mkP=(side,x,color,center)=>({side,x,y:H/2-BASE_H/2,w:18,h:BASE_H,vy:0,score:0,setWins:0,shield:0,meter:0,color,center,fatigue:0,reaction:0,target:H/2,notice:0,distance:0});`
+- `L51: const combo={p1:0,p2:0},comboPeak={p1:0,p2:0},tech={p1:0,p2:0},hitStreak={p1:0,p2:0};`
+- `L52: const stats={p1:{hits:0,perfect:0,center:0,power:0,smart:0,goals:0,shield:0,supers:0,maxCombo:0,maxRally:0,maxSpeed:0},p2:{hits:0,perfect:0,center:0,power:0,smart:0,goals:0,shield:0,supers:0,maxCombo:0,maxRally:0,maxSpeed:0}};`
+- `L53: let rally=0,powerup=null,powerTimer=6,modifier=null,modifierTimer=14,slowmo=0,triple=0;`
+- `L56: const MODS=[{type:'gravity',name:'GRAVITY WAVE',color:'#ff8ad8',dur:9},{type:'magnet',name:'MAGNET CORE',color:'#5effe4',dur:9},{type:'bumpers',name:'NEON BUMPERS',color:'#ffd34d',dur:10},{type:'blackout',name:'BLACKOUT',color:'#a98cff',dur:8},{type:'narrow',name:'NARROW TUNNEL',color:'#ff765d',dur:9}];`
+- `L57: let ac=null,master=null,musicBus=null,sfxBus=null,noise=null,musicStep=0,musicClock=0,morph=.35,morphTarget=.35,morphClock=10;`
+- `L59: function osc(f,d=.07,type='square',v=.12,when=0,bus=sfxBus){if(!soundOn)return;audioInit();const t=ac.currentTime+when,o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(Math.max(.0001,v),t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(bus||sfxBus);o.start(t);o.stop(t+d)}`
+- `L66: function mult(side){return Math.min(5,1+Math.floor(Math.max(0,combo[side]-1)/2)*.5)}function score(side,pts,why=''){const m=fx[side].glass>0?2:1;tech[side]+=Math.round(pts*m);if(why&&pts>=150)announce('${side==='p1'?'P1':'P2'} +${Math.round(pts*m)}',why,side==='p1'?'#63edff':'#ffd34d',.7)}`
+- `L70: function serve(dir=Math.random()<.5?-1:1,speed=BASE){ball=makeBall(true);balls=[ball];ball.base=speed;const a=rnd(-.48,.48);ball.vx=Math.cos(a)*speed*dir;ball.vy=Math.sin(a)*speed;serveTimer=.65;rally=0;history.length=0;triple=0;powerup=null;powerTimer=Math.max(powerTimer,rnd(4,7))}`
+- `L78: function reflectBounds(b){const top=arenaTop()+b.r,bot=arenaBottom()-b.r;if(b.y<top&&b.vy<0){b.y=top;b.vy*=-1;osc(150+clamp((b.base-BASE)/(MAX-BASE),0,1)*280,.035,'triangle',.07)}if(b.y>bot&&b.vy>0){b.y=bot;b.vy*=-1;osc(150+clamp((b.base-BASE)/(MAX-BASE),0,1)*280,.035,'triangle',.07)}}`
 
 ### `salve_os_gatinhos.html`
 **Control flow signals**

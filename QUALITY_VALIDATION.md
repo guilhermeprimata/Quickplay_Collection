@@ -18,7 +18,7 @@ Validation executed with Node.js syntax checking for every inline JavaScript blo
 | `leaping_into_life.html` | 2 | 0 | ✅ | ✅ |
 | `memory_genius.html` | 4 | 0 | ✅ | ✅ |
 | `pixel_bomberman.html` | 3 | 0 | ✅ | ✅ |
-| `pong.html` | 2 | 0 | ✅ | ✅ |
+| `pong.html` | 1 | 0 | ✅ | ✅ |
 | `salve_os_gatinhos.html` | 3 | 0 | ✅ | ✅ |
 | `sudoku.html` | 3 | 0 | ✅ | ✅ |
 | `the_worm.html` | 2 | 0 | ✅ | ✅ |
