@@ -15,28 +15,19 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Promote staged Forca Neon build
-        shell: bash
-        run: |
-          if [ -f .forca-promo/part-01 ]; then
-            cat .forca-promo/part-* > /tmp/forca-neon.html.gz.b64
-            base64 --decode /tmp/forca-neon.html.gz.b64 | gzip -dc > jogo_da_forca.html
-            echo "f0e07053e193e6de89c868863eccd8be521512caceba51c2881cf445e18a8ee0  jogo_da_forca.html" | sha256sum --check --strict
-            rm -rf .forca-promo
-          fi
       - name: Validate standalone games
         run: python tools/validate_games.py
       - name: Generate feature audit
         run: python tools/quickplay_quality_audit.py
-      - name: Commit validation and promoted game when changed
+      - name: Commit validation reports when changed
         shell: bash
         run: |
-          if [ -z "$(git status --porcelain)" ]; then
-            echo "Validation reports and games unchanged."
+          if [ -z "$(git status --porcelain -- QUALITY_VALIDATION.md QUALITY_AUDIT_AUTOMATED.md)" ]; then
+            echo "Validation reports unchanged."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m "promote Forca Neon 8-language edition [skip ci]"
+          git add QUALITY_VALIDATION.md QUALITY_AUDIT_AUTOMATED.md
+          git commit -m "update minigame validation reports [skip ci]"
           git push
