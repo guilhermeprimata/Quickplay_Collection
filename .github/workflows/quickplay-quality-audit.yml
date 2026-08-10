@@ -15,19 +15,19 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Apply quality and balance pass
-        run: python tools/run_quality_pass.py
-      - name: Generate audit
+      - name: Validate standalone games
+        run: python tools/validate_games.py
+      - name: Generate feature audit
         run: python tools/quickplay_quality_audit.py
-      - name: Commit quality pass and reports when changed
+      - name: Commit validation reports when changed
         shell: bash
         run: |
-          if git diff --quiet; then
-            echo "Quality pass produced no changes."
+          if git diff --quiet -- QUALITY_VALIDATION.md QUALITY_AUDIT_AUTOMATED.md; then
+            echo "Validation reports unchanged."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add *.html QUALITY_PASS_REPORT.md QUALITY_AUDIT_AUTOMATED.md
-          git commit -m "polish minigame controls and difficulty balance [skip ci]"
+          git add QUALITY_VALIDATION.md QUALITY_AUDIT_AUTOMATED.md
+          git commit -m "update minigame validation reports [skip ci]"
           git push
