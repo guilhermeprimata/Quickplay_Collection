@@ -18,7 +18,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 | `leaping_into_life.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 30589 |
 | `memory_genius.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 52123 |
 | `pixel_bomberman.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 32269 |
-| `pong.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 46087 |
+| `pong.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 47151 |
 | `salve_os_gatinhos.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 34941 |
 | `sudoku.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 28422 |
 | `the_worm.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 31378 |
@@ -444,8 +444,8 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 ### `pong.html`
 **Control flow signals**
 - `L43: let state='menu',last=performance.now(),elapsed=0,serveTimer=.7,mode='ai',difficulty=1,seriesIndex=0,chaos=false,sudden=false;`
-- `L90: function resetAttract(){attract.left.y=H/2-attract.left.h/2;attract.right.y=H/2-attract.right.h/2;attract.left.vy=attract.right.vy=0;attract.ball.x=W/2;attract.ball.y=H/2;attract.ball.vx=(Math.random()<.5?-1:1)*rnd(330,430);attract.ball.vy=rnd(-230,230)}`
-- `L107: const modal=document.querySelector('#modal'),body=document.querySelector('#modalBody');function openModal(h){body.innerHTML=h;modal.classList.add('open')}function closeModal(){modal.classList.remove('open')}modal.addEventListener('click',e=>{if(e.target===modal||e.target.closest('.close'))closeModal()});`
+- `L91: function resetAttract(){attract.left.y=H/2-attract.left.h/2;attract.right.y=H/2-attract.right.h/2;attract.left.vy=attract.right.vy=0;attract.ball.x=W/2;attract.ball.y=H/2;attract.ball.vx=(Math.random()<.5?-1:1)*rnd(330,430);attract.ball.vy=rnd(-230,230)}`
+- `L108: const modal=document.querySelector('#modal'),body=document.querySelector('#modalBody');function openModal(h){body.innerHTML=h;modal.classList.add('open')}function closeModal(){modal.classList.remove('open')}modal.addEventListener('click',e=>{if(e.target===modal||e.target.closest('.close'))closeModal()});`
 **Gameplay tuning signals**
 - `L41: const W=960,H=540,WIN=10,BASE=400,MAX=965,BASE_H=122;`
 - `L42: const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),rnd=(a,b)=>a+Math.random()*(b-a),pick=a=>a[(Math.random()*a.length)|0],lerp=(a,b,t)=>a+(b-a)*t;`
@@ -459,9 +459,10 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 - `L58: const MODS=[{type:'gravity',name:'GRAVITY WAVE',color:'#ff8ad8',dur:9},{type:'magnet',name:'MAGNET CORE',color:'#5effe4',dur:9},{type:'bumpers',name:'NEON BUMPERS',color:'#ffd34d',dur:10},{type:'blackout',name:'BLACKOUT',color:'#a98cff',dur:8},{type:'narrow',name:'NARROW TUNNEL',color:'#ff765d',dur:9}];`
 - `L59: let ac=null,master=null,musicBus=null,sfxBus=null,noise=null,musicStep=0,musicClock=0,morph=.35,morphTarget=.35,morphClock=10;`
 - `L61: function osc(f,d=.07,type='square',v=.12,when=0,bus=sfxBus){if(!soundOn||!audioInit())return;const t=ac.currentTime+when,o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(Math.max(.0001,v),t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(bus||sfxBus);o.start(t);o.stop(t+d)}`
-- `L68: function mult(side){return Math.min(5,1+Math.floor(Math.max(0,combo[side]-1)/2)*.5)}function score(side,pts,why=''){const m=fx[side].glass>0?2:1;tech[side]+=Math.round(pts*m);if(why&&pts>=150)announce('${side==='p1'?'P1':'P2'} +${Math.round(pts*m)}',why,side==='p1'?'#63edff':'#ffd34d',.7)}`
-- `L72: function serve(dir=Math.random()<.5?-1:1,speed=BASE){ball=makeBall(true);balls=[ball];ball.base=speed;const a=rnd(-.48,.48);ball.vx=Math.cos(a)*speed*dir;ball.vy=Math.sin(a)*speed;serveTimer=.65;rally=0;history.length=0;triple=0;powerup=null;powerTimer=Math.max(powerTimer,rnd(4,7))}`
-- `L80: function reflectBounds(b){const top=arenaTop()+b.r,bot=arenaBottom()-b.r;if(b.y<top&&b.vy<0){b.y=top;b.vy*=-1;osc(150+clamp((b.base-BASE)/(MAX-BASE),0,1)*280,.035,'triangle',.07)}if(b.y>bot&&b.vy>0){b.y=bot;b.vy*=-1;osc(150+clamp((b.base-BASE)/(MAX-BASE),0,1)*280,.035,'triangle',.07)}}`
+- `L68: let runtimeFaults=0;function safeFx(fn,label='fx'){try{return fn()}catch(err){runtimeFaults++;console.warn('Neon Pong non-critical '+label+' error:',err);return null}}`
+- `L69: function mult(side){return Math.min(5,1+Math.floor(Math.max(0,combo[side]-1)/2)*.5)}function score(side,pts,why=''){const m=fx[side].glass>0?2:1;tech[side]+=Math.round(pts*m);if(why&&pts>=150)announce('${side==='p1'?'P1':'P2'} +${Math.round(pts*m)}',why,side==='p1'?'#63edff':'#ffd34d',.7)}`
+- `L73: function serve(dir=Math.random()<.5?-1:1,speed=BASE){ball=makeBall(true);balls=[ball];ball.base=speed;const a=rnd(-.48,.48);ball.vx=Math.cos(a)*speed*dir;ball.vy=Math.sin(a)*speed;serveTimer=.65;rally=0;history.length=0;triple=0;powerup=null;powerTimer=Math.max(powerTimer,rnd(4,7))}`
+- `L81: function reflectBounds(b){const top=arenaTop()+b.r,bot=arenaBottom()-b.r;if(b.y<top&&b.vy<0){b.y=top;b.vy*=-1;osc(150+clamp((b.base-BASE)/(MAX-BASE),0,1)*280,.035,'triangle',.07)}if(b.y>bot&&b.vy>0){b.y=bot;b.vy*=-1;osc(150+clamp((b.base-BASE)/(MAX-BASE),0,1)*280,.035,'triangle',.07)}}`
 
 ### `salve_os_gatinhos.html`
 **Control flow signals**
