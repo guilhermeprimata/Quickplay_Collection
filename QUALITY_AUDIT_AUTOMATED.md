@@ -18,7 +18,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 | `leaping_into_life.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 30589 |
 | `memory_genius.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 52123 |
 | `pixel_bomberman.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 32269 |
-| `pong.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 47151 |
+| `pong.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 49020 |
 | `salve_os_gatinhos.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 34941 |
 | `sudoku.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 28422 |
 | `the_worm.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 31378 |
@@ -443,14 +443,13 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 
 ### `pong.html`
 **Control flow signals**
-- `L43: let state='menu',last=performance.now(),elapsed=0,serveTimer=.7,mode='ai',difficulty=1,seriesIndex=0,chaos=false,sudden=false;`
+- `L43: let state='menu',last=performance.now(),elapsed=0,serveTimer=.7,mode='ai',difficulty=1,seriesIndex=0,chaos=false,sudden=false,goalPauseTimer=0,goalPending=null;`
 - `L91: function resetAttract(){attract.left.y=H/2-attract.left.h/2;attract.right.y=H/2-attract.right.h/2;attract.left.vy=attract.right.vy=0;attract.ball.x=W/2;attract.ball.y=H/2;attract.ball.vx=(Math.random()<.5?-1:1)*rnd(330,430);attract.ball.vy=rnd(-230,230)}`
 - `L108: const modal=document.querySelector('#modal'),body=document.querySelector('#modalBody');function openModal(h){body.innerHTML=h;modal.classList.add('open')}function closeModal(){modal.classList.remove('open')}modal.addEventListener('click',e=>{if(e.target===modal||e.target.closest('.close'))closeModal()});`
 **Gameplay tuning signals**
 - `L41: const W=960,H=540,WIN=10,BASE=400,MAX=965,BASE_H=122;`
 - `L42: const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),rnd=(a,b)=>a+Math.random()*(b-a),pick=a=>a[(Math.random()*a.length)|0],lerp=(a,b,t)=>a+(b-a)*t;`
-- `L43: let state='menu',last=performance.now(),elapsed=0,serveTimer=.7,mode='ai',difficulty=1,seriesIndex=0,chaos=false,sudden=false;`
-- `L44: const seriesOptions=[1,3,5],diffs=[{name:'CASUAL',reaction:.19,error:58,max:390,accel:1750,fatigueCap:.42,fatigueRate:.0019},{name:'ESTRATEGISTA',reaction:.125,error:34,max:470,accel:2200,fatigueCap:.35,fatigueRate:.0016},{name:'MESTRE',reaction:.08,error:19,max:550,accel:2850,fatigueCap:.28,fatigueRate:.0013}];`
+- `L43: let state='menu',last=performance.now(),elapsed=0,serveTimer=.7,mode='ai',difficulty=1,seriesIndex=0,chaos=false,sudden=false,goalPauseTimer=0,goalPending=null;`
 - `L48: const prefs=(()=>{try{return JSON.parse(localStorage.getItem('ppg_platform_prefs_v1'))||{}}catch{return {}}})();let soundOn=prefs.sound!==false,pointerTarget=null;if(prefs.theme==='light')document.body.classList.add('light');`
 - `L50: const mkP=(side,x,color,center)=>({side,x,y:H/2-BASE_H/2,w:18,h:BASE_H,vy:0,score:0,setWins:0,shield:0,meter:0,color,center,fatigue:0,reaction:0,target:H/2,notice:0,distance:0});`
 - `L53: const combo={p1:0,p2:0},comboPeak={p1:0,p2:0},tech={p1:0,p2:0},hitStreak={p1:0,p2:0};`
@@ -461,7 +460,6 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 - `L61: function osc(f,d=.07,type='square',v=.12,when=0,bus=sfxBus){if(!soundOn||!audioInit())return;const t=ac.currentTime+when,o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(Math.max(.0001,v),t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(bus||sfxBus);o.start(t);o.stop(t+d)}`
 - `L68: let runtimeFaults=0;function safeFx(fn,label='fx'){try{return fn()}catch(err){runtimeFaults++;console.warn('Neon Pong non-critical '+label+' error:',err);return null}}`
 - `L69: function mult(side){return Math.min(5,1+Math.floor(Math.max(0,combo[side]-1)/2)*.5)}function score(side,pts,why=''){const m=fx[side].glass>0?2:1;tech[side]+=Math.round(pts*m);if(why&&pts>=150)announce('${side==='p1'?'P1':'P2'} +${Math.round(pts*m)}',why,side==='p1'?'#63edff':'#ffd34d',.7)}`
-- `L73: function serve(dir=Math.random()<.5?-1:1,speed=BASE){ball=makeBall(true);balls=[ball];ball.base=speed;const a=rnd(-.48,.48);ball.vx=Math.cos(a)*speed*dir;ball.vy=Math.sin(a)*speed;serveTimer=.65;rally=0;history.length=0;triple=0;powerup=null;powerTimer=Math.max(powerTimer,rnd(4,7))}`
 - `L81: function reflectBounds(b){const top=arenaTop()+b.r,bot=arenaBottom()-b.r;if(b.y<top&&b.vy<0){b.y=top;b.vy*=-1;osc(150+clamp((b.base-BASE)/(MAX-BASE),0,1)*280,.035,'triangle',.07)}if(b.y>bot&&b.vy>0){b.y=bot;b.vy*=-1;osc(150+clamp((b.base-BASE)/(MAX-BASE),0,1)*280,.035,'triangle',.07)}}`
 
 ### `salve_os_gatinhos.html`
