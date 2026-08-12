@@ -1,0 +1,53 @@
+name: Assemble Snowball Main Impact
+
+on:
+  push:
+    branches:
+      - agent/snowball-main-impact-staging
+    paths:
+      - '.github/workflows/assemble-snowball-main-impact.yml'
+      - '.snowball-main-impact/**'
+
+permissions:
+  contents: write
+
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout staging branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/snowball-main-impact-staging
+          fetch-depth: 0
+
+      - name: Assemble and validate Snowball Avalanche
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .snowball-main-impact/part*.txt > /tmp/snowball.b64
+          base64 -d /tmp/snowball.b64 > /tmp/snowball.html.gz
+          gunzip -c /tmp/snowball.html.gz > snowball_avalanche.html
+          echo '08cba13c9cf14fe7c3b62d13b27f88b18821307387d26288a2a5966bd21b7ef8  snowball_avalanche.html' | sha256sum -c -
+          python3 - <<'PY'
+          import re, pathlib
+          html = pathlib.Path('snowball_avalanche.html').read_text(encoding='utf-8')
+          scripts = re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>', html, flags=re.S|re.I)
+          if not scripts:
+              raise SystemExit('No inline script found')
+          pathlib.Path('/tmp/snowball.js').write_text('\n'.join(scripts), encoding='utf-8')
+          PY
+          node --check /tmp/snowball.js
+          grep -q 'Infinite World v1.3' snowball_avalanche.html
+          grep -q 'beginDeathCrash' snowball_avalanche.html
+          rm -rf .snowball-main-impact
+
+      - name: Commit assembled game
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'Projeto Primata Games'
+          git config user.email 'guilhermesteiglederdias@gmail.com'
+          git add snowball_avalanche.html .snowball-main-impact
+          git commit -m 'Assemble Snowball Avalanche impact version'
+          git push origin HEAD:agent/snowball-main-impact-staging
