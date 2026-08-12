@@ -20,6 +20,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 | `pixel_bomberman.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 32269 |
 | `pong.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 49020 |
 | `salve_os_gatinhos.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 34941 |
+| `snowball_avalanche.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 73558 |
 | `sudoku.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 28422 |
 | `the_worm.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 31378 |
 | `torre_de_hanoi.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 40024 |
@@ -27,7 +28,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 
 ## Automated findings
 
-- Platform layer not v2: `advinhe_o_numero.html`, `campo_minado.html`, `corrida_de_cavalos.html`, `dropworks.html`, `idle_trader.html`, `jogo_da_velha.html`, `kombo_blocks.html`, `pong.html`, `sudoku.html`, `torre_de_hanoi.html`
+- Platform layer not v2: `advinhe_o_numero.html`, `campo_minado.html`, `corrida_de_cavalos.html`, `dropworks.html`, `idle_trader.html`, `jogo_da_velha.html`, `kombo_blocks.html`, `pong.html`, `snowball_avalanche.html`, `sudoku.html`, `torre_de_hanoi.html`
 - No native pause signal: none
 - No native restart/new-game signal: none
 - Canvas + keyboard but no native touch signal: none
@@ -494,6 +495,32 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 - `L111: if(c.y>H+20){cats.splice(i,1);lives--;lastLifeLoss=elapsed;lifeRegenAcc=0;combo=1;shake=12;burst(c.x,GROUND,'#ef476f',18);sfx('miss');syncUI();if(lives<=0)gameOver()}`
 - `L113: for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.life-=dt;p.vy+=240*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;if(p.life<=0)particles.splice(i,1)}`
 - `L122: function loop(now){const dt=Math.min(.033,(now-last)/1000);last=now;update(dt);draw();requestAnimationFrame(loop)}`
+
+### `snowball_avalanche.html`
+**Control flow signals**
+- `L75: let input={x:0,y:1,keys:{},jump:false,trick:false,gpj:false,gpp:false},state='menu',world=[],snow=[],fx=[],trail=[],marks=[],santa=null,beast=null,nextSanta=240,mode='free',time=0,dist=0,score=0,style=0,gates=0,miss=0,cam=0,shake=0,buried=0;`
+- `L106: function pause(){if(state==='play'){state='pause';show('#pauseScreen');music('off')}else if(state==='pause'){state='play';$$('.screen').forEach(x=>x.classList.add('hidden'));music()}}`
+- `L107: function finish(force=false){if(state==='over')return;saveLocalRecord();flushShared();statActive=false;state='over';music('off');msg(T('caught'));setTimeout(()=>{show('#menu');$('#hud').classList.add('hidden');$('#touch').classList.add('hidden');$('#pauseBtn').classList.add('hidden');state='menu'},1300)}`
+**Gameplay tuning signals**
+- `L13: const IS_MOBILE=matchMedia('(pointer: coarse)').matches,MIN_ZOOM=IS_MOBILE?.46:.38,MAX_ZOOM=1,MAX_RADIUS=220,DEBUG_CAMERA=false,MAX_SPAWN_PER_UPDATE=IS_MOBILE?4:7,MAX_ENTITIES=IS_MOBILE?125:170,MAX_PARTICLES=IS_MOBILE?280:450,MAX_MARKS=IS_MOBILE?220:350,MAX_TRAIL=500;`
+- `L14: const camera={x:W/2,y:H/2,zoom:1,targetZoom:1,impactZoom:1,growthZoom:1,lookAheadX:0,offsetY:30,finalZoom:1,bounds:null};`
+- `L15: const CHUNK_WIDTH=720,CHUNK_HEIGHT=620,MAX_CHUNKS_GENERATED_PER_UPDATE=IS_MOBILE?1:2,REBASE_DISTANCE=50000,WORLD_SEED=0x5a17c9d3;`
+- `L18: const deluxe={weather:'clear',weatherStrength:0,targetWeatherStrength:0,lastBiome:'alpine',combo:0,comboTimer:0,bestCombo:0,variety:new Set(),districtScore:0,eventBonus:0,wind:0,oneShotBiome:true};`
+- `L23: function updateCombo(type,value){deluxe.combo=Math.min(99,deluxe.combo+1);deluxe.comboTimer=2.8;deluxe.bestCombo=Math.max(deluxe.bestCombo,deluxe.combo);deluxe.variety.add(type);let varietyBonus=Math.min(2.5,1+deluxe.variety.size*.08),multi=1+Math.min(3,deluxe.combo*.035);return Math.round(value*varietyBonus*multi)}`
+- `L42: function clamp(v,a,b){return Math.max(a,Math.min(b,v))}function lerp(a,b,t){return a+(b-a)*clamp(t,0,1)}`
+- `L43: function radiusFromMass(mass){let raw=Math.sqrt(Math.max(0,mass));if(raw<=80)return raw;if(raw<=160)return 80+(raw-80)*.7;return Math.min(MAX_RADIUS,136+(raw-160)*.45)}`
+- `L44: function calculateTargetZoom(r){let z;if(r<=40)z=1;else if(r<=75)z=lerp(1,.8,(r-40)/35);else if(r<=130)z=lerp(.8,.58,(r-75)/55);else if(r<=180)z=lerp(.58,.46,(r-130)/50);else z=lerp(.46,MIN_ZOOM,(r-180)/40);return clamp(z,MIN_ZOOM,MAX_ZOOM)}`
+- `L48: function getTargetEntityCount(){let factor=1/(camera.zoom*camera.zoom),raw=46*DIFF[cfg.dif].density*Math.min(2.8,factor);return clamp(Math.round(raw),40,MAX_ENTITIES)}`
+- `L65: const PREVIEW=new URLSearchParams(location.search).get('preview')==='1',GAME_ID='snowball_avalanche',SHARED_STATS='ppg_minigames_stats_v1';let statActive=false,statLast=performance.now();`
+- `L68: function flushShared(){if(PREVIEW||!statActive)return;let now=performance.now(),delta=Math.min(10,Math.max(0,(now-statLast)/1000));statLast=now;if(delta<.05)return;let all=sharedRead(),s=all[GAME_ID]||{};s.totalSeconds=(s.totalSeconds||0)+delta;all[GAME_ID]=s;sharedWrite(all)}`
+- `L75: let input={x:0,y:1,keys:{},jump:false,trick:false,gpj:false,gpp:false},state='menu',world=[],snow=[],fx=[],trail=[],marks=[],santa=null,beast=null,nextSanta=240,mode='free',time=0,dist=0,score=0,style=0,gates=0,miss=0,cam=0,shake=0,buried=0;`
+- `L76: let p={x:320,y:220,vx:0,speed:0,r:9,targetR:9,mass:81,roll:0,boost:100,growthPulse:0,trailTick:0,heading:0,rollDir:1};`
+- `L77: function show(id){$$('.screen').forEach(x=>x.classList.add('hidden'));$(id).classList.remove('hidden')}function msg(s){let e=$('#msg');e.textContent=s;e.style.opacity=1;clearTimeout(e.t);e.t=setTimeout(()=>e.style.opacity=0,1000)}`
+- `L83: function addBuilding(type,x,y,variant=0){let st=OBJECT_STATS[type]||[30,300];world.push({type,x,y,w:st[0]*1.25,h:st[0],size:st[0],value:st[1],variant,phase:rnd(0,TAU),hit:false})}`
+- `L87: function addPerson(type,x,y,variant=0){let st=OBJECT_STATS[type]||[7,40];world.push({type,x,y,w:st[0]*1.1,h:st[0]+6,size:st[0],value:st[1],variant,phase:rnd(0,TAU),clever:rnd(.3,1),panic:0,hit:false})}`
+- `L94: function updateFx(dt){for(let q of fx){q.life-=dt;q.x+=q.vx*dt;q.y+=q.vy*dt;q.vy+=(q.type==='debris'?65:q.type==='spark'?35:-8)*dt;q.vx*=.992;q.size+=q.type==='smoke'?dt*5:0}fx=fx.filter(q=>q.life>0)}`
+- `L107: function finish(force=false){if(state==='over')return;saveLocalRecord();flushShared();statActive=false;state='over';music('off');msg(T('caught'));setTimeout(()=>{show('#menu');$('#hud').classList.add('hidden');$('#touch').classList.add('hidden');$('#pauseBtn').classList.add('hidden');state='menu'},1300)}`
+- `L108: let last=performance.now(),acc=0,FIX=1/120;function loop(now){let f=Math.min(.1,(now-last)/1000);last=now;acc+=f;while(acc>=FIX){update(FIX);acc-=FIX}render();requestAnimationFrame(loop)}requestAnimationFrame(loop);`
 
 ### `sudoku.html`
 **Control flow signals**
