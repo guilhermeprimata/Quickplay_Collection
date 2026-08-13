@@ -1,0 +1,62 @@
+name: Publish Snowball v2.5
+on:
+  push:
+    branches: [agent/snowball-v21-staging]
+    paths:
+      - '.github/workflows/publish-snowball-v25.yml'
+      - '.snowball-v25/**'
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout release payload
+        uses: actions/checkout@v4
+        with:
+          ref: agent/snowball-v21-staging
+          path: payload
+      - name: Checkout current main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: repo
+      - name: Rebuild and validate Snowball v2.5
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE"
+          echo "Input Snowball SHA: $(sha256sum repo/snowball_avalanche.html | cut -d' ' -f1)"
+          test "$(sha256sum repo/snowball_avalanche.html | cut -d' ' -f1)" = "a345724c699ab920bce24e438ee475230adda0fab97f2b11ffb47c1e0e3d783e"
+          cat payload/.snowball-v25/part00.txt payload/.snowball-v25/part01.txt payload/.snowball-v25/part02.txt payload/.snowball-v25/part03a.txt payload/.snowball-v25/part03b.txt payload/.snowball-v25/part03c.txt payload/.snowball-v25/part03d.txt payload/.snowball-v25/part04a.txt payload/.snowball-v25/part04b.txt payload/.snowball-v25/part04c.txt payload/.snowball-v25/part04d.txt > /tmp/snowball-v25.b64
+          python - <<'PY'
+          import base64,lzma,pathlib
+          raw=base64.b64decode(pathlib.Path('/tmp/snowball-v25.b64').read_text().strip())
+          html=lzma.decompress(raw)
+          pathlib.Path('repo/snowball_avalanche.html').write_bytes(html)
+          text=html.decode('utf-8')
+          a=text.find('<script>'); b=text.rfind('</script>')
+          assert a>=0 and b>a
+          pathlib.Path('/tmp/snowball-v25.js').write_text(text[a+8:b],encoding='utf-8')
+          PY
+          echo "Output Snowball SHA: $(sha256sum repo/snowball_avalanche.html | cut -d' ' -f1)"
+          test "$(sha256sum repo/snowball_avalanche.html | cut -d' ' -f1)" = "01a402698ce70beead53a2882c6929ced6ab53c485b409e01a76bd843c873a32"
+          node --check /tmp/snowball-v25.js
+          grep -q 'Infinite World v2.5' repo/snowball_avalanche.html
+          grep -q "GAME_ID='snowball_avalanche'" repo/snowball_avalanche.html
+          grep -q "SHARED_STATS='ppg_minigames_stats_v1'" repo/snowball_avalanche.html
+          grep -q "location.href='index.html'" repo/snowball_avalanche.html
+          grep -q '"file":"snowball_avalanche.html"' repo/index.html
+          grep -q '"id":"snowball_avalanche"' repo/index.html
+          test "$(grep -o '"id":"snowball_avalanche"' repo/index.html | wc -l)" -eq 1
+      - name: Commit Snowball v2.5 to main
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE/repo"
+          git config user.name "Projeto Primata Games"
+          git config user.email "guilhermesteiglederdias@gmail.com"
+          git add snowball_avalanche.html
+          git diff --cached --quiet && { echo 'No Snowball change to publish'; exit 0; }
+          git commit -m "Release Snowball Avalanche v2.5"
+          git push origin HEAD:main
