@@ -1,0 +1,67 @@
+name: Apply Snowball v1.6
+
+on:
+  push:
+    branches:
+      - agent/snowball-v16-staging
+    paths:
+      - '.snowball-v16/**'
+      - '.github/workflows/apply-snowball-v16.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout patch source
+        uses: actions/checkout@v4
+        with:
+          ref: agent/snowball-v16-staging
+          path: patchsrc
+
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: repo
+          fetch-depth: 0
+
+      - name: Rebuild and validate Snowball v1.6
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE"
+          echo '2af0fd34fbc7b0d8982e925995ea757505ce08a3814f8c38f022a15a8dc2736f  repo/snowball_avalanche.html' | sha256sum -c -
+          cat patchsrc/.snowball-v16/part*.txt > /tmp/snowball-v16-patch.b64
+          base64 -d /tmp/snowball-v16-patch.b64 > /tmp/snowball-v16-patch.py.gz
+          gunzip -c /tmp/snowball-v16-patch.py.gz > /tmp/snowball-v16-patch.py
+          python3 /tmp/snowball-v16-patch.py
+          echo '4d8336081cc1e68403ef0927a49bdcb08a343ed855afb5076052bd199c4e14c0  repo/snowball_avalanche.html' | sha256sum -c -
+          python3 - <<'PY'
+          import re, pathlib
+          html=pathlib.Path('repo/snowball_avalanche.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',html,re.S|re.I)
+          if not scripts:
+              raise SystemExit('No inline script found')
+          pathlib.Path('/tmp/snowball-v16.js').write_text('\n'.join(scripts),encoding='utf-8')
+          PY
+          node --check /tmp/snowball-v16.js
+          grep -q 'Infinite World v1.6' repo/snowball_avalanche.html
+          grep -q 'STRUCTURE_COMBO_WINDOW=2.2' repo/snowball_avalanche.html
+          grep -q 'function drawAvalancheSatellites' repo/snowball_avalanche.html
+          grep -q 'function screamVoice' repo/snowball_avalanche.html
+          grep -q 'gore18:false' repo/snowball_avalanche.html
+          grep -q 'const W=640,H=480' repo/snowball_avalanche.html
+
+      - name: Commit v1.6 to main
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd repo
+          git config user.name 'Projeto Primata Games'
+          git config user.email 'guilhermesteiglederdias@gmail.com'
+          git add snowball_avalanche.html
+          git commit -m 'Refine Snowball Avalanche life combos CRT and avalanche'
+          git push origin HEAD:main
