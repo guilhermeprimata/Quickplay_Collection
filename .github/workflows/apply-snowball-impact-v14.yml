@@ -1,0 +1,57 @@
+name: Apply Snowball Impact v1.4
+
+on:
+  push:
+    branches:
+      - agent/snowball-main-impact-staging
+    paths:
+      - '.snowball-patches/refine-impact-v14.py'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout patch source
+        uses: actions/checkout@v4
+        with:
+          ref: agent/snowball-main-impact-staging
+          path: patchsrc
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: repo
+          fetch-depth: 0
+      - name: Apply and validate impact rework
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE"
+          echo '08cba13c9cf14fe7c3b62d13b27f88b18821307387d26288a2a5966bd21b7ef8  repo/snowball_avalanche.html' | sha256sum -c -
+          cp patchsrc/.snowball-patches/refine-impact-v14.py /tmp/refine-impact-v14.py
+          sed -i "s#p=Path('/mnt/data/snowball_avalanche.html')#p=Path('repo/snowball_avalanche.html')#" /tmp/refine-impact-v14.py
+          python3 /tmp/refine-impact-v14.py
+          echo '9d992f82004e9ca8b9c53973a56717ab6a6f3211744ce67575d9c8741addc583  repo/snowball_avalanche.html' | sha256sum -c -
+          python3 - <<'PY'
+          import re, pathlib
+          html=pathlib.Path('repo/snowball_avalanche.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',html,re.S|re.I)
+          pathlib.Path('/tmp/snowball-v14.js').write_text('\n'.join(scripts),encoding='utf-8')
+          PY
+          node --check /tmp/snowball-v14.js
+          grep -q 'Infinite World v1.4' repo/snowball_avalanche.html
+          grep -q 'deathImpactBurst' repo/snowball_avalanche.html
+          grep -q 'secondHitDone' repo/snowball_avalanche.html
+      - name: Commit to main
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd repo
+          git config user.name 'Projeto Primata Games'
+          git config user.email 'guilhermesteiglederdias@gmail.com'
+          git add snowball_avalanche.html
+          git commit -m 'Refine Snowball Avalanche final impact'
+          git push origin HEAD:main
