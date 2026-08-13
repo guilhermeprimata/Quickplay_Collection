@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/apply-fullscreen-landscape.yml'
+      - '.github/scripts/apply_fullscreen_landscape.py'
 permissions:
   contents: write
 jobs:
@@ -14,58 +15,18 @@ jobs:
         with:
           ref: main
           fetch-depth: 0
-      - name: Inject Quickplay fullscreen and landscape runtime
-        shell: python
-        run: |
-          from pathlib import Path
-          import re
-          GAME_MARK='PPG_FULLSCREEN_LANDSCAPE_V1'; MENU_MARK='PPG_MENU_FULLSCREEN_LAUNCHER_V1'
-          game_runtime=r'''<!-- PPG_FULLSCREEN_LANDSCAPE_V1 -->
-<style id="ppg-fs-style">#ppgFullscreenBtn{position:fixed;right:10px;top:10px;z-index:2147483646;width:42px;height:36px;padding:0;border:2px outset #eee;border-radius:7px;background:#111b;color:#fff;font:700 20px/1 system-ui;cursor:pointer;backdrop-filter:blur(4px)}#ppgRotateHint{display:none;position:fixed;inset:0;z-index:2147483645;place-items:center;padding:28px;text-align:center;background:#080b12e8;color:#fff;font:800 18px/1.4 system-ui}#ppgRotateHint b{font-size:42px;display:block;margin-bottom:8px}@media (orientation:portrait) and (max-width:900px){body.ppg-needs-landscape #ppgRotateHint{display:grid}}</style>
-<button id="ppgFullscreenBtn" type="button" title="Tela cheia" aria-label="Tela cheia">⛶</button><div id="ppgRotateHint"><div><b>↻</b>Gire o dispositivo para jogar em modo paisagem.</div></div>
-<script id="ppg-fs-runtime">(()=>{'use strict';const q=new URLSearchParams(location.search),embedded=q.get('embedded')==='1',auto=q.get('autofs')==='1';const btn=document.getElementById('ppgFullscreenBtn');const mobile=()=>matchMedia('(max-width:900px)').matches||/Android|iPhone|iPad|Mobile/i.test(navigator.userAgent);function markOrientation(){document.body.classList.toggle('ppg-needs-landscape',mobile()&&innerHeight>innerWidth)}async function lockLandscape(){if(!mobile())return true;try{if(screen.orientation&&screen.orientation.lock){await screen.orientation.lock('landscape');markOrientation();return true}}catch(e){}markOrientation();return false}async function goFS(){try{if(embedded&&parent!==window){const pd=parent.document,el=pd.getElementById('ppgGameLauncher')||pd.documentElement;if(!pd.fullscreenElement&&el.requestFullscreen)await el.requestFullscreen({navigationUI:'hide'});}else if(!document.fullscreenElement&&document.documentElement.requestFullscreen){await document.documentElement.requestFullscreen({navigationUI:'hide'})}}catch(e){}await lockLandscape();markOrientation()}btn?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();goFS()});addEventListener('resize',markOrientation);addEventListener('orientationchange',markOrientation);document.addEventListener('fullscreenchange',markOrientation);markOrientation();if(auto){const once=()=>{goFS();removeEventListener('pointerdown',once,true);removeEventListener('keydown',once,true)};addEventListener('pointerdown',once,true);addEventListener('keydown',once,true)}if(embedded&&parent!==window){document.addEventListener('click',e=>{const a=e.target.closest('a,button');if(!a)return;const href=(a.getAttribute('href')||'').toLowerCase();const txt=(a.textContent||'').toLowerCase();if(href==='index.html'||href.endsWith('/index.html')||href.includes('menu_minigames')||txt.includes('voltar ao menu')||txt.includes('back to menu')){e.preventDefault();e.stopPropagation();parent.postMessage({type:'ppg-exit-game'},location.origin)}},true)}})();</script>'''
-          menu_runtime=r'''<!-- PPG_MENU_FULLSCREEN_LAUNCHER_V1 -->
-<style id="ppg-launcher-style">#ppgGameLauncher{position:fixed;inset:0;z-index:2147483600;background:#05070d;display:none}#ppgGameLauncher.open{display:block}#ppgGameFrame{width:100%;height:100%;border:0;background:#05070d;display:block}#ppgLauncherClose{position:absolute;right:max(10px,env(safe-area-inset-right));top:max(10px,env(safe-area-inset-top));z-index:3;width:44px;height:40px;border:1px solid #ffffff55;border-radius:9px;background:#080b12c9;color:#fff;font:900 19px/1 system-ui;cursor:pointer;backdrop-filter:blur(6px)}#ppgLauncherRotate{display:none;position:absolute;inset:0;z-index:2;place-items:center;text-align:center;padding:28px;background:#070a12ee;color:#fff;font:800 18px/1.45 system-ui;pointer-events:none}#ppgLauncherRotate b{display:block;font-size:46px;margin-bottom:8px}@media(orientation:portrait) and (max-width:900px){#ppgGameLauncher.needs-landscape #ppgLauncherRotate{display:grid}}</style>
-<div id="ppgGameLauncher" aria-hidden="true"><button id="ppgLauncherClose" type="button" aria-label="Fechar jogo">✕</button><div id="ppgLauncherRotate"><div><b>↻</b>Gire o dispositivo para jogar em modo paisagem.</div></div><iframe id="ppgGameFrame" title="Quickplay game" allow="fullscreen" allowfullscreen></iframe></div>
-<script id="ppg-menu-launcher-runtime">(()=>{'use strict';const box=document.getElementById('ppgGameLauncher'),frame=document.getElementById('ppgGameFrame'),close=document.getElementById('ppgLauncherClose');const mobile=()=>matchMedia('(max-width:900px)').matches||/Android|iPhone|iPad|Mobile/i.test(navigator.userAgent);function rotateState(){box.classList.toggle('needs-landscape',mobile()&&innerHeight>innerWidth)}async function orient(){if(!mobile())return;try{if(screen.orientation&&screen.orientation.lock)await screen.orientation.lock('landscape')}catch(e){}rotateState()}async function enterFS(){try{if(!document.fullscreenElement&&box.requestFullscreen)await box.requestFullscreen({navigationUI:'hide'})}catch(e){}await orient()}async function exitGame(){frame.src='about:blank';box.classList.remove('open','needs-landscape');box.setAttribute('aria-hidden','true');try{if(document.fullscreenElement)await document.exitFullscreen()}catch(e){}try{screen.orientation?.unlock?.()}catch(e){}}function gameURL(href){const u=new URL(href,location.href);u.searchParams.set('embedded','1');u.searchParams.set('autofs','1');return u.href}document.addEventListener('click',e=>{const a=e.target.closest('a.game-card');if(!a||e.button>0||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;e.preventDefault();box.classList.add('open');box.setAttribute('aria-hidden','false');frame.src=gameURL(a.href);rotateState();enterFS()},true);close.addEventListener('click',e=>{e.preventDefault();exitGame()});window.addEventListener('message',e=>{if(e.origin===location.origin&&e.data&&e.data.type==='ppg-exit-game')exitGame()});addEventListener('resize',rotateState);addEventListener('orientationchange',rotateState);document.addEventListener('fullscreenchange',rotateState)})();</script>'''
-          changed=[]
-          for p in sorted(Path('.').glob('*.html')):
-            s=p.read_text(encoding='utf-8'); low=p.name.lower()
-            if low=='index.html':
-              if MENU_MARK not in s:
-                pos=s.lower().rfind('</body>'); s=s[:pos]+menu_runtime+'\n'+s[pos:] if pos>=0 else s+menu_runtime; p.write_text(s,encoding='utf-8'); changed.append(p.name)
-              continue
-            if low=='menu_minigames.html': continue
-            if not re.search(r'<canvas|id=["\'](?:game|gamebox|wrap|app|menu)|<script',s,re.I): continue
-            if GAME_MARK not in s:
-              pos=s.lower().rfind('</body>'); s=s[:pos]+game_runtime+'\n'+s[pos:] if pos>=0 else s+game_runtime; p.write_text(s,encoding='utf-8'); changed.append(p.name)
-          print('UPDATED',len(changed),*changed,sep='\n')
-      - name: Validate integration
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          import re
-          idx=Path('index.html').read_text(encoding='utf-8')
-          assert 'PPG_MENU_FULLSCREEN_LAUNCHER_V1' in idx
-          assert 'requestFullscreen' in idx and "orientation.lock('landscape')" in idx
-          games=[m.group(1) for m in re.finditer(r'"file":"([^"]+\.html)"',idx)]
-          assert games
-          missing=[]
-          for f in games:
-            p=Path(f)
-            if not p.exists(): missing.append(f+':missing-file'); continue
-            s=p.read_text(encoding='utf-8')
-            if 'PPG_FULLSCREEN_LANDSCAPE_V1' not in s: missing.append(f+':missing-runtime')
-            if 'ppgFullscreenBtn' not in s: missing.append(f+':missing-button')
-          assert not missing, missing
-          print('PASS games=',len(games))
-          PY
-          git diff --check
+      - name: Inject fullscreen and landscape runtime
+        run: python .github/scripts/apply_fullscreen_landscape.py
+      - name: Validate diff
+        run: git diff --check
       - name: Commit collection update
         run: |
           git config user.name "Projeto Primata Games"
           git config user.email "guilhermesteiglederdias@gmail.com"
           git add -- '*.html'
-          if git diff --cached --quiet; then echo 'No changes'; exit 0; fi
+          if git diff --cached --quiet; then
+            echo "No HTML changes"
+            exit 0
+          fi
           git commit -m "Add fullscreen landscape launcher to Quickplay"
           git push origin HEAD:main
