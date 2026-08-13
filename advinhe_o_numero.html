@@ -195,6 +195,7 @@ const sessionId=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7
 function renderRecords(){const r=readJSON(REC_KEY,[]);const list=r.length?`<div class="ppg-record-list">${r.map((x,i)=>`<div class="ppg-record"><b>#${i+1}</b><span><strong>${formatValue(x.value)}</strong><br><small>${new Date(x.at).toLocaleDateString('pt-BR')}</small></span><small>${CFG.metric}</small></div>`).join('')}</div>`:`<div class="ppg-empty">Ainda não há marca registrada neste navegador. Jogue uma partida e ela aparece aqui.</div>`;open(`<h2>Recordes locais</h2><p>Top 5 persistente deste jogo, salvo somente neste navegador.</p>${list}`)}$('#ppg-records').onclick=renderRecords;
 })();
 </script>
+
 <!-- PPG_FULLSCREEN_LANDSCAPE_V1 -->
 <style id="ppg-fs-style">#ppgFullscreenBtn{position:fixed;right:10px;top:10px;z-index:2147483646;width:42px;height:36px;padding:0;border:2px outset #eee;border-radius:7px;background:#111b;color:#fff;font:700 20px/1 system-ui;cursor:pointer;backdrop-filter:blur(4px)}#ppgRotateHint{display:none;position:fixed;inset:0;z-index:2147483645;place-items:center;padding:28px;text-align:center;background:#080b12e8;color:#fff;font:800 18px/1.4 system-ui}#ppgRotateHint b{font-size:42px;display:block;margin-bottom:8px}@media (orientation:portrait) and (max-width:900px){body.ppg-needs-landscape #ppgRotateHint{display:grid}}</style>
 <button id="ppgFullscreenBtn" type="button" title="Tela cheia" aria-label="Tela cheia">⛶</button><div id="ppgRotateHint"><div><b>↻</b>Gire o dispositivo para jogar em modo paisagem.</div></div>
