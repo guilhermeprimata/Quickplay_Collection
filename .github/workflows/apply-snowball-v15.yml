@@ -1,0 +1,64 @@
+name: Apply Snowball v1.5
+
+on:
+  push:
+    branches:
+      - agent/snowball-v15-staging
+    paths:
+      - '.snowball-v15/**'
+      - '.github/workflows/apply-snowball-v15.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout patch source
+        uses: actions/checkout@v4
+        with:
+          ref: agent/snowball-v15-staging
+          path: patchsrc
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: repo
+          fetch-depth: 0
+      - name: Rebuild and validate Snowball v1.5
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE"
+          echo '9d992f82004e9ca8b9c53973a56717ab6a6f3211744ce67575d9c8741addc583  repo/snowball_avalanche.html' | sha256sum -c -
+          cat patchsrc/.snowball-v15/part*.txt | base64 -d > /tmp/apply_v15.py.gz
+          gunzip -c /tmp/apply_v15.py.gz > /tmp/apply_v15.py
+          python3 /tmp/apply_v15.py repo/snowball_avalanche.html
+          echo '2af0fd34fbc7b0d8982e925995ea757505ce08a3814f8c38f022a15a8dc2736f  repo/snowball_avalanche.html' | sha256sum -c -
+          python3 - <<'PY'
+          import re, pathlib
+          html=pathlib.Path('repo/snowball_avalanche.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>', html, flags=re.S|re.I)
+          if not scripts:
+              raise SystemExit('No inline script found')
+          pathlib.Path('/tmp/snowball-v15.js').write_text('\n'.join(scripts), encoding='utf-8')
+          PY
+          node --check /tmp/snowball-v15.js
+          grep -q 'Infinite World v1.5' repo/snowball_avalanche.html
+          grep -q 'MAX_RADIUS=600' repo/snowball_avalanche.html
+          grep -q 'timeLimit=60' repo/snowball_avalanche.html
+          grep -q 'fadeToGameOver' repo/snowball_avalanche.html
+          grep -q 'drawYetiDeluxe' repo/snowball_avalanche.html
+          grep -q 'acidVoice' repo/snowball_avalanche.html
+          grep -q 'MODO ZEN' repo/snowball_avalanche.html
+      - name: Commit v1.5 to main
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd repo
+          git config user.name 'Projeto Primata Games'
+          git config user.email 'guilhermesteiglederdias@gmail.com'
+          git add snowball_avalanche.html
+          git commit -m 'Expand Snowball Avalanche modes stats and UI'
+          git push origin HEAD:main
