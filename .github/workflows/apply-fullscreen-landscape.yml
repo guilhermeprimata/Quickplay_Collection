@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/apply-fullscreen-landscape.yml'
       - '.github/scripts/apply_fullscreen_landscape.py'
+      - '.github/scripts/normalize_fullscreen_runtime.py'
 permissions:
   contents: write
 jobs:
@@ -15,8 +16,8 @@ jobs:
         with:
           ref: main
           fetch-depth: 0
-      - name: Inject fullscreen and landscape runtime
-        run: python .github/scripts/apply_fullscreen_landscape.py
+      - name: Inject and normalize fullscreen runtime
+        run: python .github/scripts/normalize_fullscreen_runtime.py
       - name: Validate diff
         run: git diff --check
       - name: Commit collection update
@@ -28,5 +29,5 @@ jobs:
             echo "No HTML changes"
             exit 0
           fi
-          git commit -m "Add fullscreen landscape launcher to Quickplay"
+          git commit -m "Normalize fullscreen landscape runtime"
           git push origin HEAD:main
