@@ -38,6 +38,14 @@ jobs:
           base64 -d /tmp/snowball-v16-patch.b64 > /tmp/snowball-v16-patch.py.gz
           gunzip -c /tmp/snowball-v16-patch.py.gz > /tmp/snowball-v16-patch.py
           python3 /tmp/snowball-v16-patch.py
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('repo/snowball_avalanche.html')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace('\\nconst STRUCTURE_COMBO_WINDOW=2.2','\nconst STRUCTURE_COMBO_WINDOW=2.2')
+          s=s.replace('\\nconsole.assert(W===640&&H===480','\nconsole.assert(W===640&&H===480')
+          p.write_text(s,encoding='utf-8')
+          PY
           echo '4d8336081cc1e68403ef0927a49bdcb08a343ed855afb5076052bd199c4e14c0  repo/snowball_avalanche.html' | sha256sum -c -
           python3 - <<'PY'
           import re, pathlib
