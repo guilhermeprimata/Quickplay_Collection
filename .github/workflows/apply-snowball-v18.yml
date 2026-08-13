@@ -1,0 +1,70 @@
+name: Apply Snowball v1.8
+
+on:
+  push:
+    branches:
+      - agent/snowball-v18-staging
+    paths:
+      - '.snowball-v18/apply_v18.py'
+      - '.github/workflows/apply-snowball-v18.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout patch source
+        uses: actions/checkout@v4
+        with:
+          ref: agent/snowball-v18-staging
+          path: patchsrc
+
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: repo
+          fetch-depth: 0
+
+      - name: Rebuild and validate Snowball v1.8
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE"
+          echo '4e530c42140a1103b00ec0d8767963bc5f28995fb326ef78342acac91f43b5d2  repo/snowball_avalanche.html' | sha256sum -c -
+          python3 patchsrc/.snowball-v18/apply_v18.py repo/snowball_avalanche.html
+          echo 'a345724c699ab920bce24e438ee475230adda0fab97f2b11ffb47c1e0e3d783e  repo/snowball_avalanche.html' | sha256sum -c -
+          python3 - <<'PY'
+          import re, pathlib
+          html=pathlib.Path('repo/snowball_avalanche.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',html,re.S|re.I)
+          if not scripts:
+              raise SystemExit('No inline script found')
+          pathlib.Path('/tmp/snowball-v18.js').write_text('\n'.join(scripts),encoding='utf-8')
+          PY
+          node --check /tmp/snowball-v18.js
+          grep -q 'Infinite World v1.8' repo/snowball_avalanche.html
+          grep -q 'TOTAL DE VÍTIMAS' repo/snowball_avalanche.html
+          grep -q 'function scoreBurst' repo/snowball_avalanche.html
+          grep -q 'function generateTownPlaza' repo/snowball_avalanche.html
+          grep -q 'function generateStreetFair' repo/snowball_avalanche.html
+          grep -q 'function generateWinterSportsArea' repo/snowball_avalanche.html
+          grep -q 'monsterTruck' repo/snowball_avalanche.html
+          grep -q 'dogSledHunter' repo/snowball_avalanche.html
+          grep -q 'function crackSfx' repo/snowball_avalanche.html
+          grep -q 'function smashSfx' repo/snowball_avalanche.html
+          grep -q 'function screamVoice' repo/snowball_avalanche.html
+          grep -q 'function windGust' repo/snowball_avalanche.html
+
+      - name: Commit v1.8 to main
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd repo
+          git config user.name 'Projeto Primata Games'
+          git config user.email 'guilhermesteiglederdias@gmail.com'
+          git add snowball_avalanche.html
+          git commit -m 'Expand Snowball Avalanche world feedback and casualties'
+          git push origin HEAD:main
