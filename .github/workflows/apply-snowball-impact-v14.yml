@@ -6,6 +6,7 @@ on:
       - agent/snowball-main-impact-staging
     paths:
       - '.snowball-patches/refine-impact-v14.py'
+      - '.github/workflows/apply-snowball-impact-v14.yml'
 
 permissions:
   contents: write
