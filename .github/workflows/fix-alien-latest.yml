@@ -1,0 +1,51 @@
+name: Fix latest Alien Threat
+
+on:
+  push:
+    branches: [chatgpt/package-20260814]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: "!contains(github.event.head_commit.message, '[alien-fix]')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Rebuild latest Alien Threat from staged payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .release_payload/part_*.txt | base64 -d > /tmp/release.tar.xz
+          mkdir -p /tmp/release
+          tar -xJf /tmp/release.tar.xz -C /tmp/release
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('alien_threat.html')
+          src = p.read_text(encoding='utf-8')
+          needle = '</body></html>'
+          pos = src.rfind(needle)
+          if pos < 0:
+              raise SystemExit('final closing tag not found')
+          tail = Path('/tmp/release/alien_tail.htmlpart').read_text(encoding='utf-8')
+          out = src[:pos] + tail
+          if 'skeleton residues' not in out or "kind:'skeleton'" not in out or 'drawSkeletonResidue' not in out:
+              raise SystemExit('latest skeleton-residue patch missing')
+          p.write_text(out, encoding='utf-8')
+          PY
+          cp /tmp/release/elementos_pendentes.md elementos_pendentes.md || true
+          grep -q "skeleton residues" alien_threat.html
+          grep -q "kind:'skeleton'" alien_threat.html
+          grep -q "drawSkeletonResidue" alien_threat.html
+          rm -rf .release_payload
+          rm -f .github/workflows/apply-best-versions.yml
+          rm -f .github/workflows/package-chatgpt-download.yml
+          rm -f .github/workflows/fix-alien-latest.yml
+          git config user.name "Projeto Primata Games"
+          git config user.email "guilhermesteiglederdias@gmail.com"
+          git add -A
+          git commit -m "Publish latest Alien Threat with skeleton residues [alien-fix]"
+          git push
