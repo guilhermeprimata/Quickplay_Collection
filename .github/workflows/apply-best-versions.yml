@@ -1,0 +1,50 @@
+name: Apply Current Best Versions
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: "!contains(github.event.head_commit.message, '[release-final]')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Rebuild current best Alien Threat
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .release_payload/part_*.txt | base64 -d > /tmp/release.tar.xz
+          echo "71945d8fd8853ed5895adb4c83dd614704529e19039aadd0f72fdedd5fd3b497  /tmp/release.tar.xz" | sha256sum -c -
+          mkdir -p /tmp/release
+          tar -xJf /tmp/release.tar.xz -C /tmp/release
+
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('alien_threat.html')
+          src = p.read_text(encoding='utf-8')
+          needle = '</body></html>'
+          pos = src.rfind(needle)
+          if pos < 0:
+              raise SystemExit('final closing tag not found')
+          base = src[:pos]
+          tail = Path('/tmp/release/alien_tail.htmlpart').read_text(encoding='utf-8')
+          p.write_text(base + tail, encoding='utf-8')
+          PY
+
+          cp /tmp/release/elementos_pendentes.md elementos_pendentes.md
+          echo "549cd38473b5c20ce3178e61178fdcde296f60fac40e2d5ad0dce1409ccfdc75  alien_threat.html" | sha256sum -c -
+          echo "009c6e01067b1b4e736481110d56ad38fe10c764039b704977a75e402c5d8e89  elementos_pendentes.md" | sha256sum -c -
+
+          rm -rf .release_payload .github/workflows/apply-best-versions.yml
+          git config user.name "Projeto Primata Games"
+          git config user.email "guilhermesteiglederdias@gmail.com"
+          git add -A
+          git commit -m "Publish current best game versions [release-final]"
+          git push
