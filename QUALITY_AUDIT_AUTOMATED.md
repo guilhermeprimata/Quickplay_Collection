@@ -4,31 +4,32 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 
 | Game | Platform | Native pause | Native restart | Native touch | Touch gap? | Audio | Storage | i18n signal | Bytes |
 |---|---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|---:|
-| `advinhe_o_numero.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 22595 |
-| `bow_and_arrow.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 52399 |
-| `campo_minado.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 66729 |
-| `click_speed.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 32779 |
-| `corrida_de_cavalos.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 45176 |
-| `dropworks.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 142090 |
-| `foguetinho.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 36681 |
-| `idle_trader.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 60743 |
-| `jogo_da_forca.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 58973 |
-| `jogo_da_velha.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 26063 |
-| `kombo_blocks.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 116039 |
-| `leaping_into_life.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 30589 |
-| `memory_genius.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 52123 |
-| `pixel_bomberman.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 32269 |
-| `pong.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 49020 |
-| `salve_os_gatinhos.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 34941 |
-| `snowball_avalanche.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 205022 |
-| `sudoku.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 28422 |
-| `the_worm.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 31378 |
-| `torre_de_hanoi.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 40024 |
-| `tron.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 43773 |
+| `advinhe_o_numero.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 25496 |
+| `alien_threat.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 348000 |
+| `bow_and_arrow.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 55300 |
+| `campo_minado.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 69630 |
+| `click_speed.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 35680 |
+| `corrida_de_cavalos.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 48077 |
+| `dropworks.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 144991 |
+| `foguetinho.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 39582 |
+| `idle_trader.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 63644 |
+| `jogo_da_forca.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 61874 |
+| `jogo_da_velha.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 28964 |
+| `kombo_blocks.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 118942 |
+| `leaping_into_life.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 33490 |
+| `memory_genius.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 55024 |
+| `pixel_bomberman.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 35170 |
+| `pong.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 51921 |
+| `salve_os_gatinhos.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 37842 |
+| `snowball_avalanche.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 207925 |
+| `sudoku.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 31323 |
+| `the_worm.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 34279 |
+| `torre_de_hanoi.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 42925 |
+| `tron.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 46674 |
 
 ## Automated findings
 
-- Platform layer not v2: `advinhe_o_numero.html`, `campo_minado.html`, `corrida_de_cavalos.html`, `dropworks.html`, `idle_trader.html`, `jogo_da_velha.html`, `kombo_blocks.html`, `pong.html`, `snowball_avalanche.html`, `sudoku.html`, `torre_de_hanoi.html`
+- Platform layer not v2: `advinhe_o_numero.html`, `alien_threat.html`, `campo_minado.html`, `corrida_de_cavalos.html`, `dropworks.html`, `idle_trader.html`, `jogo_da_velha.html`, `kombo_blocks.html`, `pong.html`, `snowball_avalanche.html`, `sudoku.html`, `torre_de_hanoi.html`
 - No native pause signal: none
 - No native restart/new-game signal: none
 - Canvas + keyboard but no native touch signal: none
@@ -50,6 +51,50 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 - `L120: if (tentativas === 0) {`
 - `L144: tentativas = 0;`
 - `L145: tempoRestante = 90;`
+
+### `alien_threat.html`
+**Control flow signals**
+- `L274: function resumeAudio(){let ctx=ensureAudio();if(!ctx)return Promise.resolve(null);if(ctx.state==='running')return Promise.resolve(ctx);if(audioResumePromise)return audioResumePromise;audioResumePromise=ctx.resume().catch(()=>null).then(()=>{audioResumePromise=null;return ctx.state==='running'?ctx:null});return audioResumePromise}`
+- `L276: function startCue(){if(!cfg.sound)return;duckMusic(.48,.7);alienPulseSfx(.8);tone(63,.42,'sine',.055,'sfx');tone(91,.28,'sawtooth',.022,'sfx',.12)}`
+- `L300: function beginRunAudio(withCue=true){if(!cfg.sound)return;let token=++runAudioToken,ctx=ensureAudio();if(!ctx)return;resumeAudio().then(ok=>{if(!ok||token!==runAudioToken||state!=='play'||!cfg.sound)return;if(withCue)startCue();setTimeout(()=>{if(token===runAudioToken&&state==='play'&&cfg.sound)music()},withCue?430:0)})}`
+- `L301: function unlockAudioFromGesture(){if(!cfg.sound)return;resumeAudio().then(ok=>{if(ok&&state==='play'&&!seqTimer)music(musicKind||'normal')})}`
+- `L314: function music(kind='normal'){if(seqTimer){clearTimeout(seqTimer);seqTimer=null}let token=++musicToken;if(kind==='off'||!cfg.sound)return;musicKind=kind;musicStep=0;let ctx=ensureAudio();if(!ctx)return;if(ctx.state==='running')scheduleMusic(token);else resumeAudio().then(ok=>{if(ok&&token===musicToken&&cfg.sound&&state==='play')scheduleMusic(token)})}`
+- `L318: let input={x:0,y:-1,keys:{},jump:false,trick:false,gpj:false,gpp:false},state='menu',world=[],biomass=[],fx=[],trail=[],marks=[],absorptionFx=[],santa=null,ufo=null,beast=null,deathCrash=null,nextSanta=210,nextUfo=95,mode='survival',time=0,dist=0,score=0,style=0,gates=0,miss=0,cam=0,shake=0,buried=0,life=100,timeLimit=60,terrainNotice=0;`
+- `L395: addEventListener('keydown',e=>{input.keys[e.code]=true;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();if(e.code==='Escape')pause();if(e.code==='F2'&&state==='play')reset(mode);if(e.code==='KeyH')$('#hud').classList.toggle('hidden')});addEventListener('keyup',e=>input.keys[e.code]=false);`
+- `L396: cv.addEventListener('mousemove',e=>{if(state!=='play')return;let r=cv.getBoundingClientRect(),sx=(e.clientX-r.left)/r.width*W,sy=(e.clientY-r.top)/r.height*H,m=screenToWorld(sx,sy);input.x=clamp((m.x-p.x)/92,-1,1);input.y=clamp((m.y-p.y)/115,-1,1);pointerSteerUntil=performance.now()+320});cv.oncontextmenu=e=>e.preventDefault();`
+- `L513: if(state==='crash'&&deathCrash?.shattered)return;`
+- `L646: function startIncidentIntro(modeName){installCommercialOverlay();commercialV3.seen.clear();commercialV3.intro={t:0,mode:modeName};commercialV3.skipArmed=true;state='intro';let d=document.getElementById('incidentCinema');d.classList.add('intro');document.getElementById('skipCinema').style.display='block';music('off');}`
+- `L649: function reset(m='survival'){startIncidentIntro(m)}`
+- `L659: function drawCommercialV3(){if(state==='intro'){drawIncidentIntro();return}if(state!=='play'&&state!=='pause')return;let s=worldToScreen(p.x,p.y),r=Math.max(18,p.r*camera.finalZoom),pulse=1+Math.sin(time*5.2)*.06;g.save();g.globalCompositeOperation='screen';`
+**Gameplay tuning signals**
+- `L119: const IS_MOBILE=matchMedia('(pointer: coarse)').matches,MIN_ZOOM=IS_MOBILE?.32:.34,MAX_ZOOM=1,MAX_RADIUS=600,DEBUG_CAMERA=false,MAX_SPAWN_PER_UPDATE=IS_MOBILE?4:7,MAX_ENTITIES=IS_MOBILE?125:170,MAX_PARTICLES=IS_MOBILE?280:450,MAX_MARKS=IS_MOBILE?220:350,MAX_TRAIL=500;`
+- `L120: const camera={x:W/2,y:H/2,zoom:1,targetZoom:1,impactZoom:1,growthZoom:1,lookAheadX:0,lookAheadY:0,offsetY:0,finalZoom:1,bounds:null};`
+- `L121: const ISLAND_RADIUS=7600,COAST_WIDTH=520,CHUNK_WIDTH=720,CHUNK_HEIGHT=620,MAX_CHUNKS_GENERATED_PER_UPDATE=IS_MOBILE?1:2,REBASE_DISTANCE=50000,WORLD_SEED=0x5a17c9d3;`
+- `L124: const CONTAM_CELL=24,MAX_CONTAM_PER_CHUNK=220;let contaminationStore=new Map(),contaminationStep=0;`
+- `L125: const deluxe={weather:'clear',weatherStrength:0,targetWeatherStrength:0,lastBiome:'alpine',combo:0,comboTimer:0,bestCombo:0,variety:new Set(),districtScore:0,eventBonus:0,wind:0,oneShotBiome:true};`
+- `L130: function updateCombo(type,value){deluxe.combo=Math.min(99,deluxe.combo+1);deluxe.comboTimer=2.8;deluxe.bestCombo=Math.max(deluxe.bestCombo,deluxe.combo);deluxe.variety.add(type);let varietyBonus=Math.min(2.5,1+deluxe.variety.size*.08),multi=1+Math.min(3,deluxe.combo*.035);return Math.round(value*varietyBonus*multi)}`
+- `L153: return{key:chunkKey(cx,cy),x:cx,y:cy,seed,biome,district:biome,urbanity:biome==='downtown'?1:biome==='commercial'?.82:biome==='industrial'?.7:biome==='residential'?.48:biome==='village'?.2:.05,difficulty:Math.min(1,Math.max(0,cy/80)),density:.9+random()*.35,corridor:0,roadWidth:avenueX||avenueY?88:54,avenueX,avenueY,events:[],entities:[],loaded:false};`
+- `L158: if(b==='frozen')return r<.24?'dog':r<.37?'bear':r<.43?'villager':r<.54?'rock':r<.65?'hydrant':r<.74?'skatePark':r<.82?'cityBlock':r<.90?'tourist':r<.97?'truck':'waterTower';`
+- `L159: if(b==='industrial')return r<.13?'warehouse':r<.24?'factory':r<.33?'garage':r<.42?'parking':r<.50?'train':r<.57?'maintenance':r<.64?'truck':r<.71?'fireTruck':r<.77?'car':r<.84?'waterTower':r<.90?'billboard':r<.96?'powerPlant':r<.985?'villager':'monsterTruck';`
+- `L165: const STRUCTURE_COMBO_WINDOW=2.2;let structureCombo={count:0,lastAt:-99,expires:0,mult:1,best:0,lastTier:0};`
+- `L176: function featureEntity(chunk,type,x,y,extra={}){let st=OBJECT_STATS[type]||[10,10];return pushChunkEntity(chunk,{type,x,y,w:st[0]*1.2,h:st[0],size:st[0],value:st[1],variant:0,phase:0,hit:false,gone:false,chunkKey:chunk.key,biome:chunk.biome,material:materialFor(type),hp:1,maxHp:1,...extra})}`
+- `L179: function makeRiverPoints(random,height=CHUNK_HEIGHT*1.18,turns=7){let pts=[],phase=random()*TAU,amp=35+random()*90,drift=(random()-.5)*60;for(let i=0;i<turns;i++){let t=i/(turns-1),yy=-height/2+t*height,xx=Math.sin(phase+t*(2.2+random()*2.2)*Math.PI)*amp+(t-.5)*drift;pts.push([xx,yy])}return pts}`
+- `L200: if(random()<.045)featureEntity(chunk,'lake',cx,cy,{w:100+random()*170,h:60+random()*100,size:0,terrainHazard:true,decorative:true,waterPower:.5});`
+- `L201: if(random()<.035)featureEntity(chunk,'river',cx,cy,{w:18+random()*20,h:CHUNK_HEIGHT*1.2,size:0,terrainHazard:true,decorative:true,points:makeRiverPoints(random),waterPower:.45});chunk.loaded=true;return`
+- `L203: let pool=cityBuildingPool(d),roadX=chunk.avenueX?88:54,roadY=chunk.avenueY?78:48,sidewalk=14,marginX=roadX*.5+sidewalk+12,marginY=roadY*.5+sidewalk+12,blocks=[[-1,-1],[1,-1],[-1,1],[1,1]],blockW=CHUNK_WIDTH*.5-marginX-18,blockH=CHUNK_HEIGHT*.5-marginY-18;`
+- `L220: function canOverrun(e){if(!e||e.terrainHazard||e.decorative)return false;let ballSpan=Math.max(p.r,p.targetR*.96)*2,objectSpan=Math.max(4,e.size||Math.max(e.w||0,e.h||0)*.5),need=overrunRequirement(e);return ballSpan>=objectSpan*need}`
+- `L221: function overrunImpact(e){let beforeSpeed=p.speed,beforeMass=p.mass;bury(e);p.speed=Math.max(beforeSpeed,p.speed,p.speedPeak||0);p.speedPeak=Math.max(p.speedPeak||0,p.speed);p.vx*=.985;camera.impactZoom=Math.max(camera.impactZoom,.985);shake=Math.min(shake,Math.max(1.2,(e.size||8)*.035));return p.mass>beforeMass}`
+- `L224: function clamp(v,a,b){return Math.max(a,Math.min(b,v))}function lerp(a,b,t){return a+(b-a)*clamp(t,0,1)}`
+- `L225: function radiusFromMass(mass){let raw=Math.sqrt(Math.max(0,mass));if(raw<=80)return raw;if(raw<=160)return 80+(raw-80)*.7;return Math.min(MAX_RADIUS,136+(raw-160)*.45)}`
+- `L226: function calculateTargetZoom(r){let z;if(r<=40)z=1;else if(r<=75)z=lerp(1,.9,(r-40)/35);else if(r<=130)z=lerp(.9,.79,(r-75)/55);else if(r<=180)z=lerp(.79,.70,(r-130)/50);else if(r<=300)z=lerp(.70,.58,(r-180)/120);else if(r<=450)z=lerp(.58,.46,(r-300)/150);else z=lerp(.46,IS_MOBILE?.35:.37,(r-450)/150);return clamp(z,MIN_ZOOM,MAX_ZOOM)}`
+- `L230: function getTargetEntityCount(){let factor=1/(camera.zoom*camera.zoom),raw=46*DIFF[cfg.dif].density*Math.min(2.8,factor);return clamp(Math.round(raw),40,MAX_ENTITIES)}`
+- `L261: const PREVIEW=new URLSearchParams(location.search).get('preview')==='1',GAME_ID='alien_threat',SHARED_STATS='ppg_minigames_stats_v1';let statActive=false,statLast=performance.now();`
+- `L265: function flushShared(){if(PREVIEW||!statActive)return;let now=performance.now(),delta=Math.min(10,Math.max(0,(now-statLast)/1000));statLast=now;if(delta<.05)return;let all=sharedRead(),s=all[GAME_ID]||{};s.totalSeconds=(s.totalSeconds||0)+delta;all[GAME_ID]=s;sharedWrite(all)}`
+- `L270: let ac,seqTimer=null,musicToken=0,musicStep=0,musicKind='normal',noiseBuffer=null,windBuffer=null,crowdAudioTimer=0,windAudioTimer=0,bgmBus=null,bgmTone=null,sfxBus=null,masterBus=null,masterComp=null,audioResumePromise=null,runAudioToken=0,musicRecoveryCooldown=0,lastMusicBeat=0,crawlAudioTimer=0,growthAudioRadius=9;const MUSIC_GAIN=1.9;`
+- `L273: function duckMusic(amount=.58,duration=.34){let ctx=ensureAudio();if(!ctx||!bgmBus)return;let now=ctx.currentTime,target=Math.max(.24,Math.min(1.06,amount));bgmBus.gain.cancelScheduledValues(now);bgmBus.gain.setTargetAtTime(target,now,.025);bgmBus.gain.setTargetAtTime(1.06,now+Math.max(.08,duration),.08)}`
+- `L281: function crawlSfx(){if(!cfg.sound||state!=='play')return;let size=clamp(p.r/300,0,1),speed=clamp(p.speed/260,0,1),base=48-size*15;filteredNoise(.12+.08*size,'lowpass',135+speed*95,.009+.014*size);tone(base,.09+.07*size,'sine',.01+.012*size,'sfx');if(size>.45)tone(base*.66,.16,'triangle',.006+.008*size,'sfx',.025)}`
+- `L311: function windGust(intensity=.5){alienPulseSfx(.3+intensity*.5)}`
+- `L312: function updateEnvironmentalAudio(dt){if(!cfg.sound||state!=='play')return;crawlAudioTimer-=dt;crowdAudioTimer-=dt;if(crawlAudioTimer<=0){crawlSfx();crawlAudioTimer=clamp(.48-p.speed*.0007-p.r*.00035,.17,.48)}if(crowdAudioTimer<=0){let danger=musicTension();if(Math.random()<.18+danger*.2)alienPulseSfx(.25+danger*.55);crowdAudioTimer=rnd(2.4,4.8)}}`
 
 ### `bow_and_arrow.html`
 **Control flow signals**
