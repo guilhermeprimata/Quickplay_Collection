@@ -1,0 +1,59 @@
+name: Repair HTML endings
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/repair-html-endings.yml'
+permissions:
+  contents: write
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Repair malformed document endings
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          targets = [Path('kombo_blocks.html'), Path('snowball_avalanche.html')]
+          marker = '<!-- PPG_FULLSCREEN_LANDSCAPE_V1 -->'
+          for path in targets:
+              text = path.read_text(encoding='utf-8')
+              idx = text.rfind(marker)
+              if idx < 0:
+                  raise SystemExit(f'{path}: fullscreen marker not found')
+              prefix, suffix = text[:idx], text[idx:]
+              # Remove the premature/malformed closing tags immediately before the fullscreen runtime.
+              prefix, n = re.subn(r'</body\s*>\s*</html\s*>?\s*$', '', prefix, count=1, flags=re.I)
+              if n != 1:
+                  raise SystemExit(f'{path}: expected malformed/premature body/html ending not found')
+              # Remove the stray terminal ">" left by the previous injector.
+              suffix, n = re.subn(r'\s*>\s*$', '\n', suffix, count=1)
+              if n != 1:
+                  raise SystemExit(f'{path}: expected stray terminal > not found')
+              fixed = prefix.rstrip() + '\n' + suffix.rstrip() + '\n</body>\n</html>\n'
+              if fixed.lower().count('</html>') != 1:
+                  raise SystemExit(f'{path}: expected exactly one closing </html> after repair')
+              if not fixed.rstrip().lower().endswith('</html>'):
+                  raise SystemExit(f'{path}: document does not end with </html>')
+              path.write_text(fixed, encoding='utf-8', newline='\n')
+              print(f'REPAIRED {path}')
+          PY
+      - name: Validate standalone games
+        run: python tools/validate_games.py
+      - name: Commit repaired games
+        run: |
+          set -euo pipefail
+          git diff --check
+          git config user.name "Projeto Primata Games"
+          git config user.email "guilhermesteiglederdias@gmail.com"
+          git add kombo_blocks.html snowball_avalanche.html
+          git commit -m "Repair HTML endings in Kombo Blocks and Snowball Avalanche"
+          git push origin HEAD:main
