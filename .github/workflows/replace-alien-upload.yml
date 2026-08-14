@@ -1,0 +1,34 @@
+name: Replace Alien Threat upload
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/replace-alien-upload.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  replace:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Rebuild uploaded Alien Threat
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .alien_payload/part_*.txt | base64 -d > /tmp/alien_threat.html.xz
+          xz -dc /tmp/alien_threat.html.xz > alien_threat.html
+          echo "54a4e134dcfdc0a1249b2683e6e6586404465ad3994bcb8814bdac9d1b5720cf  alien_threat.html" | sha256sum -c -
+          rm -rf .alien_payload
+          rm -f .github/workflows/replace-alien-upload.yml
+          git config user.name "Projeto Primata Games"
+          git config user.email "guilhermesteiglederdias@gmail.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "Replace Alien Threat with uploaded edition"
+          git push origin HEAD:main
