@@ -7,6 +7,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 | `advinhe_o_numero.html` | v2 | — | ✅ | — | ⚠️ | ✅ | ✅ | ✅ | 22428 |
 | `alien_threat.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 485488 |
 | `bow_and_arrow.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 55300 |
+| `brain_matrix.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 86497 |
 | `campo_minado.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 69630 |
 | `click_speed.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 35680 |
 | `corrida_de_cavalos.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 48077 |
@@ -20,6 +21,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 | `pixel_bomberman.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 35170 |
 | `pong.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 51921 |
 | `reef_runner.html` | v2 | — | — | ✅ | — | ✅ | ✅ | ✅ | 31004 |
+| `rift_run.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | — | 158626 |
 | `salve_os_gatinhos.html` | v2 | — | — | ✅ | — | ✅ | ✅ | ✅ | 40591 |
 | `snowball_avalanche.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 207925 |
 | `sudoku.html` | v2 | — | — | — | — | ✅ | ✅ | ✅ | 39066 |
@@ -29,7 +31,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 
 ## Automated findings
 
-- Platform layer not v2: `alien_threat.html`, `campo_minado.html`, `corrida_de_cavalos.html`, `dropworks.html`, `idle_trader.html`, `kombo_blocks.html`, `pong.html`, `snowball_avalanche.html`
+- Platform layer not v2: `alien_threat.html`, `brain_matrix.html`, `campo_minado.html`, `corrida_de_cavalos.html`, `dropworks.html`, `idle_trader.html`, `kombo_blocks.html`, `pong.html`, `rift_run.html`, `snowball_avalanche.html`
 - No native pause signal: `advinhe_o_numero.html`, `jogo_da_velha.html`, `reef_runner.html`, `salve_os_gatinhos.html`, `sudoku.html`, `torre_de_hanoi.html`
 - No native restart/new-game signal: `reef_runner.html`, `salve_os_gatinhos.html`, `sudoku.html`
 - Canvas + keyboard but no native touch signal: `advinhe_o_numero.html`
@@ -129,6 +131,50 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 - `L94: function showError(msg){frameErrors++;const box=$('errorBox');box.textContent='Falha recuperável: '+msg;box.style.display='block';clearTimeout(showError.t);showError.t=setTimeout(()=>box.style.display='none',3500)}`
 - `L96: function resize(){DPR=Math.min(devicePixelRatio||1,2);W=Math.max(320,innerWidth);H=Math.max(240,innerHeight);canvas.width=Math.round(W*DPR);canvas.height=Math.round(H*DPR);ctx.setTransform(DPR,0,0,DPR,0,0);if(currentWeather)seedClouds(false)}`
 - `L98: function archer(){return{x:Math.max(92,W*.11),y:H*.72}}`
+
+### `brain_matrix.html`
+**Control flow signals**
+- `L867: if (this.ctx.state === "suspended") {`
+- `L1147: function portalStartRun() {`
+- `L1180: function portalPauseTime() {`
+- `L1185: function portalResumeTime() {`
+- `L1208: document.getElementById("btn-confirm-yes").addEventListener("click", () => {`
+- `L1217: document.getElementById("btn-confirm-no").addEventListener("click", () => {`
+- `L1250: btnSel.addEventListener("click", () => {`
+- `L1264: btnDel.addEventListener("click", () => {`
+- `L1283: function addNewProfile(name) {`
+- `L1626: canvas.addEventListener("pointerdown", (e) => {`
+- `L1642: canvas.addEventListener("keydown", (e) => {`
+- `L1695: btn.addEventListener("click", () => switchScreen(btn.dataset.target));`
+**Gameplay tuning signals**
+- `L605: help2: "2. Clear numbers first, then letters in alphabetical order (A-Z).",`
+- `L627: help2: "2. Termine os números primeiro, depois as letras em ordem (A-Z).",`
+- `L628: help3: "3. Erros descontam o dobro de pontos, desviram a última peça e embaralham a tela!",`
+- `L716: help3: "3. Gli errori tolgono il doppio, annullano l'ultima mossa e rimescolano la matrice!",`
+- `L856: this.currentIntervalMs = 0;`
+- `L1028: let interval = mode === "menu" ? 340 : Math.max(130, 240 - Math.floor(this.tension * 110));`
+- `L1065: const oldInterval = Math.max(130, 240 - Math.floor(this.tension * 110));`
+- `L1066: this.tension = Math.min(1.0, Math.max(0.0, progress));`
+- `L1067: const newInterval = Math.max(130, 240 - Math.floor(this.tension * 110));`
+- `L1068: if (this.bgmMode === "game" && this.bgmEnabled && !this.isMuted && Math.abs(newInterval - oldInterval) >= 14) {`
+- `L1096: const PORTAL_STATS_KEY = "ppg_minigames_stats_v1";`
+- `L1098: const PREVIEW = new URLSearchParams(location.search).get("preview") === "1";`
+- `L1123: // V1 stored records only by level, mixing modes. Preserve them as Normal records.`
+- `L1166: st.longestStreak = Math.max(st.longestStreak || 0, streak);`
+- `L1175: st.totalSeconds = (st.totalSeconds || 0) + Math.max(0, (performance.now() - portalSegmentStart) / 1000);`
+- `L1189: setInterval(() => { if (portalSegmentStart) portalCommitActiveTime(); }, 30000);`
+- `L1244: btnGroup.style.gap = "6px";`
+- `L1298: 5. GAME ENGINE & MASTERMIND MATRIX LOGIC`
+- `L1301: { level: 1, size: 2, numCount: 4, letCount: 0, mult: 1.0 },`
+- `L1302: { level: 2, size: 3, numCount: 9, letCount: 0, mult: 1.1 },`
+- `L1303: { level: 3, size: 4, numCount: 16, letCount: 0, mult: 1.2 },`
+- `L1304: { level: 4, size: 5, numCount: 25, letCount: 0, mult: 1.3 },`
+- `L1305: { level: 5, size: 6, numCount: 36, letCount: 0, mult: 1.4 },`
+- `L1306: { level: 6, size: 7, numCount: 49, letCount: 0, mult: 1.5 },`
+- `L1307: { level: 7, size: 8, numCount: 64, letCount: 0, mult: 1.6 },`
+- `L1308: { level: 8, size: 9, numCount: 81, letCount: 0, mult: 1.7 },`
+- `L1309: { level: 9, size: 10, numCount: 100, letCount: 0, mult: 1.8 },`
+- `L1310: { level: 10, size: 11, numCount: 100, letCount: 10, mult: 1.9 },`
 
 ### `campo_minado.html`
 **Control flow signals**
@@ -504,6 +550,50 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 - `L92: for(let i=particles.length-1;i>=0;i--){let p=particles[i];p.life-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=55*dt;ctx.globalAlpha=Math.max(0,p.life*1.7);ctx.fillStyle=p.color;ctx.shadowColor=p.color;ctx.shadowBlur=p.size>2?6:0;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,7);ctx.fill();if(p.life<=0)particles.splice(i,1)}ctx.shadowBlur=0;ctx.globalAlpha=1`
 - `L95: function draw(dt){waterT+=dt;ctx.save();if(shake>0)ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);sky();effects(dt);for(let o of obstacles)treeObstacle(o);lake(waterT);frogDraw();if(flash>0){ctx.fillStyle='rgba(210,245,255,${flash*.16})';ctx.fillRect(0,0,W,H)}ctx.restore();shake=Math.max(0,shake-dt*24);flash=Math.max(0,flash-dt*2.8)}`
 - `L96: function frame(now){let dt=Math.min(.035,(now-last)/1000||0);last=now;update(dt);draw(dt);requestAnimationFrame(frame)}reset();requestAnimationFrame(frame);if(PREVIEW)setTimeout(start,60);`
+
+### `rift_run.html`
+**Control flow signals**
+- `L564: let gameState = 'PLAYING'; // PLAYING | DYING | DESTROYED | BREACHED | VICTORY`
+- `L676: if (audioContext.state === 'suspended') {`
+- `L687: if (isChargingShot && player.alive && gameState === 'PLAYING') {`
+- `L856: const hz = (42 + logNorm * 44 + stutter) * (gameState === 'DYING' ? 0.6 : 1.0);`
+- `L857: const active = soundEnabled && (gameState === 'PLAYING' || gameState === 'DYING') && player.alive;`
+- `L1156: function portalStartRun() {`
+- `L1183: function portalPauseTime() {`
+- `L1188: function portalResumeTime() {`
+- `L1189: if (!PREVIEW && !paused && (gameState === 'PLAYING' || gameState === 'DYING') && !portalSegmentStart) portalSegmentStart = performance.now();`
+- `L1253: function setPaused(next) {`
+- `L1255: if (paused === next || (!player.alive && gameState === 'DESTROYED')) return;`
+- `L1584: function resetEnemyShip(ship, slot = 0, forceFar = false) {`
+**Gameplay tuning signals**
+- `L229: const PREVIEW = new URLSearchParams(location.search).get('preview') === '1';`
+- `L232: const PORTAL_STATS_KEY = 'ppg_minigames_stats_v1';`
+- `L270: const SPEED_TIERS = [900, 1250, 1650, 2100, 2650, 3250, 3950];`
+- `L271: const MIN_CRUISE_SPEED = SPEED_TIERS[0];`
+- `L272: const MAX_CRUISE_SPEED = SPEED_TIERS[SPEED_TIERS.length - 1];`
+- `L273: let cruiseSpeed = SPEED_TIERS[3];`
+- `L284: ghostShield: 100, // Lagging Ghost Health Bar`
+- `L286: deathTimer: 0,`
+- `L287: deathMaxTimer: 2.8,`
+- `L302: const MAX_VISIBLE_THREAT_Z = 14500;`
+- `L303: const AUTO_AIM_MIN_Z = 0.5;`
+- `L309: const AUTO_AIM_CONE_DIST_THRESHOLD = 0.45; // Max normalized offset from flight lead`
+- `L312: const MIN_CHARGE_TIME = 0.05;`
+- `L315: let shotChargeTimer = 0;`
+- `L317: let laserChargeLevel = 1; // 1 (Tap), 2 (Medium), 3 (Overcharge)`
+- `L323: const DAMAGE_TRAIL_PARTICLE_COUNT = 240;`
+- `L324: const ENEMY_BOLT_COUNT = 72;`
+- `L325: const ENEMY_BOLT_HIT_Z = 12;`
+- `L326: const ENEMY_BOLT_DESPAWN_Z = -220;`
+- `L330: let combatShieldTimer = 0;`
+- `L331: let combatShieldRechargeTimer = 0;`
+- `L334: let fireCooldownTimer = 0;`
+- `L336: let damageCooldown = 0;`
+- `L338: let damageVignette = 0;`
+- `L339: let damageShake = 0;`
+- `L340: let damageEmissionAccumulator = 0;`
+- `L341: let damageAlarmTimer = 0;`
+- `L342: let damageAlarmVisualPulse = 0;`
 
 ### `salve_os_gatinhos.html`
 **Control flow signals**

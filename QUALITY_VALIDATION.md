@@ -7,6 +7,7 @@ Validation executed with Node.js syntax checking for every inline JavaScript blo
 | `advinhe_o_numero.html` | 2 | 0 | — | ✅ |
 | `alien_threat.html` | 10 | 0 | ✅ | ✅ |
 | `bow_and_arrow.html` | 4 | 0 | ✅ | ✅ |
+| `brain_matrix.html` | 1 | 0 | ✅ | ✅ |
 | `campo_minado.html` | 5 | 0 | ✅ | ✅ |
 | `click_speed.html` | 4 | 0 | ✅ | ✅ |
 | `corrida_de_cavalos.html` | 4 | 0 | ✅ | ✅ |
@@ -20,6 +21,7 @@ Validation executed with Node.js syntax checking for every inline JavaScript blo
 | `pixel_bomberman.html` | 4 | 0 | ✅ | ✅ |
 | `pong.html` | 2 | 0 | ✅ | ✅ |
 | `reef_runner.html` | 1 | 0 | — | — |
+| `rift_run.html` | 1 | 0 | ✅ | ✅ |
 | `salve_os_gatinhos.html` | 2 | 0 | — | — |
 | `snowball_avalanche.html` | 2 | 0 | ✅ | ✅ |
 | `sudoku.html` | 2 | 0 | — | — |
@@ -29,7 +31,7 @@ Validation executed with Node.js syntax checking for every inline JavaScript blo
 
 ## Result
 
-- Games checked: **22**
+- Games checked: **24**
 - JavaScript syntax failures: **0**
 - External JavaScript dependencies: **0**
 - Direct Banco do Brasil branding signals: **0**
