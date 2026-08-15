@@ -1,0 +1,52 @@
+name: Quickplay staged assembly
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.quickplay-upload/**'
+
+permissions:
+  contents: write
+
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Wait for ready marker
+        id: ready
+        shell: bash
+        run: |
+          if [ ! -f .quickplay-upload/READY ]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "Staging incomplete; nothing to assemble yet."
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Assemble and validate Quickplay release
+        if: steps.ready.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .quickplay-upload/brain_matrix/part_* > brain_matrix.html
+          cat .quickplay-upload/rift_run/part_* > rift_run.html
+          cat .quickplay-upload/index/part_* > index.html
+          echo 'c7d0b08ac4cd9455c5decd7baa7574d81f2029a84f2f15ea557b54aad7f2ffff  brain_matrix.html' | sha256sum -c -
+          echo '9e457c6f8156df19c9ada2d8ffff17846c41823f2a8ffb28b29dbe0addff3f7e  rift_run.html' | sha256sum -c -
+          echo 'bd1e8c8ed0e63d99ee5d5a81496acf2b63974f8160ffc2d69268c741834640f4  index.html' | sha256sum -c -
+          node -e "for (const f of ['brain_matrix.html','rift_run.html','index.html']) { const s=require('fs').readFileSync(f,'utf8'); const m=s.match(/<script[^>]*>([\\s\\S]*?)<\\/script>/g)||[]; for (const [i,b] of m.entries()) { const js=b.replace(/^<script[^>]*>/,'').replace(/<\\/script>$/,''); new Function(js); } console.log(f+': scripts parse OK'); }"
+      - name: Commit assembled release
+        if: steps.ready.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .quickplay-upload
+          rm -f .github/workflows/quickplay-assemble.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html brain_matrix.html rift_run.html .quickplay-upload .github/workflows/quickplay-assemble.yml
+          git commit -m 'Integrate Brain Matrix and RIFT RUN into Quickplay Collection'
+          git push origin HEAD:main
