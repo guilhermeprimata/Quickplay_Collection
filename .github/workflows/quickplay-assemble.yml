@@ -32,18 +32,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          assemble() { cat ".quickplay-upload/release3/$1"/part_* | base64 -d | gzip -d > "$2"; }
-          assemble brain_matrix brain_matrix.html
-          assemble rift_run rift_run.html
-          assemble index index.html
-          assemble salve_os_gatinhos salve_os_gatinhos.html
-          assemble jogo_da_velha jogo_da_velha.html
-          assemble advinhe_o_numero advinhe_o_numero.html
-          assemble torre_de_hanoi torre_de_hanoi.html
-          assemble click_speed click_speed.html
-          assemble foguetinho foguetinho.html
-          assemble reef_runner reef_runner.html
-          assemble sudoku sudoku.html
+          cat .quickplay-upload/release4/part_* | base64 -d > /tmp/quickplay-release.tar.gz
+          echo 'aa31f18fcd1ab5dc03ee4dddb229d4ebc169c41759a84b7c79e5303f6994aa7b  /tmp/quickplay-release.tar.gz' | sha256sum -c -
+          tar -xzf /tmp/quickplay-release.tar.gz -C .
           echo 'c7d0b08ac4cd9455c5decd7baa7574d81f2029a84f2f15ea557b54aad7f2ffff  brain_matrix.html' | sha256sum -c -
           echo '9e457c6f8156df19c9ada2d8ffff17846c41823f2a8ffb28b29dbe0addff3f7e  rift_run.html' | sha256sum -c -
           echo 'e7205cc3ac3274e8180d22dde015b969a7681dc81cf3b261c2639c93b1279fe7  index.html' | sha256sum -c -
@@ -64,8 +55,9 @@ jobs:
             for(const b of scripts){const js=b.replace(/^<script[^>]*>/,'').replace(/<\/script>$/,'');new Function(js)}
             console.log(f+': scripts parse OK');
           }
-          if (fs.readFileSync('index.html','utf8').includes("file:'leaping_into_life.html'")) throw new Error('Legacy LEAP FROG still listed');
-          if (!fs.readFileSync('index.html','utf8').includes("file:'reef_runner.html'")) throw new Error('Reef Runner missing from menu');
+          const menu=fs.readFileSync('index.html','utf8');
+          if (menu.includes("file:'leaping_into_life.html'")) throw new Error('Legacy LEAP FROG still listed');
+          if (!menu.includes("file:'reef_runner.html'")) throw new Error('Reef Runner missing from menu');
           NODE
           rm -f leaping_into_life.html
       - name: Commit assembled release
