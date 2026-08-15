@@ -1,142 +1,263 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Velha Quântica</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Velha Quântica 4×4 — PPG</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background-color: #FFB45E;
-      color: #5138B8;
+    :root {
+      --bg: #090b16;
+      --panel: rgba(18, 22, 42, 0.85);
+      --accent: #49f6ff;
+      --accent-glow: rgba(73, 246, 255, 0.4);
+      --plasma: #ff5e97;
+      --plasma-glow: rgba(255, 94, 151, 0.4);
+      --ink: #eaf3ff;
+      --muted: #8ca3c7;
+      --gold: #ffd166;
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
       margin: 0;
-      padding: 20px;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: Inter, system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at 50% 20%, #151d3b 0%, var(--bg) 75%);
+      color: var(--ink);
     }
 
+    .shell {
+      width: min(480px, calc(100vw - 16px));
+      height: calc(100dvh - var(--ppg-bar-h, 48px) - 12px);
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+    }
+
+    header {
+      text-align: center;
+      width: 100%;
+    }
     h1 {
-      font-size: 3em;
-      margin-bottom: 10px;
+      margin: 0;
+      font-size: clamp(1.4rem, 4vh, 2rem);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      background: linear-gradient(135deg, var(--accent), #b475ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
-    canvas {
-      border: 4px solid #5138B8;
-      background-color: #fff;
-      margin-top: 10px;
+    .hud-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      width: 100%;
+      margin: 6px 0;
+    }
+    .hud-card {
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      padding: 6px 10px;
+      text-align: center;
+      backdrop-filter: blur(8px);
+    }
+    .hud-card span { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+    .hud-card b { display: block; font-size: 1.25rem; font-family: ui-monospace, monospace; color: var(--gold); }
+
+    .stage-wrap {
+      position: relative;
+      width: min(390px, 86vw);
+      aspect-ratio: 1;
+      border-radius: 20px;
+      padding: 10px;
+      background: rgba(10, 14, 28, 0.9);
+      border: 1px solid rgba(73, 246, 255, 0.25);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6), inset 0 0 30px rgba(73, 246, 255, 0.05);
+    }
+    canvas#gameCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
       cursor: pointer;
+      touch-action: none;
     }
 
-    .info {
-      margin-top: 15px;
-      font-size: 1.2em;
+    /* Modal Overlay de Fim de Jogo */
+    .game-overlay {
+      position: absolute;
+      inset: 0;
+      display: none;
+      place-items: center;
+      background: rgba(4, 7, 18, 0.88);
+      backdrop-filter: blur(6px);
+      border-radius: 20px;
+      padding: 16px;
+      text-align: center;
+      animation: fadeIn 0.2s ease-out;
     }
+    .game-overlay.active { display: grid; }
+    .game-overlay h2 { margin: 0 0 6px; font-size: 1.5rem; color: var(--accent); }
+    .game-overlay p { margin: 0 0 16px; color: var(--muted); font-size: 0.9rem; }
+    .game-overlay input {
+      width: 80%;
+      padding: 8px 12px;
+      background: #0d152c;
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      color: #fff;
+      font: 700 1rem inherit;
+      text-align: center;
+      margin-bottom: 12px;
+      outline: none;
+    }
+    .btn-restart {
+      padding: 10px 20px;
+      background: linear-gradient(135deg, #49f6ff, #785cff);
+      border: 0;
+      border-radius: 10px;
+      color: #050814;
+      font-weight: 850;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+    .btn-restart:hover { transform: scale(1.04); }
 
-    .top5 {
-      margin-top: 30px;
+    .ranking-box {
+      width: 100%;
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      padding: 8px 12px;
+      max-height: 85px;
+      overflow-y: auto;
     }
+    .ranking-box h3 { margin: 0 0 4px; font-size: 0.75rem; color: var(--muted); text-transform: uppercase; }
+    .ranking-box ol { margin: 0; padding-left: 18px; font-size: 0.82rem; font-family: ui-monospace, monospace; }
 
-    .top5 ol {
-      padding-left: 0;
-      list-style-position: inside;
-    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   </style>
-<style id="ppg-viewport-fit">
-:root{--fitbar:var(--ppg-bar-h,48px)}html,body{height:100%;overflow:hidden}body{height:100dvh!important;min-height:0!important;padding:calc(var(--fitbar) + 5px) 8px 5px!important}h1{font-size:clamp(22px,5vh,42px)!important;margin:0 0 3px!important}#gameCanvas{display:block;width:min(400px,calc(100vw - 20px),calc(100dvh - var(--fitbar) - 245px));height:auto;aspect-ratio:1;margin:3px auto!important}.info{margin-top:4px!important;font-size:clamp(12px,2vh,18px)!important}.info p{margin:2px}.top5{margin-top:5px!important;max-height:92px;overflow:auto}.top5 h2{font-size:15px;margin:2px}.top5 ol{margin:2px}
-@media(max-height:560px){.top5{display:none}#gameCanvas{width:min(400px,calc(100vw - 20px),calc(100dvh - var(--fitbar) - 135px))}}
-</style>
-
-<style id="ppg-quality-controls-style">
-#ppg-quality-pause-overlay{position:fixed;z-index:2147483635;inset:0;display:none;place-items:center;padding:18px;background:rgba(4,6,16,.82);backdrop-filter:blur(9px);font-family:Inter,"Segoe UI",system-ui,sans-serif;color:#fff}#ppg-quality-pause-overlay.open{display:grid}.ppg-quality-pause-card{width:min(440px,94vw);padding:24px;border:1px solid rgba(255,255,255,.18);border-radius:22px;background:linear-gradient(145deg,#17192d,#090b17);box-shadow:0 30px 100px #000a;text-align:center}.ppg-quality-pause-card h2{margin:0 0 8px;font-size:clamp(25px,5vw,38px);color:#e8dcff}.ppg-quality-pause-card p{margin:0 0 18px;color:#bcc2d8;line-height:1.45}.ppg-quality-pause-actions{display:grid;gap:9px}.ppg-quality-pause-actions button,.ppg-quality-pause-actions a{display:block;width:100%;padding:12px 14px;border:1px solid #ffffff22;border-radius:12px;background:#242941;color:#fff;font:800 14px/1.2 Inter,"Segoe UI",system-ui,sans-serif;text-decoration:none;cursor:pointer}.ppg-quality-pause-actions button:first-child{background:linear-gradient(135deg,#6d5cff,#27d9c0);color:#081016}.ppg-quality-pause-actions :is(button,a):hover{filter:brightness(1.13)}#ppg-quality-pause,#ppg-quality-restart{white-space:nowrap}.ppg-quality-paused body{overflow:hidden!important}
-</style>
-<script id="ppg-quality-controls-runtime">
-(()=>{'use strict';
-const qs=new URLSearchParams(location.search);if(qs.get('preview')==='1'||qs.has('preview'))return;
-const ADD_RESTART=false;
-const realPerfNow=performance.now.bind(performance),realDateNow=Date.now.bind(Date),nativeRAF=window.requestAnimationFrame.bind(window),nativeSetInterval=window.setInterval.bind(window),nativeSetTimeout=window.setTimeout.bind(window);
-let paused=false,pausePerf=0,pauseDate=0,perfOffset=0,dateOffset=0;
-const gamePerfNow=()=>{const n=realPerfNow();return n-perfOffset-(paused?n-pausePerf:0)};
-const gameDateNow=()=>{const n=realDateNow();return n-dateOffset-(paused?n-pauseDate:0)};
-try{Object.defineProperty(performance,'now',{value:gamePerfNow,configurable:true})}catch{}
-try{Date.now=gameDateNow}catch{}
-window.requestAnimationFrame=cb=>nativeRAF(function gate(){if(paused)return nativeRAF(gate);cb(gamePerfNow())});
-window.setInterval=(fn,ms,...args)=>typeof fn==='function'?nativeSetInterval(()=>{if(!paused)fn(...args)},ms):nativeSetInterval(fn,ms,...args);
-window.setTimeout=(fn,ms,...args)=>{if(typeof fn!=='function')return nativeSetTimeout(fn,ms,...args);const run=()=>{if(paused)return nativeSetTimeout(run,50);fn(...args)};return nativeSetTimeout(run,ms)};
-const L={
- en:{pause:'Pause',paused:'Paused',desc:'Gameplay time and controls are frozen.',resume:'Resume game',restart:'New game',exit:'Exit to Mini Games'},
- 'pt-BR':{pause:'Pausar',paused:'Pausado',desc:'O tempo e os controles da partida estão congelados.',resume:'Continuar jogo',restart:'Novo jogo',exit:'Sair para Mini Games'},
- es:{pause:'Pausa',paused:'En pausa',desc:'El tiempo y los controles están congelados.',resume:'Continuar',restart:'Nueva partida',exit:'Salir a Mini Games'},
- fr:{pause:'Pause',paused:'En pause',desc:'Le temps et les contrôles sont figés.',resume:'Reprendre',restart:'Nouvelle partie',exit:'Quitter vers Mini Games'},
- de:{pause:'Pause',paused:'Pausiert',desc:'Spielzeit und Steuerung sind angehalten.',resume:'Fortsetzen',restart:'Neues Spiel',exit:'Zu Mini Games'},
- it:{pause:'Pausa',paused:'In pausa',desc:'Tempo e controlli di gioco sono fermi.',resume:'Riprendi',restart:'Nuova partita',exit:'Esci ai Mini Games'},
- tr:{pause:'Duraklat',paused:'Duraklatıldı',desc:'Oyun süresi ve kontroller donduruldu.',resume:'Devam et',restart:'Yeni oyun',exit:"Mini Games'e çık"},
- ru:{pause:'Пауза',paused:'Игра на паузе',desc:'Игровое время и управление остановлены.',resume:'Продолжить',restart:'Новая игра',exit:'В Mini Games'},
- ja:{pause:'一時停止',paused:'一時停止中',desc:'ゲーム時間と操作を停止しています。',resume:'再開',restart:'新しいゲーム',exit:'ミニゲームへ'},
- ko:{pause:'일시정지',paused:'일시정지됨',desc:'게임 시간과 조작이 멈췄습니다.',resume:'계속',restart:'새 게임',exit:'미니게임으로'},
- 'zh-CN':{pause:'暂停',paused:'已暂停',desc:'游戏时间和操作已冻结。',resume:'继续',restart:'新游戏',exit:'返回小游戏菜单'}
-};
-function lang(){const raw=(document.documentElement.lang||navigator.language||'en').replace('_','-');if(/^pt/i.test(raw))return'pt-BR';if(/^zh/i.test(raw))return'zh-CN';const k=raw.split('-')[0];return L[k]?k:'en'}function t(k){return(L[lang()]||L.en)[k]||L.en[k]}
-let overlay,pauseBtn,restartBtn;
-function refresh(){if(pauseBtn)pauseBtn.textContent='⏸ '+t('pause');if(restartBtn)restartBtn.textContent='↻ '+t('restart');if(!overlay)return;overlay.querySelector('h2').textContent=t('paused');overlay.querySelector('p').textContent=t('desc');overlay.querySelector('[data-act=resume]').textContent='▶ '+t('resume');overlay.querySelector('[data-act=restart]').textContent='↻ '+t('restart');overlay.querySelector('[data-act=exit]').textContent='↩ '+t('exit')}
-function releaseKeys(){for(const key of ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d','W','A','S','D',' '])document.dispatchEvent(new KeyboardEvent('keyup',{key,bubbles:true}))}
-function setPaused(next){next=!!next;if(next===paused)return;if(next){releaseKeys();pausePerf=realPerfNow();pauseDate=realDateNow();paused=true}else{perfOffset+=realPerfNow()-pausePerf;dateOffset+=realDateNow()-pauseDate;paused=false}window.__PPG_PAUSED__=paused;document.documentElement.classList.toggle('ppg-quality-paused',paused);overlay?.classList.toggle('open',paused);document.dispatchEvent(new CustomEvent(paused?'ppg:pause':'ppg:resume'));if(!paused)nativeSetTimeout(()=>document.activeElement?.blur?.(),0)}
-function restart(){if(paused)setPaused(false);if(typeof window.PPGGameRestart==='function'){window.PPGGameRestart();return}location.reload()}
-function mount(){if(document.getElementById('ppg-quality-pause-overlay'))return;overlay=document.createElement('div');overlay.id='ppg-quality-pause-overlay';overlay.innerHTML='<div class="ppg-quality-pause-card" role="dialog" aria-modal="true"><h2></h2><p></p><div class="ppg-quality-pause-actions"><button data-act="resume"></button><button data-act="restart"></button><a data-act="exit" href="menu_minigames.html"></a></div></div>';document.body.appendChild(overlay);overlay.querySelector('[data-act=resume]').onclick=()=>setPaused(false);overlay.querySelector('[data-act=restart]').onclick=restart;const toolbar=document.getElementById('ppg-toolbar');if(toolbar){pauseBtn=document.createElement('button');pauseBtn.id='ppg-quality-pause';pauseBtn.type='button';pauseBtn.onclick=()=>setPaused(!paused);const menu=toolbar.querySelector('a[href*="menu_minigames"]');toolbar.insertBefore(pauseBtn,menu||null);if(ADD_RESTART){restartBtn=document.createElement('button');restartBtn.id='ppg-quality-restart';restartBtn.type='button';restartBtn.onclick=restart;toolbar.insertBefore(restartBtn,menu||null)}}refresh();new MutationObserver(refresh).observe(document.documentElement,{attributes:true,attributeFilter:['lang']})}
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(document.querySelector('.ppg-modal.open,dialog[open],.modal.open')&&!paused)return;e.preventDefault();e.stopImmediatePropagation();setPaused(!paused);return}if(paused){e.preventDefault();e.stopImmediatePropagation()}},true);for(const ev of ['pointerdown','mousedown','touchstart','click'])document.addEventListener(ev,e=>{if(paused&&!e.target.closest('#ppg-quality-pause-overlay')){e.preventDefault();e.stopImmediatePropagation()}},true);
-window.PPGQualityControls={pause:()=>setPaused(true),resume:()=>setPaused(false),toggle:()=>setPaused(!paused),restart,get paused(){return paused}};
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount);else mount();
-})();
-</script>
-
 </head>
 <body>
-  <h1>Velha Quântica</h1>
-  <canvas id="gameCanvas" width="400" height="400"></canvas>
-  <div class="info">
-    <p>Tempo: <span id="timer">0</span>s</p>
-    <p>Pontuação: <span id="score">0</span></p>
-  </div>
-  <div class="top5">
-    <h2>Top 5 Jogadores</h2>
-    <ol id="topPlayers"></ol>
-  </div>
+  <main class="shell">
+    <header>
+      <h1>VELHA QUÂNTICA 4×4</h1>
+    </header>
+
+    <div class="hud-row">
+      <div class="hud-card"><span>Cronômetro</span><b id="timer">00:00</b></div>
+      <div class="hud-card"><span>Pontuação</span><b id="score">0</b></div>
+    </div>
+
+    <div class="stage-wrap">
+      <canvas id="gameCanvas" width="400" height="400"></canvas>
+      
+      <div class="game-overlay" id="overlay">
+        <div>
+          <h2 id="overTitle">Vitória!</h2>
+          <p id="overDesc">Você conquistou 10 pontos.</p>
+          <input type="text" id="playerName" placeholder="Seu apelido" maxlength="15" />
+          <br />
+          <button class="btn-restart" id="btnContinue">JOGAR NOVAMENTE</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="ranking-box">
+      <h3>🏆 Ranking Local</h3>
+      <ol id="topPlayers"></ol>
+    </div>
+  </main>
 
   <script>
+    'use strict';
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
     const size = 4;
-    const cellSize = canvas.width / size;
+    let cellSize = canvas.width / size;
+
     let board = Array(size).fill().map(() => Array(size).fill(""));
-    let currentPlayer = "X";
     let gameOver = false;
     let score = 0;
     let timer = 0;
-    let timerInterval;
+    let timerInterval = null;
+    let roundToken = 0;
+    const SCORE_KEY = "ppg_velha_quantica_scores_v2";
 
     const timerDisplay = document.getElementById("timer");
     const scoreDisplay = document.getElementById("score");
     const topPlayersList = document.getElementById("topPlayers");
+    const overlay = document.getElementById("overlay");
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    function initDPI() {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      cellSize = rect.width / size;
+    }
+    window.addEventListener('resize', () => { initDPI(); drawBoard(); });
 
     function drawBoard() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const w = canvas.getBoundingClientRect().width;
+      ctx.clearRect(0, 0, w, w);
+
+      // Linhas da grade com efeito Neon
+      ctx.strokeStyle = 'rgba(73, 246, 255, 0.28)';
+      ctx.lineWidth = 2;
       for (let i = 1; i < size; i++) {
+        const p = i * cellSize;
         ctx.beginPath();
-        ctx.moveTo(i * cellSize, 0);
-        ctx.lineTo(i * cellSize, canvas.height);
-        ctx.moveTo(0, i * cellSize);
-        ctx.lineTo(canvas.width, i * cellSize);
-        ctx.strokeStyle = "#5138B8";
-        ctx.lineWidth = 2;
+        ctx.moveTo(p, 8); ctx.lineTo(p, w - 8);
+        ctx.moveTo(8, p); ctx.lineTo(w - 8, p);
         ctx.stroke();
       }
 
+      // Desenha símbolos X e O estilizados
       for (let r = 0; r < size; r++) {
         for (let c = 0; c < size; c++) {
-          if (board[r][c]) {
-            ctx.font = "40px Arial";
-            ctx.fillStyle = board[r][c] === "X" ? "#5138B8" : "#FFB45E";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(board[r][c], c * cellSize + cellSize / 2, r * cellSize + cellSize / 2);
+          const val = board[r][c];
+          if (!val) continue;
+
+          const cx = c * cellSize + cellSize / 2;
+          const cy = r * cellSize + cellSize / 2;
+          const rad = cellSize * 0.26;
+
+          if (val === "X") {
+            ctx.save();
+            ctx.strokeStyle = "#49f6ff";
+            ctx.shadowColor = "#49f6ff";
+            ctx.shadowBlur = 12;
+            ctx.lineWidth = 4;
+            ctx.lineCap = "round";
+            ctx.beginPath();
+            ctx.moveTo(cx - rad, cy - rad); ctx.lineTo(cx + rad, cy + rad);
+            ctx.moveTo(cx + rad, cy - rad); ctx.lineTo(cx - rad, cy + rad);
+            ctx.stroke();
+            ctx.restore();
+          } else {
+            ctx.save();
+            ctx.strokeStyle = "#ff5e97";
+            ctx.shadowColor = "#ff5e97";
+            ctx.shadowBlur = 12;
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.arc(cx, cy, rad, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
           }
         }
       }
@@ -156,50 +277,26 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
       return board.flat().every(cell => cell !== "");
     }
 
-    function lineCells() {
-      const lines=[];
-      for(let r=0;r<size;r++) lines.push(Array.from({length:size},(_,c)=>[r,c]));
-      for(let c=0;c<size;c++) lines.push(Array.from({length:size},(_,r)=>[r,c]));
-      lines.push(Array.from({length:size},(_,i)=>[i,i]));
-      lines.push(Array.from({length:size},(_,i)=>[i,size-1-i]));
-      return lines;
-    }
-
-    function immediateMove(mark) {
-      for (const line of lineCells()) {
-        const vals=line.map(([r,c])=>board[r][c]), empty=vals.findIndex(v=>v==='');
-        if (empty>=0 && vals.filter(v=>v===mark).length===size-1) return line[empty];
-      }
-      return null;
-    }
-
-    function strategicScore(r,c) {
-      let value = ((r===1||r===2)&&(c===1||c===2)) ? 4 : 1;
-      for (const line of lineCells()) {
-        if (!line.some(([rr,cc])=>rr===r&&cc===c)) continue;
-        const vals=line.map(([rr,cc])=>board[rr][cc]), own=vals.filter(v=>v==='O').length, opp=vals.filter(v=>v==='X').length;
-        if (!opp) value += [1,4,13,48][own] || 0;
-        if (!own) value += [0,3,10,38][opp] || 0;
-      }
-      return value + Math.random()*2.5;
-    }
-
     function aiMove() {
       if (gameOver) return;
-      const empty=[];
-      for(let r=0;r<size;r++)for(let c=0;c<size;c++)if(board[r][c]==='')empty.push([r,c]);
-      if (!empty.length) return;
-      let move=immediateMove('O') || immediateMove('X');
-      if (!move) {
-        const ranked=empty.map(([r,c])=>({r,c,s:strategicScore(r,c)})).sort((a,b)=>b.s-a.s);
-        if (Math.random()<.80) {
-          const roll=Math.random(),pick=roll<.68?0:roll<.90?1:2;
-          const m=ranked[Math.min(pick,ranked.length-1)]; move=[m.r,m.c];
-        } else move=empty[(Math.random()*empty.length)|0];
+      let empty = [];
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          if (board[r][c] === "") empty.push([r, c]);
+        }
       }
-      const [r,c]=move; board[r][c]='O'; drawBoard();
-      if (checkWinner('O')) endGame('IA venceu!');
-      else if (isFull()) endGame('Empate!');
+      if (empty.length === 0) return;
+
+      const [r, c] = empty[Math.floor(Math.random() * empty.length)];
+      board[r][c] = "O";
+      window.PPG?.sfx?.("ui");
+      drawBoard();
+
+      if (checkWinner("O")) {
+        endGame("Derrota Quântica", "A IA completou a sequência antes de você.");
+      } else if (isFull()) {
+        endGame("Colapso / Empate", "Nenhum vetor dominante formado.");
+      }
     }
 
     function handleClick(e) {
@@ -207,108 +304,126 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-      const row = Math.floor(y / cellSize);
       const col = Math.floor(x / cellSize);
-      if (board[row][col] === "") {
+      const row = Math.floor(y / cellSize);
+
+      if (row >= 0 && row < size && col >= 0 && col < size && board[row][col] === "") {
         board[row][col] = "X";
+        window.PPG?.sfx?.("tap");
         drawBoard();
+
         if (checkWinner("X")) {
-          score = Math.max(10, 100 - timer * 2);
+          score += 10;
           scoreDisplay.textContent = score;
-          endGame("Você venceu!");
+          endGame("Vitória Holográfica!", "Você fechou uma linha quântica (+10 pts).");
         } else if (isFull()) {
-          endGame("Empate!");
+          endGame("Empate!", "O grid foi saturado sem vencedores.");
         } else {
-          setTimeout(aiMove, 500);
+          const token = roundToken;
+          setTimeout(() => { if (token === roundToken && !gameOver) aiMove(); }, 300);
         }
       }
     }
 
-    function endGame(message) {
+    function endGame(title, desc) {
       gameOver = true;
+      window.PPG?.sfx?.(title.toLowerCase().includes("vitória") ? "success" : "error");
       clearInterval(timerInterval);
-      setTimeout(() => {
-        if (score > 0) {
-          const name = prompt(`${message}
-Digite seu nome para salvar no ranking:`);
-          if (name) saveScore(name, score);
-        }
-        resetGame();
-      }, 900);
+      document.getElementById('overTitle').textContent = title;
+      document.getElementById('overDesc').textContent = desc;
+      overlay.classList.add('active');
+      document.getElementById('playerName').focus();
     }
 
     function resetGame() {
+      roundToken++;
       board = Array(size).fill().map(() => Array(size).fill(""));
       gameOver = false;
       timer = 0;
-      score = 0;
-      timerDisplay.textContent = timer;
-      scoreDisplay.textContent = score;
+      timerDisplay.textContent = "00:00";
+      overlay.classList.remove('active');
+      clearInterval(timerInterval);
       timerInterval = setInterval(() => {
         timer++;
-        timerDisplay.textContent = timer;
+        timerDisplay.textContent = formatTime(timer);
       }, 1000);
       drawBoard();
     }
 
-    function saveScore(name, score) {
-      const scores = JSON.parse(localStorage.getItem("velha_quantica_scores") || localStorage.getItem("bbvelha_scores") || "[]");
-      scores.push({ name, score });
+    function saveScore(name, pts) {
+      if (!name) name = "Operador";
+      const scores = JSON.parse(localStorage.getItem(SCORE_KEY) || localStorage.getItem("bbvelha_scores") || "[]");
+      scores.push({ name, score: pts, at: Date.now() });
       scores.sort((a, b) => b.score - a.score);
-      localStorage.setItem("velha_quantica_scores", JSON.stringify(scores.slice(0, 5)));
+      localStorage.setItem(SCORE_KEY, JSON.stringify(scores.slice(0, 5)));
       renderTopPlayers();
     }
 
     function renderTopPlayers() {
-      const scores = JSON.parse(localStorage.getItem("velha_quantica_scores") || localStorage.getItem("bbvelha_scores") || "[]");
+      const scores = JSON.parse(localStorage.getItem(SCORE_KEY) || localStorage.getItem("bbvelha_scores") || "[]");
       topPlayersList.innerHTML = "";
+      if (!scores.length) {
+        topPlayersList.innerHTML = "<li>Sem registros ainda</li>";
+        return;
+      }
       scores.forEach(s => {
         const li = document.createElement("li");
-        li.textContent = `${s.name} - ${s.score} pts`;
+        li.textContent = `${s.name} — ${s.score} pts`;
         topPlayersList.appendChild(li);
       });
     }
 
+    document.getElementById('btnContinue').addEventListener('click', () => {
+      const nameInput = document.getElementById('playerName');
+      if (nameInput.value.trim() && score > 0) {
+        saveScore(nameInput.value.trim(), score);
+      }
+      resetGame();
+    });
+
     canvas.addEventListener("click", handleClick);
+    initDPI();
     renderTopPlayers();
     resetGame();
   </script>
-<style id="ppg-platform-style">
-:root{--ppg-ui-bg:rgba(10,13,28,.88);--ppg-ui-fg:#f7f5ff;--ppg-ui-line:rgba(255,255,255,.15);--ppg-ui-accent:#a875ff;--ppg-ui-accent2:#35e6ca}
-#ppg-toolbar{position:fixed;z-index:2147483000;top:10px;right:10px;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;max-width:min(92vw,620px);font-family:Inter,"Segoe UI",system-ui,sans-serif!important}
-#ppg-toolbar button,#ppg-toolbar a{min-height:34px!important;padding:7px 10px!important;margin:0!important;border:1px solid var(--ppg-ui-line)!important;border-radius:10px!important;background:var(--ppg-ui-bg)!important;color:var(--ppg-ui-fg)!important;font:700 12px/1 Inter,"Segoe UI",system-ui,sans-serif!important;text-decoration:none!important;text-transform:none!important;letter-spacing:0!important;box-shadow:0 8px 25px rgba(0,0,0,.22)!important;cursor:pointer!important;backdrop-filter:blur(10px);transform:none!important}
-#ppg-toolbar button:hover,#ppg-toolbar a:hover{border-color:var(--ppg-ui-accent2)!important;filter:brightness(1.12)!important}
-.ppg-modal{position:fixed;z-index:2147483640;inset:0;display:none;place-items:center;padding:18px;background:rgba(2,3,12,.78);backdrop-filter:blur(8px);font-family:Inter,"Segoe UI",system-ui,sans-serif!important}.ppg-modal.open{display:grid}.ppg-card{width:min(560px,96vw);max-height:min(80vh,720px);overflow:auto;padding:22px;border:1px solid rgba(255,255,255,.16);border-radius:20px;background:linear-gradient(145deg,#14162b,#0a0d1b);color:#f8f7ff;text-align:left;box-shadow:0 30px 90px #0009}.ppg-card h2{margin:0 0 8px!important;color:#d9c7ff!important;font:800 clamp(22px,4vw,30px)/1.1 Inter,"Segoe UI",system-ui,sans-serif!important}.ppg-card h3{margin:17px 0 6px!important;color:#63ecd6!important;font:800 14px/1.2 Inter,"Segoe UI",system-ui,sans-serif!important;text-transform:uppercase;letter-spacing:.08em}.ppg-card p,.ppg-card li{color:#d7d9e7!important;font:400 14px/1.55 Inter,"Segoe UI",system-ui,sans-serif!important}.ppg-card .ppg-credit{margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.12);font-weight:800;color:#fff!important}.ppg-close{float:right;border:0!important;background:#282c48!important;color:white!important;border-radius:9px!important;padding:7px 10px!important;cursor:pointer!important}.ppg-record-list{display:grid;gap:8px;margin-top:12px}.ppg-record{display:grid;grid-template-columns:34px 1fr auto;gap:8px;padding:10px;border-radius:12px;background:#ffffff0b;border:1px solid #ffffff10;align-items:center}.ppg-record small{color:#989db7}.ppg-empty{padding:14px;border:1px dashed #ffffff2a;border-radius:12px;color:#aeb3c8}
-body.ppg-light{background-color:#edf1f8!important;color:#182038!important}body.ppg-light :is(.menu-card,.card,.panel,.toolbar,.stats,.help,.bet-panel,.track-card,.game-container){filter:brightness(1.08) saturate(.92)}body.ppg-dark{color-scheme:dark}
-@media(max-width:720px){#ppg-toolbar{top:6px;right:6px}#ppg-toolbar button,#ppg-toolbar a{padding:6px 8px!important;font-size:11px!important}.ppg-card{padding:17px}}
-</style><script id="ppg-platform-script">
+
+<style id="ppg-platform-v3-style">
+:root{--ppg-bar-h:48px;--ppg-ui-bg:rgba(9,12,27,.94);--ppg-ui-fg:#f7f6ff;--ppg-ui-line:rgba(255,255,255,.15);--ppg-ui-accent:#9e7aff;--ppg-ui-mint:#54e7cf}
+#ppg-toolbar{position:fixed;z-index:2147483000;inset:0 0 auto;height:var(--ppg-bar-h);display:flex;align-items:center;gap:6px;padding:6px 9px;overflow-x:auto;white-space:nowrap;background:linear-gradient(90deg,#090c1bf7,#15112cf4);border-bottom:1px solid var(--ppg-ui-line);box-shadow:0 8px 28px #0006;font-family:Inter,"Segoe UI",system-ui,sans-serif!important}
+#ppg-toolbar .ppg-brand{margin-right:auto;font:900 11px/1 system-ui;color:#d8c9ff;letter-spacing:.08em}
+#ppg-toolbar button,#ppg-toolbar a{min-height:34px!important;padding:7px 10px!important;margin:0!important;border:1px solid var(--ppg-ui-line)!important;border-radius:9px!important;background:#171a32!important;color:var(--ppg-ui-fg)!important;font:750 12px/1 system-ui!important;text-decoration:none!important;text-transform:none!important;letter-spacing:0!important;cursor:pointer!important;box-shadow:none!important}
+#ppg-toolbar button:hover,#ppg-toolbar a:hover{border-color:var(--ppg-ui-mint)!important;filter:brightness(1.12)}
+.ppg-modal{position:fixed;z-index:2147483640;inset:var(--ppg-bar-h) 0 0;display:none;place-items:center;padding:18px;background:#030510cc;backdrop-filter:blur(8px);font-family:Inter,"Segoe UI",system-ui,sans-serif!important}.ppg-modal.open{display:grid}
+.ppg-card{width:min(590px,96vw);max-height:min(80vh,720px);overflow:auto;padding:22px;border:1px solid #ffffff24;border-radius:20px;background:linear-gradient(145deg,#15182f,#0a0d1d);color:#f7f6ff;text-align:left;box-shadow:0 30px 90px #000a}.ppg-card h2{margin:0 0 8px;color:#dacbff}.ppg-card h3{margin:16px 0 5px;color:#63ecd6;font-size:13px;text-transform:uppercase;letter-spacing:.08em}.ppg-card p,.ppg-card li{color:#d4d7e5;line-height:1.55}.ppg-credit{margin-top:18px;padding-top:12px;border-top:1px solid #ffffff18;font-weight:850;color:#fff!important}.ppg-close{float:right!important;border:0!important;border-radius:8px!important;background:#292e49!important;color:#fff!important;padding:7px 9px!important;cursor:pointer!important}
+.ppg-record-list{display:grid;gap:7px;margin-top:10px}.ppg-record{display:grid;grid-template-columns:34px 1fr auto;gap:9px;align-items:center;padding:9px;border:1px solid #ffffff12;border-radius:11px;background:#ffffff08}.ppg-record small{color:#9da4bc}.ppg-empty{padding:14px;border:1px dashed #ffffff2b;border-radius:12px;color:#afb5ca}
+body.ppg-light{color-scheme:light;background-color:#eef2f8!important;color:#1d2840!important}body.ppg-light #ppg-toolbar{background:#f8f9fceF;border-color:#25324a20;box-shadow:0 8px 28px #35405b18}body.ppg-light #ppg-toolbar button,body.ppg-light #ppg-toolbar a{background:#fff!important;color:#26334d!important;border-color:#26334d20!important}body.ppg-light .ppg-card{background:#fff;color:#202a40;border-color:#25324a22}body.ppg-light .ppg-card p,body.ppg-light .ppg-card li{color:#4e5b73}
+body.ppg-preview{--ppg-bar-h:0px!important;padding-top:0!important}body.ppg-preview #ppg-toolbar,body.ppg-preview .ppg-modal{display:none!important}
+body:not(.ppg-preview){padding-top:var(--ppg-bar-h)!important}body.ppg-light{background:radial-gradient(circle at 50% 20%,#dbe7f3,#eef2f8 72%)!important}.ppg-light .hud-card,.ppg-light .ranking-box{background:rgba(255,255,255,.78);color:#23304a}.ppg-light .stage-wrap{background:#11182b}
+@media(max-width:720px){#ppg-toolbar{height:46px;padding:6px}#ppg-toolbar .ppg-brand{display:none}#ppg-toolbar button,#ppg-toolbar a{padding:6px 8px!important;font-size:11px!important}}
+</style>
+<script id="ppg-platform-v3-script">
 (()=>{'use strict';
-const CFG={"id": "velha_quantica", "name": "Velha Quântica", "emoji": "❎", "desc": "Jogo da velha 4×4 contra a IA.", "how": "Você joga com X em um tabuleiro 4×4. Complete uma linha, coluna ou diagonal inteira antes da IA.", "tip": "Em 4×4, o centro continua valioso, mas criar duas ameaças simultâneas é ainda mais importante do que bloquear uma única linha.", "metric": "Pontuação", "unit": " pts", "mode": "max"};
-const STATS_KEY='ppg_minigames_stats_v1', PREF_KEY='ppg_platform_prefs_v1', REC_KEY='ppg_records_'+CFG.id;
-const $=s=>document.querySelector(s), num=v=>{const m=String(v??'').replace(/\s/g,'').replace(/\.(?=\d{3}(\D|$))/g,'').replace(',','.').match(/-?\d+(?:\.\d+)?/);return m?+m[0]:null};
-const money=v=>{const s=String(v??'').replace(/R\$|◈|Créditos?|Banca:|💰/gi,'').trim();let m=s.match(/(-?[\d.,]+)\s*(K|M|B|T|Qa|Qi|Sx|Sp|Oc|No|Dc)?/i);if(!m)return null;let n=num(m[1]);const u=(m[2]||'').toLowerCase(),map={k:1e3,m:1e6,b:1e9,t:1e12,qa:1e15,qi:1e18,sx:1e21,sp:1e24,oc:1e27,no:1e30,dc:1e33};return n*(map[u]||1)};
-window.__ppgHelpers={num,money};
-function readJSON(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}}function writeJSON(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
-function dayKey(d=new Date()){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}function dayDiff(a,b){const A=new Date(a+'T12:00:00'),B=new Date(b+'T12:00:00');return Math.round((B-A)/86400000)}
-let all=readJSON(STATS_KEY,{}),st=all[CFG.id]||{starts:0,totalSeconds:0,longestStreak:0,currentStreak:0,lastDay:null};const today=dayKey();st.starts=(st.starts||0)+1;if(st.lastDay!==today){const dd=st.lastDay?dayDiff(st.lastDay,today):99;st.currentStreak=dd===1?(st.currentStreak||0)+1:1;st.longestStreak=Math.max(st.longestStreak||0,st.currentStreak);st.lastDay=today}st.lastStarted=Date.now();all[CFG.id]=st;writeJSON(STATS_KEY,all);
-let lastTick=performance.now();function flushTime(){const now=performance.now(),d=Math.max(0,(now-lastTick)/1000);lastTick=now;all=readJSON(STATS_KEY,{});const x=all[CFG.id]||st;x.totalSeconds=(x.totalSeconds||0)+d;x.lastPlayed=Date.now();all[CFG.id]=x;writeJSON(STATS_KEY,all)}setInterval(flushTime,5000);addEventListener('pagehide',flushTime);document.addEventListener('visibilitychange',()=>{if(document.hidden)flushTime();else lastTick=performance.now()});
-let prefs=readJSON(PREF_KEY,{theme:'dark',sound:true});document.body.classList.toggle('ppg-light',prefs.theme==='light');document.body.classList.toggle('ppg-dark',prefs.theme!=='light');
-const toolbar=document.createElement('nav');toolbar.id='ppg-toolbar';toolbar.innerHTML=`<button id="ppg-theme" title="Alternar modo claro/escuro">${prefs.theme==='light'?'🌙 Escuro':'☀️ Claro'}</button><button id="ppg-sound" title="Som e música">${prefs.sound?'🔊 Som':'🔇 Som'}</button><button id="ppg-records">🏆 Recordes</button><button id="ppg-about">ⓘ Sobre</button><a href="menu_minigames.html" id="ppg-menu">↩ Menu de Mini Games</a>`;document.body.appendChild(toolbar);
-const modal=document.createElement('div');modal.className='ppg-modal';modal.id='ppg-modal';modal.innerHTML=`<div class="ppg-card"><button class="ppg-close" aria-label="Fechar">✕</button><div id="ppg-modal-body"></div></div>`;document.body.appendChild(modal);const body=$('#ppg-modal-body');function open(html){body.innerHTML=html;modal.classList.add('open')}function close(){modal.classList.remove('open')}modal.addEventListener('click',e=>{if(e.target===modal||e.target.closest('.ppg-close'))close()});addEventListener('keydown',e=>{if(e.key==='Escape')close()});
-$('#ppg-about').onclick=()=>open(`<h2>${CFG.name}</h2><p>${CFG.desc}</p><h3>Como jogar</h3><p>${CFG.how}</p><h3>Dica de estratégia</h3><p>${CFG.tip}</p><p class="ppg-credit">Produção: Projeto Primata Games em 2026.</p>`);
-$('#ppg-theme').onclick=()=>{prefs.theme=prefs.theme==='light'?'dark':'light';writeJSON(PREF_KEY,prefs);document.body.classList.toggle('ppg-light',prefs.theme==='light');document.body.classList.toggle('ppg-dark',prefs.theme==='dark');$('#ppg-theme').textContent=prefs.theme==='light'?'🌙 Escuro':'☀️ Claro';sfx(520,.05)};
-// Áudio procedural comum: garante BGM + SFX sem arquivos externos.
-let ac=null,master=null,music=null,beat=0;function initAudio(){if(ac)return;ac=new (window.AudioContext||window.webkitAudioContext)();master=ac.createGain();master.gain.value=prefs.sound?.12:0;master.connect(ac.destination)}function tone(f,d=.08,type='sine',vol=.08,when=0){if(!prefs.sound)return;initAudio();const t=ac.currentTime+when,o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(master);o.start(t);o.stop(t+d)}function sfx(f=420,d=.045){tone(f,d,'triangle',.11)}function startBgm(){if(music||!prefs.sound)return;initAudio();music=setInterval(()=>{if(document.hidden||!prefs.sound)return;const seq=[110,138.59,164.81,220,196,164.81,146.83,123.47],f=seq[beat++%seq.length];tone(f,.16,'triangle',.025);if(beat%4===1)tone(f/2,.1,'sine',.018)},360)}function stopBgm(){clearInterval(music);music=null}function unlock(){initAudio();ac?.resume();if(prefs.sound)startBgm()}addEventListener('pointerdown',unlock,{once:true});addEventListener('keydown',unlock,{once:true});document.addEventListener('click',e=>{if(e.target.closest('button,a,input,select'))sfx(380+Math.random()*80,.035)},true);
-$('#ppg-sound').onclick=e=>{e.stopPropagation();prefs.sound=!prefs.sound;writeJSON(PREF_KEY,prefs);initAudio();master.gain.setTargetAtTime(prefs.sound?.12:0,ac.currentTime,.02);if(prefs.sound){ac.resume();startBgm();sfx(660,.08)}else stopBgm();$('#ppg-sound').textContent=prefs.sound?'🔊 Som':'🔇 Som'};
-// Ranking local por sessão. A mesma sessão é atualizada em vez de poluir o top 5 com cada incremento.
-const sessionId=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7);function formatValue(v){if(v==null)return '—';if(Math.abs(v)>=1e9)return v.toLocaleString('pt-BR',{notation:'compact',maximumFractionDigits:2})+CFG.unit;return (Number.isInteger(v)?v:v.toFixed(2).replace('.',','))+CFG.unit}function metric(){try{const num=window.__ppgHelpers.num,money=window.__ppgHelpers.money;return num(document.querySelector('#score')?.textContent)}catch{return null}}function upsert(v){if(v==null||!Number.isFinite(v)||(CFG.mode==='min'&&v<=0))return;let r=readJSON(REC_KEY,[]),me=r.find(x=>x.sessionId===sessionId);if(me){const better=CFG.mode==='min'?v<me.value:v>me.value;if(!better)return;me.value=v;me.at=Date.now()}else r.push({sessionId,value:v,at:Date.now()});r.sort((a,b)=>CFG.mode==='min'?a.value-b.value:b.value-a.value);writeJSON(REC_KEY,r.slice(0,5))}setInterval(()=>upsert(metric()),800);addEventListener('pagehide',()=>upsert(metric()));
-function renderRecords(){const r=readJSON(REC_KEY,[]);const list=r.length?`<div class="ppg-record-list">${r.map((x,i)=>`<div class="ppg-record"><b>#${i+1}</b><span><strong>${formatValue(x.value)}</strong><br><small>${new Date(x.at).toLocaleDateString('pt-BR')}</small></span><small>${CFG.metric}</small></div>`).join('')}</div>`:`<div class="ppg-empty">Ainda não há marca registrada neste navegador. Jogue uma partida e ela aparece aqui.</div>`;open(`<h2>Recordes locais</h2><p>Top 5 persistente deste jogo, salvo somente neste navegador.</p>${list}`)}$('#ppg-records').onclick=renderRecords;
+const PREVIEW=new URLSearchParams(location.search).has('preview');if(PREVIEW)document.body.classList.add('ppg-preview');
+const CFG={"id": "velha_quantica", "name": "Velha Quântica 4×4", "desc": "Jogo da velha 4×4 contra uma IA em uma arena neon.", "how": "Você joga com X. Complete uma linha, coluna ou diagonal de quatro símbolos antes da IA.", "tip": "No tabuleiro 4×4, ameaças duplas valem ouro: crie duas linhas que possam ser fechadas no próximo lance."},STATS_KEY='ppg_minigames_stats_v1',PREF_KEY='ppg_platform_prefs_v2',REC_KEY='ppg_records_v2_'+CFG.id;
+const read=(k,f)=>{try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}},write=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}};
+const dayKey=(d=new Date())=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+let prefs=read(PREF_KEY,read('ppg_platform_prefs_v1',{theme:'dark',sound:true}));
+document.body.classList.toggle('ppg-light',prefs.theme==='light');document.body.classList.toggle('ppg-dark',prefs.theme!=='light');
+if(!PREVIEW){let all=read(STATS_KEY,{}),s=all[CFG.id]||{starts:0,totalSeconds:0,longestStreak:0,currentStreak:0,lastDay:null},today=dayKey();s.starts=(s.starts||0)+1;if(s.lastDay!==today){let gap=s.lastDay?Math.round((new Date(today+'T12:00:00')-new Date(s.lastDay+'T12:00:00'))/86400000):99;s.currentStreak=gap===1?(s.currentStreak||0)+1:1;s.longestStreak=Math.max(s.longestStreak||0,s.currentStreak);s.lastDay=today}s.lastStarted=Date.now();all[CFG.id]=s;write(STATS_KEY,all);let lt=performance.now();const flush=()=>{let n=performance.now(),db=read(STATS_KEY,{}),x=db[CFG.id]||s;x.totalSeconds=(x.totalSeconds||0)+Math.max(0,(n-lt)/1000);x.lastPlayed=Date.now();lt=n;db[CFG.id]=x;write(STATS_KEY,db)};setInterval(flush,5000);addEventListener('pagehide',flush);document.addEventListener('visibilitychange',()=>{if(document.hidden)flush();else lt=performance.now()})}
+if(PREVIEW){window.PPG={sfx:()=>{},record:()=>{},syncSound:()=>{}};return}
+const toolbar=document.createElement('nav');toolbar.id='ppg-toolbar';toolbar.setAttribute('aria-label','Controles Quickplay');toolbar.innerHTML=`<span class="ppg-brand">🦧 PPG</span><button id="ppg-theme">${prefs.theme==='light'?'🌙 Escuro':'☀️ Claro'}</button><button id="ppg-sound">${prefs.sound?'🔊 Som ON':'🔇 Som OFF'}</button><button id="ppg-records">🏆 Recordes</button><button id="ppg-about">ⓘ Sobre</button><a href="index.html">↩ Mini Games</a>`;document.body.prepend(toolbar);
+const modal=document.createElement('div');modal.className='ppg-modal';modal.innerHTML='<div class="ppg-card"><button class="ppg-close" aria-label="Fechar">✕</button><div id="ppg-modal-body"></div></div>';document.body.appendChild(modal);const mb=modal.querySelector('#ppg-modal-body');const open=html=>{mb.innerHTML=html;modal.classList.add('open')};const close=()=>modal.classList.remove('open');modal.onclick=e=>{if(e.target===modal||e.target.closest('.ppg-close'))close()};addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+document.getElementById('ppg-about').onclick=()=>open(`<h2>${CFG.name}</h2><p>${CFG.desc}</p><h3>Como jogar</h3><p>${CFG.how}</p><h3>Dica de estratégia</h3><p>${CFG.tip}</p><p class="ppg-credit">Produção: Projeto Primata Games em 2026.</p>`);
+document.getElementById('ppg-theme').onclick=()=>{prefs.theme=prefs.theme==='light'?'dark':'light';write(PREF_KEY,prefs);document.body.classList.toggle('ppg-light',prefs.theme==='light');document.body.classList.toggle('ppg-dark',prefs.theme==='dark');document.getElementById('ppg-theme').textContent=prefs.theme==='light'?'🌙 Escuro':'☀️ Claro';sfx('ui')};
+const GENERIC_AUDIO=true;let ac=null,master=null,bgm=null,beat=0;function initAudio(){if(!GENERIC_AUDIO)return;if(ac)return;ac=new (window.AudioContext||window.webkitAudioContext)();master=ac.createGain();master.gain.value=prefs.sound?.10:0;master.connect(ac.destination)}function tone(f,d=.06,type='triangle',v=.06,when=0){if(!GENERIC_AUDIO||!prefs.sound)return;initAudio();const t=ac.currentTime+when,o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(master);o.start(t);o.stop(t+d+.02)}function sfx(k='ui'){if(!GENERIC_AUDIO)return;if(k==='tap')tone(520+(beat%5)*38,.025,'triangle',.025);else if(k==='success'){tone(523,.09,'triangle',.07);tone(784,.12,'sine',.05,.07)}else if(k==='error')tone(145,.18,'sawtooth',.06);else tone(460,.045,'triangle',.04)}function startBgm(){if(!GENERIC_AUDIO||bgm||!prefs.sound)return;initAudio();ac.resume().catch(()=>{});const seq=[110,138.59,164.81,146.83,123.47,164.81,196,146.83];bgm=setInterval(()=>{if(document.hidden||!prefs.sound)return;const f=seq[beat++%seq.length];tone(f,.18,'triangle',.014);if(beat%4===1)tone(f*2,.09,'sine',.009)},390)}function stopBgm(){clearInterval(bgm);bgm=null}
+function applyNativeSound(on){}
+function setSound(on,fromNative=false){prefs.sound=!!on;write(PREF_KEY,prefs);document.getElementById('ppg-sound').textContent=prefs.sound?'🔊 Som ON':'🔇 Som OFF';if(GENERIC_AUDIO){initAudio();master.gain.setTargetAtTime(prefs.sound?.10:0,ac.currentTime,.02);if(prefs.sound)startBgm();else stopBgm()}if(!fromNative)applyNativeSound(prefs.sound)}
+document.getElementById('ppg-sound').onclick=e=>{e.stopPropagation();setSound(!prefs.sound)};if(GENERIC_AUDIO){addEventListener('pointerdown',startBgm,{once:true});addEventListener('keydown',startBgm,{once:true})}else applyNativeSound(prefs.sound);
+function recordEntry(data){let a=read(REC_KEY,[]);a.push({...data,at:data.at||Date.now()});write(REC_KEY,a.slice(-50));}
+function renderRecords(){const scores=read(SCORE_KEY,read('bbvelha_scores',[]));const list=scores.length?'<div class="ppg-record-list">'+scores.map((r,i)=>'<div class="ppg-record"><b>#'+(i+1)+'</b><span><strong>'+String(r.name||'Operador').replace(/[<>]/g,'')+'</strong><br><small>'+new Date(r.at||Date.now()).toLocaleDateString('pt-BR')+'</small></span><strong>'+Number(r.score||0)+' pts</strong></div>').join('')+'</div>':'<div class="ppg-empty">Sem registros ainda.</div>';open('<h2>Recordes locais</h2><p>Top 5 persistente salvo neste navegador.</p>'+list);}
+document.getElementById('ppg-records').onclick=renderRecords;
+window.PPG={sfx,record:recordEntry,open,read,write,syncSound:on=>setSound(on,true),setSound};
 })();
 </script>
-
-<!-- PPG_FULLSCREEN_LANDSCAPE_V1 -->
-<style id="ppg-fs-style">#ppgFullscreenBtn{position:fixed;right:10px;top:10px;z-index:2147483646;width:42px;height:36px;padding:0;border:2px outset #eee;border-radius:7px;background:#111b;color:#fff;font:700 20px/1 system-ui;cursor:pointer;backdrop-filter:blur(4px)}#ppgRotateHint{display:none;position:fixed;inset:0;z-index:2147483645;place-items:center;padding:28px;text-align:center;background:#080b12e8;color:#fff;font:800 18px/1.4 system-ui}#ppgRotateHint b{font-size:42px;display:block;margin-bottom:8px}@media (orientation:portrait) and (max-width:900px){body.ppg-needs-landscape #ppgRotateHint{display:grid}}</style>
-<button id="ppgFullscreenBtn" type="button" title="Tela cheia" aria-label="Tela cheia">⛶</button><div id="ppgRotateHint"><div><b>↻</b>Gire o dispositivo para jogar em modo paisagem.</div></div>
-<script id="ppg-fs-runtime">(()=>{'use strict';const q=new URLSearchParams(location.search),embedded=q.get('embedded')==='1',auto=q.get('autofs')==='1';const btn=document.getElementById('ppgFullscreenBtn');const mobile=()=>matchMedia('(max-width:900px)').matches||/Android|iPhone|iPad|Mobile/i.test(navigator.userAgent);function markOrientation(){document.body.classList.toggle('ppg-needs-landscape',mobile()&&innerHeight>innerWidth)}async function lockLandscape(){if(!mobile())return true;try{if(screen.orientation&&screen.orientation.lock){await screen.orientation.lock('landscape');markOrientation();return true}}catch(e){}markOrientation();return false}async function goFS(){try{if(embedded&&parent!==window){const pd=parent.document,el=pd.getElementById('ppgGameLauncher')||pd.documentElement;if(!pd.fullscreenElement&&el.requestFullscreen)await el.requestFullscreen({navigationUI:'hide'});}else if(!document.fullscreenElement&&document.documentElement.requestFullscreen){await document.documentElement.requestFullscreen({navigationUI:'hide'})}}catch(e){}await lockLandscape();markOrientation()}btn?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();goFS()});addEventListener('resize',markOrientation);addEventListener('orientationchange',markOrientation);document.addEventListener('fullscreenchange',markOrientation);markOrientation();if(auto){const once=()=>{goFS();removeEventListener('pointerdown',once,true);removeEventListener('keydown',once,true)};addEventListener('pointerdown',once,true);addEventListener('keydown',once,true)}if(embedded&&parent!==window){document.addEventListener('click',e=>{const a=e.target.closest('a,button');if(!a)return;const href=(a.getAttribute('href')||'').toLowerCase();const txt=(a.textContent||'').toLowerCase();if(href==='index.html'||href.endsWith('/index.html')||href.includes('menu_minigames')||txt.includes('voltar ao menu')||txt.includes('back to menu')){e.preventDefault();e.stopPropagation();parent.postMessage({type:'ppg-exit-game'},location.origin)}},true)}})();</script>
 </body>
 </html>

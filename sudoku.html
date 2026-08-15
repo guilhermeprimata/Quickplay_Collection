@@ -6,162 +6,599 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Zen Sudoku</title>
   <style>
+    :root {
+      --zen-bg-0: #090817;
+      --zen-bg-1: #11102a;
+      --zen-bg-2: #17163a;
+      --zen-panel: rgba(23, 22, 58, .82);
+      --zen-panel-strong: rgba(18, 17, 45, .96);
+      --zen-panel-line: rgba(216, 205, 255, .14);
+      --zen-text: #f5f1ff;
+      --zen-muted: #aaa2c8;
+      --zen-violet: #a985ff;
+      --zen-violet-2: #7558df;
+      --zen-cyan: #67ead6;
+      --zen-gold: #ffc978;
+      --zen-gold-2: #ffad62;
+      --zen-danger: #ff6f86;
+      --zen-cell: rgba(248, 247, 255, .96);
+      --zen-cell-alt: rgba(241, 238, 252, .96);
+      --zen-cell-text: #5644aa;
+      --zen-given-bg: #fff0d0;
+      --zen-given-text: #7b4e20;
+      --zen-peer-bg: #ece6ff;
+      --zen-same-bg: #d9fff7;
+      --zen-grid: rgba(85, 68, 146, .17);
+      --zen-grid-strong: #6751b9;
+      --zen-shadow: 0 28px 70px rgba(0, 0, 0, .38);
+      --zen-soft-shadow: 0 12px 34px rgba(0, 0, 0, .22);
+      --zen-radius: 20px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { margin: 0; }
+
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #F5F5F5;
-      color: #5A3AC8;
+      font-family: "Segoe UI", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--zen-text);
+      background:
+        radial-gradient(circle at 17% 12%, rgba(169, 133, 255, .18), transparent 28%),
+        radial-gradient(circle at 83% 20%, rgba(103, 234, 214, .11), transparent 24%),
+        radial-gradient(circle at 52% 100%, rgba(255, 201, 120, .08), transparent 34%),
+        linear-gradient(145deg, var(--zen-bg-0), var(--zen-bg-1) 46%, #0c0b20);
+      position: relative;
+      isolation: isolate;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      pointer-events: none;
+      opacity: .30;
+      background-image:
+        linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px);
+      background-size: 34px 34px;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,.8), transparent 82%);
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      left: 50%;
+      bottom: -180px;
+      width: min(760px, 92vw);
+      height: 360px;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      z-index: -1;
+      pointer-events: none;
+      background: rgba(119, 89, 224, .10);
+      filter: blur(64px);
+    }
+
+    .game-shell {
+      width: min(920px, 100%);
+      margin: 0 auto;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 20px;
+      gap: 10px;
+    }
+
+    .hero {
+      text-align: center;
+      line-height: 1;
+      user-select: none;
+    }
+
+    .eyebrow {
+      margin-bottom: 5px;
+      color: var(--zen-cyan);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      opacity: .88;
     }
 
     h1 {
-      color: #FFB85C;
-      text-shadow: 1px 1px 2px #5A3AC8;
+      margin: 0;
+      color: var(--zen-text);
+      font-size: clamp(28px, 4.8vh, 43px);
+      font-weight: 900;
+      letter-spacing: -.05em;
+      text-shadow: 0 7px 26px rgba(0,0,0,.35);
+    }
+
+    h1 .zen-word {
+      color: var(--zen-gold);
+      text-shadow: 0 0 26px rgba(255, 201, 120, .20);
+    }
+
+    .subtitle {
+      margin: 5px 0 0;
+      color: var(--zen-muted);
+      font-size: 11px;
+      letter-spacing: .05em;
+    }
+
+    .game-panel {
+      width: 100%;
+      padding: 11px;
+      border: 1px solid var(--zen-panel-line);
+      border-radius: calc(var(--zen-radius) + 4px);
+      background: linear-gradient(145deg, rgba(255,255,255,.055), rgba(255,255,255,.015));
+      box-shadow: var(--zen-shadow), inset 0 1px 0 rgba(255,255,255,.06);
+      backdrop-filter: blur(13px);
+    }
+
+    .game-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .game-controls button {
+      min-height: 34px;
+      margin: 0;
+      padding: 7px 13px;
+      border: 1px solid rgba(255,255,255,.11);
+      border-radius: 11px;
+      color: #d8d2ee;
+      background: rgba(11, 10, 28, .48);
+      font: 800 12px/1 "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+      letter-spacing: .025em;
+      cursor: pointer;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+      transition: transform .16s ease, border-color .16s ease, background .16s ease, color .16s ease, box-shadow .16s ease;
+    }
+
+    .game-controls button:hover {
+      transform: translateY(-1px);
+      color: #fff;
+      border-color: rgba(169,133,255,.62);
+      background: rgba(117, 88, 223, .22);
+    }
+
+    .game-controls button:active { transform: translateY(0) scale(.98); }
+
+    .game-controls button.active {
+      color: #171226;
+      border-color: rgba(255, 201, 120, .92);
+      background: linear-gradient(180deg, #ffd993, var(--zen-gold));
+      box-shadow: 0 5px 18px rgba(255, 181, 98, .18), inset 0 1px 0 rgba(255,255,255,.62);
+    }
+
+    .game-controls .reset-btn {
+      color: var(--zen-cyan);
+      border-color: rgba(103, 234, 214, .24);
+    }
+
+    .play-area {
+      display: grid;
+      grid-template-columns: auto minmax(190px, 230px);
+      gap: 12px;
+      justify-content: center;
+      align-items: stretch;
+      margin-top: 9px;
+    }
+
+    .board-column {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      width: fit-content;
+      max-width: 100%;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .board-frame {
+      position: relative;
+      width: fit-content;
+      align-self: center;
+      padding: 7px;
+      border: 1px solid rgba(255,255,255,.11);
+      border-radius: 16px;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,.075), rgba(255,255,255,.015)),
+        rgba(7, 6, 20, .54);
+      box-shadow: var(--zen-soft-shadow), inset 0 1px 0 rgba(255,255,255,.05);
+    }
+
+    .board-frame::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      z-index: -1;
+      border-radius: 17px;
+      background: linear-gradient(135deg, rgba(255,201,120,.28), transparent 22%, transparent 70%, rgba(103,234,214,.22));
+      opacity: .62;
     }
 
     .sudoku-container {
       display: grid;
+      width: fit-content;
       grid-template-columns: repeat(9, 40px);
       grid-template-rows: repeat(9, 40px);
-      gap: 2px;
+      gap: 0;
+      overflow: hidden;
+      border: 3px solid var(--zen-grid-strong);
+      border-radius: 10px;
+      background: var(--zen-grid-strong);
+      box-shadow: 0 8px 20px rgba(0,0,0,.22), inset 0 0 0 1px rgba(255,255,255,.18);
     }
 
     .cell {
       width: 40px;
       height: 40px;
-      text-align: center;
-      font-size: 18px;
-      border: none;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      border-right: 1px solid var(--zen-grid);
+      border-bottom: 1px solid var(--zen-grid);
       outline: none;
-      background-color: #FFFFFF;
-      color: #5A3AC8;
+      border-radius: 0;
+      text-align: center;
+      font: 750 18px/1 "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+      color: var(--zen-cell-text);
+      background: var(--zen-cell);
+      caret-color: var(--zen-violet-2);
+      box-shadow: none;
+      transition: background .12s ease, color .12s ease, box-shadow .12s ease, transform .12s ease;
+      -webkit-appearance: none;
+      appearance: none;
     }
 
+    .cell:nth-child(odd) { background: var(--zen-cell-alt); }
+    .cell.block-right { border-right: 3px solid var(--zen-grid-strong); }
+    .cell.block-bottom { border-bottom: 3px solid var(--zen-grid-strong); }
+
     .cell:disabled {
-      background-color: #FFB85C;
-      font-weight: bold;
+      opacity: 1;
+      -webkit-text-fill-color: var(--zen-given-text);
+      color: var(--zen-given-text);
+      background: linear-gradient(145deg, #fff4dc, var(--zen-given-bg));
+      font-weight: 900;
+      text-shadow: 0 1px 0 rgba(255,255,255,.65);
+      cursor: default;
+    }
+
+    .cell.peer:not(.invalid) { background: var(--zen-peer-bg); }
+    .cell.same:not(.invalid) {
+      color: #14796b;
+      background: var(--zen-same-bg);
+      box-shadow: inset 0 0 0 2px rgba(55, 206, 181, .19);
+    }
+    .cell:disabled.same:not(.invalid) {
+      color: #7a581d;
+      -webkit-text-fill-color: #7a581d;
+      background: #fff0b9;
+    }
+
+    .cell:not(:disabled):hover:not(:focus):not(.invalid) {
+      background: #f8f5ff;
+      box-shadow: inset 0 0 0 2px rgba(169,133,255,.20);
+    }
+
+    .cell:focus {
+      position: relative;
+      z-index: 4;
+      color: #3e298f;
+      background: #fff;
+      box-shadow:
+        inset 0 0 0 3px var(--zen-violet),
+        0 0 0 2px rgba(169, 133, 255, .15),
+        0 0 18px rgba(117, 88, 223, .18);
     }
 
     .cell.invalid {
-      background-color: #FF9999;
+      position: relative;
+      z-index: 5;
+      color: #a31935;
+      background: #ffd9df;
+      box-shadow: inset 0 0 0 3px var(--zen-danger), 0 0 16px rgba(255, 111, 134, .20);
+      animation: invalidNudge .19s ease both;
     }
 
-    .bold-border {
-      border-right: 2px solid #5A3AC8;
-      border-bottom: 2px solid #5A3AC8;
+    .cell.valid-pop { animation: validPop .18s ease both; }
+
+    @keyframes invalidNudge {
+      0%,100% { transform: translateX(0); }
+      35% { transform: translateX(-2px); }
+      70% { transform: translateX(2px); }
     }
 
-    .controls {
-      margin-top: 20px;
+    @keyframes validPop {
+      0% { transform: scale(.95); }
+      65% { transform: scale(1.035); }
+      100% { transform: scale(1); }
     }
 
-    button {
-      background-color: #5A3AC8;
-      color: #FFB85C;
-      border: none;
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-      border-radius: 4px;
-      margin: 5px;
+    .status-strip {
+      display: grid;
+      grid-template-columns: 1fr 1.1fr 1fr;
+      gap: 6px;
     }
 
-    button:hover {
-      background-color: #3B2793;
+    .status-card {
+      min-height: 48px;
+      padding: 7px 9px;
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 11px;
+      background: rgba(8, 7, 22, .40);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
     }
+
+    .status-card small {
+      display: block;
+      margin-bottom: 3px;
+      color: #8d85aa;
+      font-size: 8px;
+      font-weight: 900;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    .status-card strong {
+      color: #eee9ff;
+      font-size: 13px;
+      font-weight: 850;
+      letter-spacing: .03em;
+    }
+
+    .timer-card { text-align: center; }
+    #timer {
+      color: var(--zen-cyan);
+      font: 900 18px/1 ui-monospace, "SFMono-Regular", Consolas, monospace;
+      letter-spacing: .08em;
+      text-shadow: 0 0 15px rgba(103, 234, 214, .24);
+    }
+
+    .status-tip { text-align: right; }
+    .status-tip strong { color: var(--zen-gold); }
 
     .top-5 {
-      margin-top: 20px;
-      width: 100%;
-      max-width: 300px;
+      position: relative;
+      min-width: 0;
+      overflow: hidden;
+      padding: 11px;
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 16px;
+      background:
+        radial-gradient(circle at 100% 0, rgba(169,133,255,.11), transparent 44%),
+        rgba(8, 7, 22, .42);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
+    }
+
+    .top-5::after {
+      content: "";
+      position: absolute;
+      right: -34px;
+      bottom: -38px;
+      width: 150px;
+      height: 150px;
+      pointer-events: none;
+      border: 1px solid rgba(169,133,255,.18);
+      border-radius: 24px;
+      opacity: .24;
+      transform: rotate(9deg);
+      background-image:
+        linear-gradient(90deg, transparent 32.7%, rgba(169,133,255,.16) 33%, rgba(169,133,255,.16) 33.7%, transparent 34%),
+        linear-gradient(90deg, transparent 65.7%, rgba(169,133,255,.16) 66%, rgba(169,133,255,.16) 66.7%, transparent 67%),
+        linear-gradient(transparent 32.7%, rgba(103,234,214,.12) 33%, rgba(103,234,214,.12) 33.7%, transparent 34%),
+        linear-gradient(transparent 65.7%, rgba(103,234,214,.12) 66%, rgba(103,234,214,.12) 66.7%, transparent 67%);
+    }
+
+    .top-5 > * { position: relative; z-index: 1; }
+
+    .top-5-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255,255,255,.07);
     }
 
     .top-5 h2 {
-      color: #FFB85C;
-      text-shadow: 1px 1px 2px #5A3AC8;
+      margin: 0;
+      color: #eee9ff;
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: .02em;
+    }
+
+    .top-5-badge {
+      display: inline-grid;
+      place-items: center;
+      width: 27px;
+      height: 27px;
+      border-radius: 9px;
+      color: #1d1731;
+      background: linear-gradient(145deg, #ffdda0, var(--zen-gold));
+      box-shadow: 0 6px 16px rgba(255, 181, 98, .13);
+      font-size: 13px;
     }
 
     .top-5 ul {
-      list-style: none;
+      display: grid;
+      gap: 5px;
+      margin: 0;
       padding: 0;
+      list-style: none;
     }
 
     .top-5 li {
-      background-color: #FFFFFF;
-      color: #5A3AC8;
-      padding: 10px;
-      margin: 5px 0;
-      border-radius: 4px;
-      display: flex;
-      justify-content: space-between;
+      display: grid;
+      grid-template-columns: 24px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 7px;
+      min-height: 38px;
+      margin: 0;
+      padding: 6px 7px;
+      border: 1px solid rgba(255,255,255,.065);
+      border-radius: 10px;
+      color: #ddd7ef;
+      background: rgba(255,255,255,.035);
+      font-size: 10px;
+    }
+
+    .top-5 li:first-child {
+      border-color: rgba(255,201,120,.22);
+      background: linear-gradient(90deg, rgba(255,201,120,.10), rgba(255,255,255,.025));
+    }
+
+    .rank-index {
+      display: grid;
+      place-items: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 7px;
+      color: #9d95b7;
+      background: rgba(255,255,255,.055);
+      font-weight: 900;
+    }
+    .top-5 li:first-child .rank-index { color: #261d20; background: var(--zen-gold); }
+
+    .rank-main { min-width: 0; }
+    .rank-name {
+      display: block;
+      overflow: hidden;
+      color: #f5f1ff;
+      font-weight: 800;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .rank-difficulty { display: block; margin-top: 1px; color: #8e86a8; font-size: 8px; text-transform: uppercase; letter-spacing: .08em; }
+    .rank-time { color: var(--zen-cyan); font: 850 10px/1 ui-monospace, Consolas, monospace; white-space: nowrap; }
+
+    .empty-ranking {
+      grid-template-columns: 1fr !important;
+      min-height: 80px !important;
+      place-items: center;
+      padding: 12px !important;
+      color: #8f87aa !important;
+      text-align: center;
+      line-height: 1.4;
+    }
+
+    body.ppg-light {
+      --zen-bg-0: #eef0f8;
+      --zen-bg-1: #e6e9f4;
+      --zen-bg-2: #f6f4ff;
+      --zen-panel: rgba(255,255,255,.80);
+      --zen-panel-strong: rgba(255,255,255,.94);
+      --zen-panel-line: rgba(64, 46, 116, .13);
+      --zen-text: #2a2348;
+      --zen-muted: #6e668a;
+      --zen-shadow: 0 24px 56px rgba(56, 44, 102, .14);
+      --zen-soft-shadow: 0 12px 30px rgba(56, 44, 102, .12);
+      background:
+        radial-gradient(circle at 17% 12%, rgba(117,88,223,.12), transparent 28%),
+        radial-gradient(circle at 83% 20%, rgba(64,205,183,.10), transparent 24%),
+        linear-gradient(145deg, #f8f8fc, #eceef7);
+    }
+    body.ppg-light .game-panel,
+    body.ppg-light .top-5,
+    body.ppg-light .status-card { background-color: rgba(255,255,255,.62); }
+    body.ppg-light .game-controls button { color: #4b4267; background: rgba(255,255,255,.66); border-color: rgba(66,48,117,.12); }
+    body.ppg-light .game-controls button.active { color: #342318; background: linear-gradient(180deg, #ffdf9f, #ffc978); }
+    body.ppg-light .status-card strong,
+    body.ppg-light .top-5 h2,
+    body.ppg-light .rank-name { color: #332a53; }
+    body.ppg-light .top-5 li { color: #554d70; background: rgba(255,255,255,.66); border-color: rgba(66,48,117,.09); }
+
+    @media (max-width: 740px) {
+      .game-shell { width: min(500px, 100%); }
+      .subtitle { display: none; }
+      .game-panel { padding: 8px; }
+      .play-area { grid-template-columns: 1fr; margin-top: 7px; }
+      .board-column { align-items: center; }
+      .status-strip { width: 100%; }
+      .top-5 { width: 100%; }
+    }
+
+    @media (max-height: 660px) and (min-width: 741px) {
+      .eyebrow, .subtitle { display: none; }
+      .game-shell { gap: 5px; }
+      .game-panel { padding: 7px; }
+      .play-area { margin-top: 6px; gap: 8px; }
+      .status-card { min-height: 40px; padding: 5px 7px; }
+      .top-5 { padding: 8px; }
+      .top-5 li { min-height: 32px; padding: 4px 6px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
     }
   </style>
 <style id="ppg-viewport-fit">
-:root{--fitbar:var(--ppg-bar-h,48px);--cell:min(40px,calc((100vw - 28px)/9.2),calc((100dvh - var(--fitbar) - 235px)/9.2))}html,body{height:100%;overflow:hidden}body{height:100dvh!important;min-height:0!important;margin:0!important;padding:calc(var(--fitbar) + 5px) 8px 5px!important}h1{font-size:clamp(22px,4.6vh,36px);margin:2px 0 5px}.sudoku-container{grid-template-columns:repeat(9,var(--cell))!important;grid-template-rows:repeat(9,var(--cell))!important;gap:1px!important}.cell{width:var(--cell)!important;height:var(--cell)!important;font-size:clamp(13px,calc(var(--cell)*.45),18px)!important}.controls{margin-top:6px!important}.controls button{padding:6px 10px!important;font-size:13px!important;margin:2px!important}.top-5{margin-top:5px!important;max-height:92px;overflow:auto}.top-5 h2{font-size:15px;margin:3px}.top-5 li{padding:4px!important;margin:2px 0!important;font-size:12px}
-@media(max-height:590px){.top-5{display:none}:root{--cell:min(40px,calc((100vw - 28px)/9.2),calc((100dvh - var(--fitbar) - 145px)/9.2))}}
+:root{--fitbar:var(--ppg-bar-h,48px);--cell:min(52px,calc((100vw - 46px)/9.2),calc((100dvh - var(--fitbar) - 210px)/9.2))}
+html,body{height:100%;overflow:hidden}
+body{height:100dvh!important;min-height:0!important;margin:0!important;padding:calc(var(--fitbar) + 5px) 8px 6px!important}
+.sudoku-container{grid-template-columns:repeat(9,var(--cell))!important;grid-template-rows:repeat(9,var(--cell))!important}
+.cell{width:var(--cell)!important;height:var(--cell)!important;font-size:clamp(14px,calc(var(--cell)*.43),21px)!important}
+@media(max-width:740px){:root{--cell:min(48px,calc((100vw - 36px)/9.15),calc((100dvh - var(--fitbar) - 285px)/9.15))}.top-5{max-height:112px;overflow:auto}}
+@media(max-height:650px) and (min-width:741px){:root{--cell:min(45px,calc((100vw - 300px)/9.15),calc((100dvh - var(--fitbar) - 200px)/9.15))}}
+@media(max-height:610px) and (max-width:740px){.top-5{display:none}:root{--cell:min(44px,calc((100vw - 36px)/9.15),calc((100dvh - var(--fitbar) - 168px)/9.15))}}
 </style>
-
-<style id="ppg-quality-controls-style">
-#ppg-quality-pause-overlay{position:fixed;z-index:2147483635;inset:0;display:none;place-items:center;padding:18px;background:rgba(4,6,16,.82);backdrop-filter:blur(9px);font-family:Inter,"Segoe UI",system-ui,sans-serif;color:#fff}#ppg-quality-pause-overlay.open{display:grid}.ppg-quality-pause-card{width:min(440px,94vw);padding:24px;border:1px solid rgba(255,255,255,.18);border-radius:22px;background:linear-gradient(145deg,#17192d,#090b17);box-shadow:0 30px 100px #000a;text-align:center}.ppg-quality-pause-card h2{margin:0 0 8px;font-size:clamp(25px,5vw,38px);color:#e8dcff}.ppg-quality-pause-card p{margin:0 0 18px;color:#bcc2d8;line-height:1.45}.ppg-quality-pause-actions{display:grid;gap:9px}.ppg-quality-pause-actions button,.ppg-quality-pause-actions a{display:block;width:100%;padding:12px 14px;border:1px solid #ffffff22;border-radius:12px;background:#242941;color:#fff;font:800 14px/1.2 Inter,"Segoe UI",system-ui,sans-serif;text-decoration:none;cursor:pointer}.ppg-quality-pause-actions button:first-child{background:linear-gradient(135deg,#6d5cff,#27d9c0);color:#081016}.ppg-quality-pause-actions :is(button,a):hover{filter:brightness(1.13)}#ppg-quality-pause,#ppg-quality-restart{white-space:nowrap}.ppg-quality-paused body{overflow:hidden!important}
-</style>
-<script id="ppg-quality-controls-runtime">
-(()=>{'use strict';
-const qs=new URLSearchParams(location.search);if(qs.get('preview')==='1'||qs.has('preview'))return;
-const ADD_RESTART=true;
-const realPerfNow=performance.now.bind(performance),realDateNow=Date.now.bind(Date),nativeRAF=window.requestAnimationFrame.bind(window),nativeSetInterval=window.setInterval.bind(window),nativeSetTimeout=window.setTimeout.bind(window);
-let paused=false,pausePerf=0,pauseDate=0,perfOffset=0,dateOffset=0;
-const gamePerfNow=()=>{const n=realPerfNow();return n-perfOffset-(paused?n-pausePerf:0)};
-const gameDateNow=()=>{const n=realDateNow();return n-dateOffset-(paused?n-pauseDate:0)};
-try{Object.defineProperty(performance,'now',{value:gamePerfNow,configurable:true})}catch{}
-try{Date.now=gameDateNow}catch{}
-window.requestAnimationFrame=cb=>nativeRAF(function gate(){if(paused)return nativeRAF(gate);cb(gamePerfNow())});
-window.setInterval=(fn,ms,...args)=>typeof fn==='function'?nativeSetInterval(()=>{if(!paused)fn(...args)},ms):nativeSetInterval(fn,ms,...args);
-window.setTimeout=(fn,ms,...args)=>{if(typeof fn!=='function')return nativeSetTimeout(fn,ms,...args);const run=()=>{if(paused)return nativeSetTimeout(run,50);fn(...args)};return nativeSetTimeout(run,ms)};
-const L={
- en:{pause:'Pause',paused:'Paused',desc:'Gameplay time and controls are frozen.',resume:'Resume game',restart:'New game',exit:'Exit to Mini Games'},
- 'pt-BR':{pause:'Pausar',paused:'Pausado',desc:'O tempo e os controles da partida estão congelados.',resume:'Continuar jogo',restart:'Novo jogo',exit:'Sair para Mini Games'},
- es:{pause:'Pausa',paused:'En pausa',desc:'El tiempo y los controles están congelados.',resume:'Continuar',restart:'Nueva partida',exit:'Salir a Mini Games'},
- fr:{pause:'Pause',paused:'En pause',desc:'Le temps et les contrôles sont figés.',resume:'Reprendre',restart:'Nouvelle partie',exit:'Quitter vers Mini Games'},
- de:{pause:'Pause',paused:'Pausiert',desc:'Spielzeit und Steuerung sind angehalten.',resume:'Fortsetzen',restart:'Neues Spiel',exit:'Zu Mini Games'},
- it:{pause:'Pausa',paused:'In pausa',desc:'Tempo e controlli di gioco sono fermi.',resume:'Riprendi',restart:'Nuova partita',exit:'Esci ai Mini Games'},
- tr:{pause:'Duraklat',paused:'Duraklatıldı',desc:'Oyun süresi ve kontroller donduruldu.',resume:'Devam et',restart:'Yeni oyun',exit:"Mini Games'e çık"},
- ru:{pause:'Пауза',paused:'Игра на паузе',desc:'Игровое время и управление остановлены.',resume:'Продолжить',restart:'Новая игра',exit:'В Mini Games'},
- ja:{pause:'一時停止',paused:'一時停止中',desc:'ゲーム時間と操作を停止しています。',resume:'再開',restart:'新しいゲーム',exit:'ミニゲームへ'},
- ko:{pause:'일시정지',paused:'일시정지됨',desc:'게임 시간과 조작이 멈췄습니다.',resume:'계속',restart:'새 게임',exit:'미니게임으로'},
- 'zh-CN':{pause:'暂停',paused:'已暂停',desc:'游戏时间和操作已冻结。',resume:'继续',restart:'新游戏',exit:'返回小游戏菜单'}
-};
-function lang(){const raw=(document.documentElement.lang||navigator.language||'en').replace('_','-');if(/^pt/i.test(raw))return'pt-BR';if(/^zh/i.test(raw))return'zh-CN';const k=raw.split('-')[0];return L[k]?k:'en'}function t(k){return(L[lang()]||L.en)[k]||L.en[k]}
-let overlay,pauseBtn,restartBtn;
-function refresh(){if(pauseBtn)pauseBtn.textContent='⏸ '+t('pause');if(restartBtn)restartBtn.textContent='↻ '+t('restart');if(!overlay)return;overlay.querySelector('h2').textContent=t('paused');overlay.querySelector('p').textContent=t('desc');overlay.querySelector('[data-act=resume]').textContent='▶ '+t('resume');overlay.querySelector('[data-act=restart]').textContent='↻ '+t('restart');overlay.querySelector('[data-act=exit]').textContent='↩ '+t('exit')}
-function releaseKeys(){for(const key of ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d','W','A','S','D',' '])document.dispatchEvent(new KeyboardEvent('keyup',{key,bubbles:true}))}
-function setPaused(next){next=!!next;if(next===paused)return;if(next){releaseKeys();pausePerf=realPerfNow();pauseDate=realDateNow();paused=true}else{perfOffset+=realPerfNow()-pausePerf;dateOffset+=realDateNow()-pauseDate;paused=false}window.__PPG_PAUSED__=paused;document.documentElement.classList.toggle('ppg-quality-paused',paused);overlay?.classList.toggle('open',paused);document.dispatchEvent(new CustomEvent(paused?'ppg:pause':'ppg:resume'));if(!paused)nativeSetTimeout(()=>document.activeElement?.blur?.(),0)}
-function restart(){if(paused)setPaused(false);if(typeof window.PPGGameRestart==='function'){window.PPGGameRestart();return}location.reload()}
-function mount(){if(document.getElementById('ppg-quality-pause-overlay'))return;overlay=document.createElement('div');overlay.id='ppg-quality-pause-overlay';overlay.innerHTML='<div class="ppg-quality-pause-card" role="dialog" aria-modal="true"><h2></h2><p></p><div class="ppg-quality-pause-actions"><button data-act="resume"></button><button data-act="restart"></button><a data-act="exit" href="menu_minigames.html"></a></div></div>';document.body.appendChild(overlay);overlay.querySelector('[data-act=resume]').onclick=()=>setPaused(false);overlay.querySelector('[data-act=restart]').onclick=restart;const toolbar=document.getElementById('ppg-toolbar');if(toolbar){pauseBtn=document.createElement('button');pauseBtn.id='ppg-quality-pause';pauseBtn.type='button';pauseBtn.onclick=()=>setPaused(!paused);const menu=toolbar.querySelector('a[href*="menu_minigames"]');toolbar.insertBefore(pauseBtn,menu||null);if(ADD_RESTART){restartBtn=document.createElement('button');restartBtn.id='ppg-quality-restart';restartBtn.type='button';restartBtn.onclick=restart;toolbar.insertBefore(restartBtn,menu||null)}}refresh();new MutationObserver(refresh).observe(document.documentElement,{attributes:true,attributeFilter:['lang']})}
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(document.querySelector('.ppg-modal.open,dialog[open],.modal.open')&&!paused)return;e.preventDefault();e.stopImmediatePropagation();setPaused(!paused);return}if(paused){e.preventDefault();e.stopImmediatePropagation()}},true);for(const ev of ['pointerdown','mousedown','touchstart','click'])document.addEventListener(ev,e=>{if(paused&&!e.target.closest('#ppg-quality-pause-overlay')){e.preventDefault();e.stopImmediatePropagation()}},true);
-window.PPGQualityControls={pause:()=>setPaused(true),resume:()=>setPaused(false),toggle:()=>setPaused(!paused),restart,get paused(){return paused}};
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount);else mount();
-})();
-</script>
-
 </head>
 <body>
-  <h1>Zen Sudoku</h1>
-  <div class="controls">
-    <button onclick="startGame('easy')">Fácil</button>
-    <button onclick="startGame('medium')">Médio</button>
-    <button onclick="startGame('hard')">Difícil</button>
-    <button onclick="resetBoard()">Reiniciar</button>
-  </div>
-  <div class="sudoku-container" id="sudoku"></div>
-  <div class="controls">
-    <span id="timer">00:00</span>
-  </div>
-  <div class="top-5">
-    <h2>Top 5 Jogadores</h2>
-    <ul id="top-5-list"></ul>
-  </div>
+  <main class="game-shell">
+    <header class="hero">
+      <div class="eyebrow">Projeto Primata Games · Logic Series</div>
+      <h1><span class="zen-word">ZEN</span> SUDOKU</h1>
+      <p class="subtitle">Nove números. Oitenta e uma casas. Nenhum espaço para o caos.</p>
+    </header>
+
+    <section class="game-panel" aria-label="Jogo Zen Sudoku">
+      <div class="game-controls" aria-label="Controles da partida">
+        <button type="button" data-level="easy" onclick="startGame('easy')">Fácil</button>
+        <button type="button" data-level="medium" onclick="startGame('medium')">Médio</button>
+        <button type="button" data-level="hard" onclick="startGame('hard')">Difícil</button>
+        <button type="button" class="reset-btn" onclick="resetBoard()" title="Gerar novamente esta dificuldade">↻ Reiniciar</button>
+      </div>
+
+      <div class="play-area">
+        <div class="board-column">
+          <div class="board-frame">
+            <div class="sudoku-container" id="sudoku" aria-label="Tabuleiro de Sudoku 9 por 9"></div>
+          </div>
+
+          <div class="status-strip" aria-label="Status da partida">
+            <div class="status-card">
+              <small>Dificuldade</small>
+              <strong id="difficulty-label">FÁCIL</strong>
+            </div>
+            <div class="status-card timer-card">
+              <small>Tempo</small>
+              <strong id="timer">00:00</strong>
+            </div>
+            <div class="status-card status-tip">
+              <small>Regra</small>
+              <strong>1–9 · sem repetir</strong>
+            </div>
+          </div>
+        </div>
+
+        <aside class="top-5" aria-label="Top 5 jogadores">
+          <div class="top-5-head">
+            <h2>Melhores tempos</h2>
+            <span class="top-5-badge" aria-hidden="true">♛</span>
+          </div>
+          <ul id="top-5-list"></ul>
+        </aside>
+      </div>
+    </section>
+  </main>
 
   <script>
     const initialBoard = [
@@ -180,7 +617,8 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     let timer;
     let startTime;
     let difficulty;
-    let top5 = JSON.parse(localStorage.getItem('top5')) || [];
+    const TOP5_KEY='ppg_zen_sudoku_top5_v2';
+    let top5 = JSON.parse(localStorage.getItem(TOP5_KEY) || localStorage.getItem('top5') || '[]');
 
     function createBoard(board) {
       const container = document.getElementById('sudoku');
@@ -190,19 +628,26 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
         for (let col = 0; col < 9; col++) {
           const input = document.createElement('input');
           input.type = 'text';
+          input.inputMode = 'numeric';
+          input.autocomplete = 'off';
           input.maxLength = 1;
           input.classList.add('cell');
+          input.dataset.row = row;
+          input.dataset.col = col;
+          input.setAttribute('aria-label', `Linha ${row + 1}, coluna ${col + 1}`);
 
           if (board[row][col] !== '') {
             input.value = board[row][col];
             input.disabled = true;
           } else {
             input.addEventListener('input', () => validateInput(row, col));
+            input.addEventListener('focus', () => paintFocus(row, col));
+            input.addEventListener('click', () => paintFocus(row, col));
           }
 
-          // Adiciona bordas grossas para separar blocos 3x3
-          if ((col + 1) % 3 === 0 && col !== 8) input.style.borderRight = '2px solid #5A3AC8';
-          if ((row + 1) % 3 === 0 && row !== 8) input.style.borderBottom = '2px solid #5A3AC8';
+          // Separação visual dos blocos 3x3, sem alterar a estrutura do grid.
+          if ((col + 1) % 3 === 0 && col !== 8) input.classList.add('block-right');
+          if ((row + 1) % 3 === 0 && row !== 8) input.classList.add('block-bottom');
 
           container.appendChild(input);
           cells[row][col] = input;
@@ -210,14 +655,32 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
       }
     }
 
-    function validateInput(row, col) {
-      const value = cells[row][col].value;
-      cells[row][col].classList.remove('invalid');
+    function paintFocus(row, col) {
+      const active = cells[row]?.[col];
+      const value = active?.value || '';
+      const blockRow = Math.floor(row / 3);
+      const blockCol = Math.floor(col / 3);
 
-      if (!/^[1-9]$/.test(value)) {
-        cells[row][col].classList.add('invalid');
-        return;
+      for (let r = 0; r < 9; r++) {
+        for (let c = 0; c < 9; c++) {
+          const cell = cells[r][c];
+          cell.classList.remove('peer', 'same');
+          const sameBlock = Math.floor(r / 3) === blockRow && Math.floor(c / 3) === blockCol;
+          if ((r === row || c === col || sameBlock) && !(r === row && c === col)) cell.classList.add('peer');
+          if (value && cell.value === value && !(r === row && c === col)) cell.classList.add('same');
+        }
       }
+    }
+
+    function validateInput(row, col) {
+      const cell = cells[row][col];
+      let value = cell.value.replace(/[^1-9]/g, '').slice(0, 1);
+      if (cell.value !== value) cell.value = value;
+      cell.classList.remove('invalid', 'valid-pop');
+      paintFocus(row, col);
+
+      // Apagar uma casa volta ao estado neutro; apenas valores conflitantes ficam vermelhos.
+      if (value === '') return;
 
       // Verifica duplicatas na linha, coluna e bloco
       for (let i = 0; i < 9; i++) {
@@ -242,6 +705,8 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
         }
       }
 
+      cell.classList.add('valid-pop');
+      setTimeout(() => cell.classList.remove('valid-pop'), 190);
       checkWin();
     }
 
@@ -260,7 +725,8 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
         top5.push({ name: playerName, time: timeTaken, difficulty });
         top5.sort((a, b) => a.time - b.time);
         if (top5.length > 5) top5.pop();
-        localStorage.setItem('top5', JSON.stringify(top5));
+        localStorage.setItem(TOP5_KEY, JSON.stringify(top5));
+        window.__ppgLastSudokuTime=timeTaken;
         updateTop5();
       }
     }
@@ -268,20 +734,58 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     function updateTop5() {
       const top5List = document.getElementById('top-5-list');
       top5List.innerHTML = '';
-      top5.forEach(player => {
+      const labels = { easy: 'Fácil', medium: 'Médio', hard: 'Difícil' };
+
+      if (!top5.length) {
+        const empty = document.createElement('li');
+        empty.className = 'empty-ranking';
+        empty.textContent = 'Seu primeiro tempo vai inaugurar este placar.';
+        top5List.appendChild(empty);
+        return;
+      }
+
+      top5.forEach((player, index) => {
         const li = document.createElement('li');
-        li.textContent = `${player.name} - ${player.time}s (${player.difficulty})`;
+        const rank = document.createElement('span');
+        const main = document.createElement('span');
+        const name = document.createElement('span');
+        const diff = document.createElement('small');
+        const time = document.createElement('strong');
+        const min = String(Math.floor(player.time / 60)).padStart(2, '0');
+        const sec = String(player.time % 60).padStart(2, '0');
+
+        rank.className = 'rank-index';
+        main.className = 'rank-main';
+        name.className = 'rank-name';
+        diff.className = 'rank-difficulty';
+        time.className = 'rank-time';
+
+        rank.textContent = index + 1;
+        name.textContent = player.name;
+        diff.textContent = labels[player.difficulty] || player.difficulty || '—';
+        time.textContent = `${min}:${sec}`;
+        main.append(name, diff);
+        li.append(rank, main, time);
         top5List.appendChild(li);
       });
     }
 
     function startGame(level) {
-      difficulty = level;
-      const board = generateBoard(level);
+      window.__ppgLastSudokuTime=null;
+      difficulty = level || 'easy';
+      const board = generateBoard(difficulty);
       createBoard(board);
       startTime = Date.now();
       clearInterval(timer);
+      document.getElementById('timer').textContent = '00:00';
       timer = setInterval(updateTimer, 1000);
+
+      const labels = { easy: 'FÁCIL', medium: 'MÉDIO', hard: 'DIFÍCIL' };
+      document.getElementById('difficulty-label').textContent = labels[difficulty] || difficulty.toUpperCase();
+      document.querySelectorAll('[data-level]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.level === difficulty);
+        btn.setAttribute('aria-pressed', btn.dataset.level === difficulty ? 'true' : 'false');
+      });
     }
 
     function updateTimer() {
@@ -292,21 +796,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     }
 
     function resetBoard() {
-      startGame(difficulty);
-    }
-
-    function sudokuSolutionCount(board, limit = 2) {
-      let best = null, bestCandidates = null;
-      for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) if (board[r][c] === '') {
-        const used = new Set();
-        for (let i = 0; i < 9; i++) { if (board[r][i] !== '') used.add(board[r][i]); if (board[i][c] !== '') used.add(board[i][c]); }
-        const br=Math.floor(r/3)*3,bc=Math.floor(c/3)*3;for(let rr=br;rr<br+3;rr++)for(let cc=bc;cc<bc+3;cc++)if(board[rr][cc] !== '')used.add(board[rr][cc]);
-        const candidates=[];for(let n=1;n<=9;n++)if(!used.has(n))candidates.push(n);
-        if (!candidates.length) return 0;
-        if (!bestCandidates || candidates.length < bestCandidates.length) { best=[r,c]; bestCandidates=candidates; if(candidates.length===1) break; }
-      }
-      if (!best) return 1;
-      let total=0;const [r,c]=best;for(const n of bestCandidates){board[r][c]=n;total+=sudokuSolutionCount(board,limit-total);board[r][c]='';if(total>=limit)return total}return total;
+      startGame(difficulty || 'easy');
     }
 
     function generateBoard(level) {
@@ -321,14 +811,29 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
         [2, 8, 7, 4, 1, 9, 6, 3, 5],
         [3, 4, 5, 2, 8, 6, 1, 7, 9]
       ];
-      for (let i = 0; i < 9; i += 3) { shuffle(baseBoard, i, i + 2); shuffle(baseBoard, i, i + 2, true); }
-      const board=baseBoard.map(row=>row.slice()),target=level==='easy'?30:level==='medium'?40:50;
-      const cells=Array.from({length:81},(_,i)=>i).sort(()=>Math.random()-.5);let removed=0,attempts=0;
-      for (const pos of cells) {
-        if (removed>=target || attempts++>81) break;
-        const r=Math.floor(pos/9),c=pos%9,keep=board[r][c];board[r][c]='';
-        const probe=board.map(row=>row.slice());if(sudokuSolutionCount(probe,2)===1)removed++;else board[r][c]=keep;
+
+      // Shuffle rows and columns within each 3x3 block
+      for (let i = 0; i < 9; i += 3) {
+        shuffle(baseBoard, i, i + 2);
+        shuffle(baseBoard, i, i + 2, true);
       }
+
+      // Remove numbers based on difficulty
+      const board = baseBoard.map(row => row.slice());
+      let cellsToRemove;
+      if (level === 'easy') cellsToRemove = 20;
+      else if (level === 'medium') cellsToRemove = 40;
+      else cellsToRemove = 60;
+
+      while (cellsToRemove > 0) {
+        const row = Math.floor(Math.random() * 9);
+        const col = Math.floor(Math.random() * 9);
+        if (board[row][col] !== '') {
+          board[row][col] = '';
+          cellsToRemove--;
+        }
+      }
+
       return board;
     }
 
@@ -349,26 +854,27 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     startGame('easy');
   </script>
 <style id="ppg-platform-style">
+body.ppg-preview{--ppg-bar-h:0px!important;padding-top:0!important}body.ppg-preview #ppg-toolbar,body.ppg-preview .ppg-modal{display:none!important}
 :root{--ppg-ui-bg:rgba(10,13,28,.88);--ppg-ui-fg:#f7f5ff;--ppg-ui-line:rgba(255,255,255,.15);--ppg-ui-accent:#a875ff;--ppg-ui-accent2:#35e6ca}
 #ppg-toolbar{position:fixed;z-index:2147483000;top:10px;right:10px;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;max-width:min(92vw,620px);font-family:Inter,"Segoe UI",system-ui,sans-serif!important}
 #ppg-toolbar button,#ppg-toolbar a{min-height:34px!important;padding:7px 10px!important;margin:0!important;border:1px solid var(--ppg-ui-line)!important;border-radius:10px!important;background:var(--ppg-ui-bg)!important;color:var(--ppg-ui-fg)!important;font:700 12px/1 Inter,"Segoe UI",system-ui,sans-serif!important;text-decoration:none!important;text-transform:none!important;letter-spacing:0!important;box-shadow:0 8px 25px rgba(0,0,0,.22)!important;cursor:pointer!important;backdrop-filter:blur(10px);transform:none!important}
 #ppg-toolbar button:hover,#ppg-toolbar a:hover{border-color:var(--ppg-ui-accent2)!important;filter:brightness(1.12)!important}
 .ppg-modal{position:fixed;z-index:2147483640;inset:0;display:none;place-items:center;padding:18px;background:rgba(2,3,12,.78);backdrop-filter:blur(8px);font-family:Inter,"Segoe UI",system-ui,sans-serif!important}.ppg-modal.open{display:grid}.ppg-card{width:min(560px,96vw);max-height:min(80vh,720px);overflow:auto;padding:22px;border:1px solid rgba(255,255,255,.16);border-radius:20px;background:linear-gradient(145deg,#14162b,#0a0d1b);color:#f8f7ff;text-align:left;box-shadow:0 30px 90px #0009}.ppg-card h2{margin:0 0 8px!important;color:#d9c7ff!important;font:800 clamp(22px,4vw,30px)/1.1 Inter,"Segoe UI",system-ui,sans-serif!important}.ppg-card h3{margin:17px 0 6px!important;color:#63ecd6!important;font:800 14px/1.2 Inter,"Segoe UI",system-ui,sans-serif!important;text-transform:uppercase;letter-spacing:.08em}.ppg-card p,.ppg-card li{color:#d7d9e7!important;font:400 14px/1.55 Inter,"Segoe UI",system-ui,sans-serif!important}.ppg-card .ppg-credit{margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.12);font-weight:800;color:#fff!important}.ppg-close{float:right;border:0!important;background:#282c48!important;color:white!important;border-radius:9px!important;padding:7px 10px!important;cursor:pointer!important}.ppg-record-list{display:grid;gap:8px;margin-top:12px}.ppg-record{display:grid;grid-template-columns:34px 1fr auto;gap:8px;padding:10px;border-radius:12px;background:#ffffff0b;border:1px solid #ffffff10;align-items:center}.ppg-record small{color:#989db7}.ppg-empty{padding:14px;border:1px dashed #ffffff2a;border-radius:12px;color:#aeb3c8}
-body.ppg-light{background-color:#edf1f8!important;color:#182038!important}body.ppg-light :is(.menu-card,.card,.panel,.toolbar,.stats,.help,.bet-panel,.track-card,.game-container){filter:brightness(1.08) saturate(.92)}body.ppg-dark{color-scheme:dark}
-@media(max-width:720px){#ppg-toolbar{top:6px;right:6px}#ppg-toolbar button,#ppg-toolbar a{padding:6px 8px!important;font-size:11px!important}.ppg-card{padding:17px}}
+body.ppg-light{color:#182038!important}body.ppg-light :is(.menu-card,.card,.panel,.toolbar,.stats,.help,.bet-panel,.track-card,.game-container){filter:brightness(1.08) saturate(.92)}body.ppg-dark{color-scheme:dark}
+.ppg-mobile-label{display:none}
+@media(max-width:720px){#ppg-toolbar{top:6px;right:6px;flex-wrap:nowrap;max-width:calc(100vw - 12px);gap:4px}#ppg-toolbar button,#ppg-toolbar a{min-height:32px!important;padding:6px 7px!important;font-size:10px!important;white-space:nowrap}.ppg-compact-label,.ppg-full-label{display:none}.ppg-mobile-label{display:inline}.ppg-card{padding:17px}}
 </style><script id="ppg-platform-script">
-(()=>{'use strict';
-const CFG={"id": "zen_sudoku", "name": "Zen Sudoku", "emoji": "🔢", "desc": "Sudoku em três dificuldades com ranking local por tempo.", "how": "Preencha cada linha, coluna e bloco 3×3 com os números de 1 a 9 sem repetição. Escolha a dificuldade antes de começar.", "tip": "Procure linhas e blocos quase completos antes de chutar. Sudoku bom é dedução; chute é só o caos usando gravata.", "metric": "Melhor tempo", "unit": " s", "mode": "min"};
-const STATS_KEY='ppg_minigames_stats_v1', PREF_KEY='ppg_platform_prefs_v1', REC_KEY='ppg_records_'+CFG.id;
+(()=>{'use strict';const PREVIEW=new URLSearchParams(location.search).has('preview');if(PREVIEW)document.body.classList.add('ppg-preview');const CFG={"id": "zen_sudoku", "name": "Zen Sudoku", "emoji": "🔢", "desc": "Sudoku em três dificuldades com ranking local por tempo.", "how": "Preencha cada linha, coluna e bloco 3×3 com os números de 1 a 9 sem repetição. Escolha a dificuldade antes de começar.", "tip": "Procure linhas e blocos quase completos antes de chutar. Sudoku bom é dedução; chute é só o caos usando gravata.", "metric": "Melhor tempo", "unit": " s", "mode": "min"};
+const STATS_KEY='ppg_minigames_stats_v1', PREF_KEY='ppg_platform_prefs_v2', REC_KEY='ppg_records_'+CFG.id;
 const $=s=>document.querySelector(s), num=v=>{const m=String(v??'').replace(/\s/g,'').replace(/\.(?=\d{3}(\D|$))/g,'').replace(',','.').match(/-?\d+(?:\.\d+)?/);return m?+m[0]:null};
 const money=v=>{const s=String(v??'').replace(/R\$|◈|Créditos?|Banca:|💰/gi,'').trim();let m=s.match(/(-?[\d.,]+)\s*(K|M|B|T|Qa|Qi|Sx|Sp|Oc|No|Dc)?/i);if(!m)return null;let n=num(m[1]);const u=(m[2]||'').toLowerCase(),map={k:1e3,m:1e6,b:1e9,t:1e12,qa:1e15,qi:1e18,sx:1e21,sp:1e24,oc:1e27,no:1e30,dc:1e33};return n*(map[u]||1)};
 window.__ppgHelpers={num,money};
-function readJSON(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}}function writeJSON(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
+function readJSON(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}}function writeJSON(k,v){if(PREVIEW&&k===STATS_KEY)return;try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
 function dayKey(d=new Date()){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}function dayDiff(a,b){const A=new Date(a+'T12:00:00'),B=new Date(b+'T12:00:00');return Math.round((B-A)/86400000)}
 let all=readJSON(STATS_KEY,{}),st=all[CFG.id]||{starts:0,totalSeconds:0,longestStreak:0,currentStreak:0,lastDay:null};const today=dayKey();st.starts=(st.starts||0)+1;if(st.lastDay!==today){const dd=st.lastDay?dayDiff(st.lastDay,today):99;st.currentStreak=dd===1?(st.currentStreak||0)+1:1;st.longestStreak=Math.max(st.longestStreak||0,st.currentStreak);st.lastDay=today}st.lastStarted=Date.now();all[CFG.id]=st;writeJSON(STATS_KEY,all);
 let lastTick=performance.now();function flushTime(){const now=performance.now(),d=Math.max(0,(now-lastTick)/1000);lastTick=now;all=readJSON(STATS_KEY,{});const x=all[CFG.id]||st;x.totalSeconds=(x.totalSeconds||0)+d;x.lastPlayed=Date.now();all[CFG.id]=x;writeJSON(STATS_KEY,all)}setInterval(flushTime,5000);addEventListener('pagehide',flushTime);document.addEventListener('visibilitychange',()=>{if(document.hidden)flushTime();else lastTick=performance.now()});
 let prefs=readJSON(PREF_KEY,{theme:'dark',sound:true});document.body.classList.toggle('ppg-light',prefs.theme==='light');document.body.classList.toggle('ppg-dark',prefs.theme!=='light');
-const toolbar=document.createElement('nav');toolbar.id='ppg-toolbar';toolbar.innerHTML=`<button id="ppg-theme" title="Alternar modo claro/escuro">${prefs.theme==='light'?'🌙 Escuro':'☀️ Claro'}</button><button id="ppg-sound" title="Som e música">${prefs.sound?'🔊 Som':'🔇 Som'}</button><button id="ppg-records">🏆 Recordes</button><button id="ppg-about">ⓘ Sobre</button><a href="menu_minigames.html" id="ppg-menu">↩ Menu de Mini Games</a>`;document.body.appendChild(toolbar);
+const toolbar=document.createElement('nav');toolbar.id='ppg-toolbar';toolbar.innerHTML=`<button id="ppg-theme" title="Alternar modo claro/escuro">${prefs.theme==='light'?'🌙 Escuro':'☀️ Claro'}</button><button id="ppg-sound" title="Som e música">${prefs.sound?'🔊 Som':'🔇 Som'}</button><button id="ppg-records" title="Recordes">🏆 <span class="ppg-compact-label">Recordes</span></button><button id="ppg-about" title="Sobre">ⓘ <span class="ppg-compact-label">Sobre</span></button><a href="index.html" id="ppg-menu"><span class="ppg-full-label">↩ Menu de Mini Games</span><span class="ppg-mobile-label">↩ Menu</span></a>`;document.body.appendChild(toolbar);
 const modal=document.createElement('div');modal.className='ppg-modal';modal.id='ppg-modal';modal.innerHTML=`<div class="ppg-card"><button class="ppg-close" aria-label="Fechar">✕</button><div id="ppg-modal-body"></div></div>`;document.body.appendChild(modal);const body=$('#ppg-modal-body');function open(html){body.innerHTML=html;modal.classList.add('open')}function close(){modal.classList.remove('open')}modal.addEventListener('click',e=>{if(e.target===modal||e.target.closest('.ppg-close'))close()});addEventListener('keydown',e=>{if(e.key==='Escape')close()});
 $('#ppg-about').onclick=()=>open(`<h2>${CFG.name}</h2><p>${CFG.desc}</p><h3>Como jogar</h3><p>${CFG.how}</p><h3>Dica de estratégia</h3><p>${CFG.tip}</p><p class="ppg-credit">Produção: Projeto Primata Games em 2026.</p>`);
 $('#ppg-theme').onclick=()=>{prefs.theme=prefs.theme==='light'?'dark':'light';writeJSON(PREF_KEY,prefs);document.body.classList.toggle('ppg-light',prefs.theme==='light');document.body.classList.toggle('ppg-dark',prefs.theme==='dark');$('#ppg-theme').textContent=prefs.theme==='light'?'🌙 Escuro':'☀️ Claro';sfx(520,.05)};
@@ -376,14 +882,9 @@ $('#ppg-theme').onclick=()=>{prefs.theme=prefs.theme==='light'?'dark':'light';wr
 let ac=null,master=null,music=null,beat=0;function initAudio(){if(ac)return;ac=new (window.AudioContext||window.webkitAudioContext)();master=ac.createGain();master.gain.value=prefs.sound?.12:0;master.connect(ac.destination)}function tone(f,d=.08,type='sine',vol=.08,when=0){if(!prefs.sound)return;initAudio();const t=ac.currentTime+when,o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(master);o.start(t);o.stop(t+d)}function sfx(f=420,d=.045){tone(f,d,'triangle',.11)}function startBgm(){if(music||!prefs.sound)return;initAudio();music=setInterval(()=>{if(document.hidden||!prefs.sound)return;const seq=[110,138.59,164.81,220,196,164.81,146.83,123.47],f=seq[beat++%seq.length];tone(f,.16,'triangle',.025);if(beat%4===1)tone(f/2,.1,'sine',.018)},360)}function stopBgm(){clearInterval(music);music=null}function unlock(){initAudio();ac?.resume();if(prefs.sound)startBgm()}addEventListener('pointerdown',unlock,{once:true});addEventListener('keydown',unlock,{once:true});document.addEventListener('click',e=>{if(e.target.closest('button,a,input,select'))sfx(380+Math.random()*80,.035)},true);
 $('#ppg-sound').onclick=e=>{e.stopPropagation();prefs.sound=!prefs.sound;writeJSON(PREF_KEY,prefs);initAudio();master.gain.setTargetAtTime(prefs.sound?.12:0,ac.currentTime,.02);if(prefs.sound){ac.resume();startBgm();sfx(660,.08)}else stopBgm();$('#ppg-sound').textContent=prefs.sound?'🔊 Som':'🔇 Som'};
 // Ranking local por sessão. A mesma sessão é atualizada em vez de poluir o top 5 com cada incremento.
-const sessionId=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7);function formatValue(v){if(v==null)return '—';if(Math.abs(v)>=1e9)return v.toLocaleString('pt-BR',{notation:'compact',maximumFractionDigits:2})+CFG.unit;return (Number.isInteger(v)?v:v.toFixed(2).replace('.',','))+CFG.unit}function metric(){try{const num=window.__ppgHelpers.num,money=window.__ppgHelpers.money;return null}catch{return null}}function upsert(v){if(v==null||!Number.isFinite(v)||(CFG.mode==='min'&&v<=0))return;let r=readJSON(REC_KEY,[]),me=r.find(x=>x.sessionId===sessionId);if(me){const better=CFG.mode==='min'?v<me.value:v>me.value;if(!better)return;me.value=v;me.at=Date.now()}else r.push({sessionId,value:v,at:Date.now()});r.sort((a,b)=>CFG.mode==='min'?a.value-b.value:b.value-a.value);writeJSON(REC_KEY,r.slice(0,5))}setInterval(()=>upsert(metric()),800);addEventListener('pagehide',()=>upsert(metric()));
+const sessionId=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7);function formatValue(v){if(v==null)return '—';if(Math.abs(v)>=1e9)return v.toLocaleString('pt-BR',{notation:'compact',maximumFractionDigits:2})+CFG.unit;return (Number.isInteger(v)?v:v.toFixed(2).replace('.',','))+CFG.unit}function metric(){try{return Number(window.__ppgLastSudokuTime)||null}catch{return null}}function upsert(v){if(v==null||!Number.isFinite(v)||(CFG.mode==='min'&&v<=0))return;let r=readJSON(REC_KEY,[]),me=r.find(x=>x.sessionId===sessionId);if(me){const better=CFG.mode==='min'?v<me.value:v>me.value;if(!better)return;me.value=v;me.at=Date.now()}else r.push({sessionId,value:v,at:Date.now()});r.sort((a,b)=>CFG.mode==='min'?a.value-b.value:b.value-a.value);writeJSON(REC_KEY,r.slice(0,5))}setInterval(()=>upsert(metric()),800);addEventListener('pagehide',()=>upsert(metric()));
 function renderRecords(){const r=readJSON(REC_KEY,[]);const list=r.length?`<div class="ppg-record-list">${r.map((x,i)=>`<div class="ppg-record"><b>#${i+1}</b><span><strong>${formatValue(x.value)}</strong><br><small>${new Date(x.at).toLocaleDateString('pt-BR')}</small></span><small>${CFG.metric}</small></div>`).join('')}</div>`:`<div class="ppg-empty">Ainda não há marca registrada neste navegador. Jogue uma partida e ela aparece aqui.</div>`;open(`<h2>Recordes locais</h2><p>Top 5 persistente deste jogo, salvo somente neste navegador.</p>${list}`)}$('#ppg-records').onclick=renderRecords;
 })();
 </script>
-
-<!-- PPG_FULLSCREEN_LANDSCAPE_V1 -->
-<style id="ppg-fs-style">#ppgFullscreenBtn{position:fixed;right:10px;top:10px;z-index:2147483646;width:42px;height:36px;padding:0;border:2px outset #eee;border-radius:7px;background:#111b;color:#fff;font:700 20px/1 system-ui;cursor:pointer;backdrop-filter:blur(4px)}#ppgRotateHint{display:none;position:fixed;inset:0;z-index:2147483645;place-items:center;padding:28px;text-align:center;background:#080b12e8;color:#fff;font:800 18px/1.4 system-ui}#ppgRotateHint b{font-size:42px;display:block;margin-bottom:8px}@media (orientation:portrait) and (max-width:900px){body.ppg-needs-landscape #ppgRotateHint{display:grid}}</style>
-<button id="ppgFullscreenBtn" type="button" title="Tela cheia" aria-label="Tela cheia">⛶</button><div id="ppgRotateHint"><div><b>↻</b>Gire o dispositivo para jogar em modo paisagem.</div></div>
-<script id="ppg-fs-runtime">(()=>{'use strict';const q=new URLSearchParams(location.search),embedded=q.get('embedded')==='1',auto=q.get('autofs')==='1';const btn=document.getElementById('ppgFullscreenBtn');const mobile=()=>matchMedia('(max-width:900px)').matches||/Android|iPhone|iPad|Mobile/i.test(navigator.userAgent);function markOrientation(){document.body.classList.toggle('ppg-needs-landscape',mobile()&&innerHeight>innerWidth)}async function lockLandscape(){if(!mobile())return true;try{if(screen.orientation&&screen.orientation.lock){await screen.orientation.lock('landscape');markOrientation();return true}}catch(e){}markOrientation();return false}async function goFS(){try{if(embedded&&parent!==window){const pd=parent.document,el=pd.getElementById('ppgGameLauncher')||pd.documentElement;if(!pd.fullscreenElement&&el.requestFullscreen)await el.requestFullscreen({navigationUI:'hide'});}else if(!document.fullscreenElement&&document.documentElement.requestFullscreen){await document.documentElement.requestFullscreen({navigationUI:'hide'})}}catch(e){}await lockLandscape();markOrientation()}btn?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();goFS()});addEventListener('resize',markOrientation);addEventListener('orientationchange',markOrientation);document.addEventListener('fullscreenchange',markOrientation);markOrientation();if(auto){const once=()=>{goFS();removeEventListener('pointerdown',once,true);removeEventListener('keydown',once,true)};addEventListener('pointerdown',once,true);addEventListener('keydown',once,true)}if(embedded&&parent!==window){document.addEventListener('click',e=>{const a=e.target.closest('a,button');if(!a)return;const href=(a.getAttribute('href')||'').toLowerCase();const txt=(a.textContent||'').toLowerCase();if(href==='index.html'||href.endsWith('/index.html')||href.includes('menu_minigames')||txt.includes('voltar ao menu')||txt.includes('back to menu')){e.preventDefault();e.stopPropagation();parent.postMessage({type:'ppg-exit-game'},location.origin)}},true)}})();</script>
 </body>
 </html>
