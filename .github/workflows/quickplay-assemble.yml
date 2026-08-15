@@ -31,13 +31,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cat .quickplay-upload/brain_matrix/part_* > brain_matrix.html
-          cat .quickplay-upload/rift_run/part_* > rift_run.html
-          cat .quickplay-upload/index/part_* > index.html
+          cat .quickplay-upload/brain_matrix/part_* | base64 -d | gzip -d > brain_matrix.html
+          cat .quickplay-upload/rift_run/part_* | base64 -d | gzip -d > rift_run.html
+          cat .quickplay-upload/index/part_* | base64 -d | gzip -d > index.html
           echo 'c7d0b08ac4cd9455c5decd7baa7574d81f2029a84f2f15ea557b54aad7f2ffff  brain_matrix.html' | sha256sum -c -
           echo '9e457c6f8156df19c9ada2d8ffff17846c41823f2a8ffb28b29dbe0addff3f7e  rift_run.html' | sha256sum -c -
           echo 'bd1e8c8ed0e63d99ee5d5a81496acf2b63974f8160ffc2d69268c741834640f4  index.html' | sha256sum -c -
-          node -e "for (const f of ['brain_matrix.html','rift_run.html','index.html']) { const s=require('fs').readFileSync(f,'utf8'); const m=s.match(/<script[^>]*>([\\s\\S]*?)<\\/script>/g)||[]; for (const [i,b] of m.entries()) { const js=b.replace(/^<script[^>]*>/,'').replace(/<\\/script>$/,''); new Function(js); } console.log(f+': scripts parse OK'); }"
+          node -e "for (const f of ['brain_matrix.html','rift_run.html','index.html']) { const s=require('fs').readFileSync(f,'utf8'); const m=s.match(/<script[^>]*>([\\s\\S]*?)<\\/script>/g)||[]; for (const b of m) { const js=b.replace(/^<script[^>]*>/,'').replace(/<\\/script>$/,''); new Function(js); } console.log(f+': scripts parse OK'); }"
       - name: Commit assembled release
         if: steps.ready.outputs.ready == 'true'
         shell: bash
@@ -47,6 +47,6 @@ jobs:
           rm -f .github/workflows/quickplay-assemble.yml
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add index.html brain_matrix.html rift_run.html .quickplay-upload .github/workflows/quickplay-assemble.yml
+          git add -A
           git commit -m 'Integrate Brain Matrix and RIFT RUN into Quickplay Collection'
           git push origin HEAD:main
