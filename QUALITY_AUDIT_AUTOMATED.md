@@ -4,7 +4,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 
 | Game | Platform | Native pause | Native restart | Native touch | Touch gap? | Audio | Storage | i18n signal | Bytes |
 |---|---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|---:|
-| `advinhe_o_numero.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 25496 |
+| `advinhe_o_numero.html` | v2 | — | ✅ | — | ⚠️ | ✅ | ✅ | ✅ | 22428 |
 | `alien_threat.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 485488 |
 | `bow_and_arrow.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 55300 |
 | `campo_minado.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 69630 |
@@ -14,43 +14,40 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 | `foguetinho.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 39582 |
 | `idle_trader.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 63644 |
 | `jogo_da_forca.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 61874 |
-| `jogo_da_velha.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 28964 |
+| `jogo_da_velha.html` | v2 | — | ✅ | ✅ | — | ✅ | ✅ | ✅ | 22196 |
 | `kombo_blocks.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 118942 |
-| `leaping_into_life.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 33490 |
 | `memory_genius.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 55024 |
 | `pixel_bomberman.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 35170 |
 | `pong.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 51921 |
-| `salve_os_gatinhos.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 37842 |
+| `reef_runner.html` | v2 | — | — | ✅ | — | ✅ | ✅ | ✅ | 31004 |
+| `salve_os_gatinhos.html` | v2 | — | — | ✅ | — | ✅ | ✅ | ✅ | 40591 |
 | `snowball_avalanche.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 207925 |
-| `sudoku.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 31323 |
+| `sudoku.html` | v2 | — | — | — | — | ✅ | ✅ | ✅ | 39066 |
 | `the_worm.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 34279 |
-| `torre_de_hanoi.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 42925 |
+| `torre_de_hanoi.html` | v2 | — | ✅ | ✅ | — | ✅ | ✅ | ✅ | 31009 |
 | `tron.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 46674 |
 
 ## Automated findings
 
-- Platform layer not v2: `advinhe_o_numero.html`, `alien_threat.html`, `campo_minado.html`, `corrida_de_cavalos.html`, `dropworks.html`, `idle_trader.html`, `jogo_da_velha.html`, `kombo_blocks.html`, `pong.html`, `snowball_avalanche.html`, `sudoku.html`, `torre_de_hanoi.html`
-- No native pause signal: none
-- No native restart/new-game signal: none
-- Canvas + keyboard but no native touch signal: none
+- Platform layer not v2: `alien_threat.html`, `campo_minado.html`, `corrida_de_cavalos.html`, `dropworks.html`, `idle_trader.html`, `kombo_blocks.html`, `pong.html`, `snowball_avalanche.html`
+- No native pause signal: `advinhe_o_numero.html`, `jogo_da_velha.html`, `reef_runner.html`, `salve_os_gatinhos.html`, `sudoku.html`, `torre_de_hanoi.html`
+- No native restart/new-game signal: `reef_runner.html`, `salve_os_gatinhos.html`, `sudoku.html`
+- Canvas + keyboard but no native touch signal: `advinhe_o_numero.html`
 
 ## Per-game controls and balance candidates
 
 ### `advinhe_o_numero.html`
 **Control flow signals**
-- `L49: function restart(){if(paused)setPaused(false);if(typeof window.PPGGameRestart==='function'){window.PPGGameRestart();return}location.reload()}`
-- `L142: function resetarJogo() {`
-- `L156: document.getElementById('palpite').addEventListener('keydown', function(event) {`
+- `L137: function resetarJogo() {`
+- `L153: document.getElementById('palpite').addEventListener('keydown', function(event) {`
 **Gameplay tuning signals**
-- `L20: const qs=new URLSearchParams(location.search);if(qs.get('preview')==='1'||qs.has('preview'))return;`
-- `L30: window.setTimeout=(fn,ms,...args)=>{if(typeof fn!=='function')return nativeSetTimeout(fn,ms,...args);const run=()=>{if(paused)return nativeSetTimeout(run,50);fn(...args)};return nativeSetTimeout(run,ms)};`
-- `L75: let tentativas = 0;`
-- `L76: let tempoRestante = 90;`
-- `L84: if (tempoRestante <= 0) {`
-- `L96: const anguloFinal = (tempo / 90) * 2 * Math.PI;`
-- `L120: if (tentativas === 0) {`
-- `L144: tentativas = 0;`
-- `L145: tempoRestante = 90;`
+- `L32: let tentativas = 0;`
+- `L33: let tempoRestante = 180;`
+- `L42: if (tempoRestante <= 0) {`
+- `L56: const t = Math.max(0, Math.min(180, tempo));`
+- `L116: if (tentativas === 0) iniciarCronometro();`
+- `L139: tentativas = 0;`
+- `L140: tempoRestante = 180;`
 
 ### `alien_threat.html`
 **Control flow signals**
@@ -365,20 +362,21 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 
 ### `jogo_da_velha.html`
 **Control flow signals**
-- `L82: function restart(){if(paused)setPaused(false);if(typeof window.PPGGameRestart==='function'){window.PPGGameRestart();return}location.reload()}`
-- `L240: function resetGame() {`
-- `L272: canvas.addEventListener("click", handleClick);`
+- `L338: function resetGame() {`
+- `L376: document.getElementById('btnContinue').addEventListener('click', () => {`
+- `L384: canvas.addEventListener("click", handleClick);`
+- `L421: document.getElementById('ppg-sound').onclick=e=>{e.stopPropagation();setSound(!prefs.sound)};if(GENERIC_AUDIO){addEventListener('pointerdown',startBgm,{once:true});addEventListener('keydown',startBgm,{once:true})}else applyNativeSound(prefs.sound);`
 **Gameplay tuning signals**
-- `L53: const qs=new URLSearchParams(location.search);if(qs.get('preview')==='1'||qs.has('preview'))return;`
-- `L63: window.setTimeout=(fn,ms,...args)=>{if(typeof fn!=='function')return nativeSetTimeout(fn,ms,...args);const run=()=>{if(paused)return nativeSetTimeout(run,50);fn(...args)};return nativeSetTimeout(run,ms)};`
-- `L111: let score = 0;`
-- `L112: let timer = 0;`
-- `L197: const m=ranked[Math.min(pick,ranked.length-1)]; move=[m.r,m.c];`
-- `L216: score = Math.max(10, 100 - timer * 2);`
-- `L231: if (score > 0) {`
-- `L243: timer = 0;`
-- `L244: score = 0;`
-- `L258: localStorage.setItem("velha_quantica_scores", JSON.stringify(scores.slice(0, 5)));`
+- `L187: let score = 0;`
+- `L188: let timer = 0;`
+- `L191: const SCORE_KEY = "ppg_velha_quantica_scores_v2";`
+- `L205: const dpr = window.devicePixelRatio || 1;`
+- `L316: score += 10;`
+- `L342: timer = 0;`
+- `L343: timerDisplay.textContent = "00:00";`
+- `L358: localStorage.setItem(SCORE_KEY, JSON.stringify(scores.slice(0, 5)));`
+- `L378: if (nameInput.value.trim() && score > 0) {`
+- `L420: function setSound(on,fromNative=false){prefs.sound=!!on;write(PREF_KEY,prefs);document.getElementById('ppg-sound').textContent=prefs.sound?'🔊 Som ON':'🔇 Som OFF';if(GENERIC_AUDIO){initAudio();master.gain.setTargetAtTime(prefs.sound?.10:0,ac.currentTime,.02);if(prefs.sound)startBgm();else stopBgm()}if(!fromNative)applyNativeSound(prefs.sound)}`
 
 ### `kombo_blocks.html`
 **Control flow signals**
@@ -418,18 +416,6 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 - `L117: ${toggleSetting('enableMatch3','enableMatch3')}${toggleSetting('includeExtendedPieces','extendedPieces')}${toggleSetting('gravityCascade','gravityCascade')}${toggleSetting('ghostPiece','ghostPiece')}${toggleSetting('allowBoardDragSwap','boardSwap')}${toggleSetting('soundEnabled','soundEffects')}${toggleSetting('musicEnabled','music')}`
 - `L128: cur=detect();$('#playerInput').value=playerName;$('#difficultySelect').value=settings.difficulty;renderLangPanel();refresh();renderModeOptions();$('#modeSelect').value=settings.gameMode;$('#modeDesc').textContent=t(modeKeys[settings.gameMode][1]);updateToolbar();$('#boardFrame').dataset.theme=settings.blockTheme;console.info('[PrimataLocale]',validate());`
 - `L129: if(PREVIEW){settings.soundEnabled=false;settings.musicEnabled=false;settings.gameMode='classic';settings.difficulty='medium';$('#modeSelect').value='classic';$('#difficultySelect').value='medium';setTimeout(()=>startGame(false),80)}`
-
-### `leaping_into_life.html`
-**Control flow signals**
-- `L54: function restart(){if(paused)setPaused(false);if(typeof window.PPGGameRestart==='function'){window.PPGGameRestart();return}location.reload()}`
-**Gameplay tuning signals**
-- `L25: const qs=new URLSearchParams(location.search);if(qs.get('preview')==='1'||qs.has('preview'))return;`
-- `L35: window.setTimeout=(fn,ms,...args)=>{if(typeof fn!=='function')return nativeSetTimeout(fn,ms,...args);const run=()=>{if(paused)return nativeSetTimeout(run,50);fn(...args)};return nativeSetTimeout(run,ms)};`
-- `L77: let frog={},obstacles=[],particles=[],fireflies=[],score=0,running=false,startAt=0,last=performance.now(),spawnDist=0,shake=0,flash=0,demo=PREVIEW,waterT=0;function fmt(s){s=Math.max(0,Math.floor(s||0));return '${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}'}`
-- `L80: function addObstacle(){let m=MODES[diffEl.value],margin=92,water=625,center=margin+Math.random()*(water-margin*2),gap=m.gap+Math.sin(score*.7)*8;center=Math.max(130,Math.min(water-120,center));obstacles.push({x:W+60,w:72,top:center-gap/2,bottom:center+gap/2,passed:false,seed:Math.random()*10});}`
-- `L81: function burst(x,y,color,n=12){for(let i=0;i<n;i++){let a=Math.random()*Math.PI*2,sp=25+Math.random()*95;particles.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:.35+Math.random()*.55,size:1.5+Math.random()*4,color})}}`
-- `L88: function draw(dt){waterT+=dt;ctx.save();if(shake>0)ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);sky();effects(dt);for(let o of obstacles)treeObstacle(o);lake(waterT);frogDraw();if(flash>0){ctx.fillStyle='rgba(240,255,210,${flash*.14})';ctx.fillRect(0,0,W,H)}ctx.restore();shake=Math.max(0,shake-dt*24);flash=Math.max(0,flash-dt*2.8)}`
-- `L89: function frame(now){let dt=Math.min(.035,(now-last)/1000||0);last=now;update(dt);draw(dt);requestAnimationFrame(frame)}reset();requestAnimationFrame(frame);if(PREVIEW)setTimeout(start,60);`
 
 ### `memory_genius.html`
 **Control flow signals**
@@ -508,38 +494,60 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 - `L69: function mult(side){return Math.min(5,1+Math.floor(Math.max(0,combo[side]-1)/2)*.5)}function score(side,pts,why=''){const m=fx[side].glass>0?2:1;tech[side]+=Math.round(pts*m);if(why&&pts>=150)announce('${side==='p1'?'P1':'P2'} +${Math.round(pts*m)}',why,side==='p1'?'#63edff':'#ffd34d',.7)}`
 - `L81: function reflectBounds(b){const top=arenaTop()+b.r,bot=arenaBottom()-b.r;if(b.y<top&&b.vy<0){b.y=top;b.vy*=-1;osc(150+clamp((b.base-BASE)/(MAX-BASE),0,1)*280,.035,'triangle',.07)}if(b.y>bot&&b.vy>0){b.y=bot;b.vy*=-1;osc(150+clamp((b.base-BASE)/(MAX-BASE),0,1)*280,.035,'triangle',.07)}}`
 
+### `reef_runner.html`
+**Control flow signals**
+- No compact control-flow signal detected.
+**Gameplay tuning signals**
+- `L34: let frog={},obstacles=[],particles=[],fireflies=[],score=0,running=false,startAt=0,last=performance.now(),spawnDist=0,shake=0,flash=0,demo=PREVIEW,waterT=0;function fmt(s){s=Math.max(0,Math.floor(s||0));return '${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}'}`
+- `L37: function addObstacle(){let m=MODES[diffEl.value],margin=88,floor=632,level=Math.min(1,score/26),center=margin+Math.random()*(floor-margin*2),gap=Math.max(132,m.gap-level*34+Math.sin(score*.55)*7);center=Math.max(135,Math.min(floor-135,center));obstacles.push({x:W+60,w:76,top:center-gap/2,bottom:center+gap/2,passed:false,seed:Math.random()*10,level});}`
+- `L38: function burst(x,y,color,n=12){for(let i=0;i<n;i++){let a=Math.random()*Math.PI*2,sp=25+Math.random()*95;particles.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:.35+Math.random()*.55,size:1.5+Math.random()*4,color})}}`
+- `L92: for(let i=particles.length-1;i>=0;i--){let p=particles[i];p.life-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=55*dt;ctx.globalAlpha=Math.max(0,p.life*1.7);ctx.fillStyle=p.color;ctx.shadowColor=p.color;ctx.shadowBlur=p.size>2?6:0;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,7);ctx.fill();if(p.life<=0)particles.splice(i,1)}ctx.shadowBlur=0;ctx.globalAlpha=1`
+- `L95: function draw(dt){waterT+=dt;ctx.save();if(shake>0)ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);sky();effects(dt);for(let o of obstacles)treeObstacle(o);lake(waterT);frogDraw();if(flash>0){ctx.fillStyle='rgba(210,245,255,${flash*.16})';ctx.fillRect(0,0,W,H)}ctx.restore();shake=Math.max(0,shake-dt*24);flash=Math.max(0,flash-dt*2.8)}`
+- `L96: function frame(now){let dt=Math.min(.035,(now-last)/1000||0);last=now;update(dt);draw(dt);requestAnimationFrame(frame)}reset();requestAnimationFrame(frame);if(PREVIEW)setTimeout(start,60);`
+
 ### `salve_os_gatinhos.html`
 **Control flow signals**
-- `L57: function restart(){if(paused)setPaused(false);if(typeof window.PPGGameRestart==='function'){window.PPGGameRestart();return}location.reload()}`
-- `L79: let state='menu',score=0,lives=3,combo=1,best=0,elapsed=0,spawnTimer=1.2,shake=0,flash=0,muted=false,last=performance.now(),lastLifeLoss=-99,lifeRegenAcc=0,rescueCount=0;`
-- `L88: function audioOn(){if(!ac){ac=new (window.AudioContext||window.webkitAudioContext)();master=ac.createGain();master.gain.value=.18;master.connect(ac.destination)}if(ac.state==='suspended')ac.resume();startMusic()}`
-- `L91: function startMusic(){if(musicTimer||!ac)return;let n=0;const notes=[220,277,330,440,330,277,247,330];musicTimer=setInterval(()=>{if(state==='play'&&!muted){tone(notes[n++%notes.length],.11,'triangle',.035);if(n%4===1)tone(110,.16,'square',.025,-20)}},240)}`
-- `L93: function reset(){score=0;lives=3;combo=1;elapsed=0;spawnTimer=.8;cats=[];particles=[];player.x=433;player.vx=0;lastLifeLoss=-99;lifeRegenAcc=0;rescueCount=0;state='play';ui.overlay.classList.add('hidden');syncUI();audioOn()}`
-- `L95: function gameOver(){state='over';best=Math.max(best,score);ui.title.textContent='FIM DO RESGATE';ui.message.innerHTML='Pontuação: <b>${score}</b><br>Recorde desta sessão: <b>${best}</b>';ui.start.textContent='TENTAR NOVAMENTE';ui.overlay.classList.remove('hidden')}`
-- `L123: function bindHold(id,key){const el=document.querySelector(id);const on=e=>{e.preventDefault();keys[key]=true;audioOn()},off=e=>{e.preventDefault();keys[key]=false};el.addEventListener('pointerdown',on);el.addEventListener('pointerup',off);el.addEventListener('pointercancel',off);el.addEventListener('pointerleave',off)}`
-- `L125: addEventListener('keydown',e=>{if(['ArrowLeft','a','A'].includes(e.key))keys.left=true;if(['ArrowRight','d','D'].includes(e.key))keys.right=true;if([' ','Enter'].includes(e.key)&&state!=='play')reset();if(['ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();audioOn()});`
-- `L127: ui.start.addEventListener('click',reset);ui.sound.addEventListener('click',()=>{muted=!muted;ui.sound.textContent=muted?'🔇':'🔊';if(!muted)audioOn()});`
+- `L51: let state = 'menu', score = 0, lives = 3, combo = 1, best = 0, elapsed = 0;`
+- `L90: if (ac.state === 'suspended') ac.resume();`
+- `L140: function startBGM() {`
+- `L146: if (state === 'play' && !muted) {`
+- `L171: function reset() {`
+- `L187: state = 'play';`
+- `L200: function gameOver() {`
+- `L201: state = 'over';`
+- `L757: el.addEventListener('pointerdown', on);`
+- `L758: el.addEventListener('pointerup', off);`
+- `L759: el.addEventListener('pointercancel', off);`
+- `L760: el.addEventListener('pointerleave', off);`
 **Gameplay tuning signals**
-- `L28: const qs=new URLSearchParams(location.search);if(qs.get('preview')==='1'||qs.has('preview'))return;`
-- `L38: window.setTimeout=(fn,ms,...args)=>{if(typeof fn!=='function')return nativeSetTimeout(fn,ms,...args);const run=()=>{if(paused)return nativeSetTimeout(run,50);fn(...args)};return nativeSetTimeout(run,ms)};`
-- `L79: let state='menu',score=0,lives=3,combo=1,best=0,elapsed=0,spawnTimer=1.2,shake=0,flash=0,muted=false,last=performance.now(),lastLifeLoss=-99,lifeRegenAcc=0,rescueCount=0;`
-- `L81: const player={x:440,y:453,w:94,h:21,vx:0,max:430,acc:1900,drag:9};`
-- `L84: for(let b=0;b<6;b++)for(let f=0;f<5;f++)windows.push({x:25+b*158+32+(f%2)*65,y:100+f*64,b,f,lit:Math.random()<.36});`
-- `L88: function audioOn(){if(!ac){ac=new (window.AudioContext||window.webkitAudioContext)();master=ac.createGain();master.gain.value=.18;master.connect(ac.destination)}if(ac.state==='suspended')ac.resume();startMusic()}`
-- `L90: function sfx(name){if(name==='catch'){tone(520,.08,'square',.16,180);tone(790,.14,'square',.1,80,.07)}if(name==='miss'){tone(150,.32,'sawtooth',.12,-80)}if(name==='spawn')tone(730,.06,'square',.05,-150)}`
-- `L91: function startMusic(){if(musicTimer||!ac)return;let n=0;const notes=[220,277,330,440,330,277,247,330];musicTimer=setInterval(()=>{if(state==='play'&&!muted){tone(notes[n++%notes.length],.11,'triangle',.035);if(n%4===1)tone(110,.16,'square',.025,-20)}},240)}`
-- `L93: function reset(){score=0;lives=3;combo=1;elapsed=0;spawnTimer=.8;cats=[];particles=[];player.x=433;player.vx=0;lastLifeLoss=-99;lifeRegenAcc=0;rescueCount=0;state='play';ui.overlay.classList.add('hidden');syncUI();audioOn()}`
-- `L94: function syncUI(){ui.score.textContent=String(score).padStart(6,'0');ui.combo.textContent='COMBO x'+combo;ui.lives.textContent='♥ '.repeat(lives).trim()||'SEM VIDAS'}`
-- `L100: function burst(x,y,color,n=10){for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,s=30+Math.random()*150;particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-45,life:.35+Math.random()*.45,max:.8,color,size:2+Math.random()*4})}}`
-- `L101: function update(dt){if(state!=='play')return;elapsed+=dt;if(lives<3&&elapsed-lastLifeLoss>12){lifeRegenAcc+=dt;if(lifeRegenAcc>=20){lifeRegenAcc=0;lives++;sfx('catch');syncUI()}}shake=Math.max(0,shake-dt*18);flash=Math.max(0,flash-dt*3);`
-- `L102: const axis=(keys.right?1:0)-(keys.left?1:0);player.vx+=axis*player.acc*dt;player.vx*=Math.exp(-player.drag*dt);player.vx=Math.max(-player.max,Math.min(player.max,player.vx));player.x=Math.max(5,Math.min(W-player.w-5,player.x+player.vx*dt));`
-- `L103: spawnTimer-=dt;if(spawnTimer<=0){spawnCat();const d=Math.min(1,elapsed/100);spawnTimer=.64+Math.random()*.68+(1-d)*.55}`
-- `L104: const wind=Math.sin(elapsed*.73)*12*Math.min(1,elapsed/70);`
-- `L105: for(let i=cats.length-1;i>=0;i--){const c=cats[i];c.vy+=390*dt;c.vx+=wind*dt;c.x+=c.vx*dt;c.y+=c.vy*dt;c.rot+=c.spin*dt;`
-- `L110: if(caught){score+=100*combo;combo=Math.min(9,combo+1);rescueCount++;if(rescueCount%15===0&&lives<3){lives++;lifeRegenAcc=0}sfx('catch');c.vy=-250;c.vx+=player.vx*.25;burst(c.x,c.y,c.color,16);cats.splice(i,1);shake=4;flash=.3;syncUI();continue}`
-- `L111: if(c.y>H+20){cats.splice(i,1);lives--;lastLifeLoss=elapsed;lifeRegenAcc=0;combo=1;shake=12;burst(c.x,GROUND,'#ef476f',18);sfx('miss');syncUI();if(lives<=0)gameOver()}`
-- `L113: for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.life-=dt;p.vy+=240*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;if(p.life<=0)particles.splice(i,1)}`
-- `L122: function loop(now){const dt=Math.min(.033,(now-last)/1000);last=now;update(dt);draw();requestAnimationFrame(loop)}`
+- `L51: let state = 'menu', score = 0, lives = 3, combo = 1, best = 0, elapsed = 0;`
+- `L52: let spawnTimer = 1.4, sceneCheckTimer = 3.0, shake = 0, flash = 0, muted = false;`
+- `L57: const player = { x: 430, y: 444, w: 106, h: 26, vx: 0, maxSpeed: 540, acc: 2900, drag: 11.5 };`
+- `L81: let ac = null, masterGain = null, bgmTimer = null, bgmStep = 0;`
+- `L102: osc.frequency.exponentialRampToValueAtTime(Math.max(20, freq + slide), t + dur);`
+- `L120: const baseFreq = 340 + Math.min(param, 10) * 45;`
+- `L162: { name: 'orange', color: '#f69d3b', inner: '#ffd383', points: 100 },`
+- `L172: score = 0;`
+- `L173: lives = 3;`
+- `L174: combo = 1;`
+- `L176: spawnTimer = 1.6;`
+- `L177: sceneCheckTimer = 2.0;`
+- `L194: ui.score.textContent = String(score).padStart(6, '0');`
+- `L196: ui.combo.style.transform = combo > 1 ? 'scale(1.15)' : 'scale(1)';`
+- `L197: ui.lives.textContent = '♥ '.repeat(Math.max(0, lives)).trim() || 'SEM VIDAS';`
+- `L211: const difficulty = Math.min(1, elapsed / 130);`
+- `L212: let availableWindows = windows.filter(w => w.f < 3 && !w.fire);`
+- `L217: availableWindows = availableWindows.filter(w => Math.abs(w.x - lastCat.x) < 420);`
+- `L218: if (availableWindows.length === 0) availableWindows = windows.filter(w => w.f < 3 && !w.fire);`
+- `L221: const win = availableWindows[(Math.random() * availableWindows.length) | 0];`
+- `L222: const isGolden = Math.random() < (0.04 + difficulty * 0.05);`
+- `L228: const vx = (Math.random() - 0.5) * (20 + difficulty * 20) + centerPull * difficulty;`
+- `L260: if (sceneCheckTimer <= 0) {`
+- `L261: sceneCheckTimer = 4.5 + Math.random() * 4.0; // Checagem espaçada`
+- `L266: const candidates = windows.filter(w => w.lit && !w.fire && !w.scene && w.f > 0);`
+- `L280: function addBurst(x, y, color, count = 10, speed = 80) {`
+- `L283: const s = Math.random() * speed + 20;`
+- `L288: life: 0.35 + Math.random() * 0.4,`
 
 ### `snowball_avalanche.html`
 **Control flow signals**
@@ -585,20 +593,27 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 
 ### `sudoku.html`
 **Control flow signals**
-- `L140: function restart(){if(paused)setPaused(false);if(typeof window.PPGGameRestart==='function'){window.PPGGameRestart();return}location.reload()}`
-- `L278: function startGame(level) {`
-- `L294: function resetBoard() {`
+- `L645: input.addEventListener('click', () => paintFocus(row, col));`
+- `L773: function startGame(level) {`
+- `L798: function resetBoard() {`
 **Gameplay tuning signals**
-- `L111: const qs=new URLSearchParams(location.search);if(qs.get('preview')==='1'||qs.has('preview'))return;`
-- `L121: window.setTimeout=(fn,ms,...args)=>{if(typeof fn!=='function')return nativeSetTimeout(fn,ms,...args);const run=()=>{if(paused)return nativeSetTimeout(run,50);fn(...args)};return nativeSetTimeout(run,ms)};`
-- `L193: input.maxLength = 1;`
-- `L260: top5.push({ name: playerName, time: timeTaken, difficulty });`
-- `L284: timer = setInterval(updateTimer, 1000);`
-- `L289: const minutes = String(Math.floor(timeElapsed / 60)).padStart(2, '0');`
-- `L325: const board=baseBoard.map(row=>row.slice()),target=level==='easy'?30:level==='medium'?40:50;`
-- `L326: const cells=Array.from({length:81},(_,i)=>i).sort(()=>Math.random()-.5);let removed=0,attempts=0;`
-- `L328: if (removed>=target || attempts++>81) break;`
-- `L330: const probe=board.map(row=>row.slice());if(sudokuSolutionCount(probe,2)===1)removed++;else board[r][c]=keep;`
+- `L633: input.maxLength = 1;`
+- `L649: if ((col + 1) % 3 === 0 && col !== 8) input.classList.add('block-right');`
+- `L650: if ((row + 1) % 3 === 0 && row !== 8) input.classList.add('block-bottom');`
+- `L661: const blockRow = Math.floor(row / 3);`
+- `L662: const blockCol = Math.floor(col / 3);`
+- `L668: const sameBlock = Math.floor(r / 3) === blockRow && Math.floor(c / 3) === blockCol;`
+- `L709: setTimeout(() => cell.classList.remove('valid-pop'), 190);`
+- `L725: top5.push({ name: playerName, time: timeTaken, difficulty });`
+- `L754: const min = String(Math.floor(player.time / 60)).padStart(2, '0');`
+- `L780: document.getElementById('timer').textContent = '00:00';`
+- `L781: timer = setInterval(updateTimer, 1000);`
+- `L793: const minutes = String(Math.floor(timeElapsed / 60)).padStart(2, '0');`
+- `L815: // Shuffle rows and columns within each 3x3 block`
+- `L824: if (level === 'easy') cellsToRemove = 20;`
+- `L825: else if (level === 'medium') cellsToRemove = 40;`
+- `L826: else cellsToRemove = 60;`
+- `L828: while (cellsToRemove > 0) {`
 
 ### `the_worm.html`
 **Control flow signals**
@@ -619,30 +634,29 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 
 ### `torre_de_hanoi.html`
 **Control flow signals**
-- `L272: function restart(){if(paused)setPaused(false);if(typeof window.PPGGameRestart==='function'){window.PPGGameRestart();return}location.reload()}`
-- `L357: if (audioCtx.state === 'suspended') audioCtx.resume();`
-- `L382: function startMusic() {`
-- `L405: function startTimer() {`
-- `L554: rod.addEventListener('click', () => chooseRod(index));`
-- `L558: document.addEventListener('keydown', event => {`
-- `L567: document.getElementById('newGame').addEventListener('click', setup);`
-- `L569: document.getElementById('autoSolve').addEventListener('click', solveAutomatically);`
-- `L571: document.getElementById('soundToggle').addEventListener('click', event => {`
-- `L578: document.getElementById('musicToggle').addEventListener('click', event => {`
+- `L306: if (audioCtx.state === 'suspended') audioCtx.resume();`
+- `L331: function startMusic() {`
+- `L350: function startTimer() {`
+- `L498: rod.addEventListener('click', () => chooseRod(index));`
+- `L502: document.addEventListener('keydown', event => {`
+- `L511: document.getElementById('newGame').addEventListener('click', setup);`
+- `L513: document.getElementById('autoSolve').addEventListener('click', solveAutomatically);`
+- `L515: document.getElementById('soundToggle').addEventListener('click', event => {`
+- `L521: document.getElementById('musicToggle').addEventListener('click', event => {`
+- `L561: document.getElementById('ppg-sound').onclick=e=>{e.stopPropagation();setSound(!prefs.sound)};if(GENERIC_AUDIO){addEventListener('pointerdown',startBgm,{once:true});addEventListener('keydown',startBgm,{once:true})}else applyNativeSound(prefs.sound);`
 **Gameplay tuning signals**
-- `L243: const qs=new URLSearchParams(location.search);if(qs.get('preview')==='1'||qs.has('preview'))return;`
-- `L253: window.setTimeout=(fn,ms,...args)=>{if(typeof fn!=='function')return nativeSetTimeout(fn,ms,...args);const run=()=>{if(paused)return nativeSetTimeout(run,50);fn(...args)};return nativeSetTimeout(run,ms)};`
-- `L323: const DISK_HEIGHT = () => window.innerWidth <= 650 ? 27 : 30;`
-- `L378: if (name === 'error') { tone(150, .14, 'sawtooth', .045); tone(115, .15, 'square', .025, .08); }`
-- `L396: musicTimer = setInterval(tick, 620);`
-- `L408: timerId = setInterval(() => { elapsed++; timerEl.textContent = formatTime(elapsed); }, 1000);`
-- `L420: const minWidth = 34;`
-- `L421: const available = Math.max(75, rod.clientWidth - 16);`
-- `L445: timerEl.textContent = '00:00';`
-- `L446: minimumEl.textContent = 2 ** numDisks - 1;`
-- `L457: setTimeout(() => rodEls[index].classList.remove('invalid'), 330);`
-- `L517: setTimeout(() => piece.remove(), 3300);`
-- `L545: await wait(Math.max(115, 500 - numDisks * 45));`
+- `L273: const DISK_HEIGHT = () => window.innerWidth <= 650 ? 28 : 32;`
+- `L327: if (name === 'error') { tone(160, .14, 'sawtooth', .05); tone(120, .15, 'square', .03, .08); }`
+- `L344: musicTimer = setInterval(tick, 620);`
+- `L353: timerId = setInterval(() => { elapsed++; timerEl.textContent = formatTime(elapsed); }, 1000);`
+- `L364: const minWidth = 38;`
+- `L365: const available = Math.max(75, rod.clientWidth - 16);`
+- `L388: timerEl.textContent = '00:00';`
+- `L389: minimumEl.textContent = 2 ** numDisks - 1;`
+- `L400: setTimeout(() => rodEls[index].classList.remove('invalid'), 320);`
+- `L461: setTimeout(() => piece.remove(), 2600);`
+- `L489: await wait(Math.max(120, 500 - numDisks * 45));`
+- `L560: function setSound(on,fromNative=false){prefs.sound=!!on;write(PREF_KEY,prefs);document.getElementById('ppg-sound').textContent=prefs.sound?'🔊 Som ON':'🔇 Som OFF';if(GENERIC_AUDIO){initAudio();master.gain.setTargetAtTime(prefs.sound?.10:0,ac.currentTime,.02);if(prefs.sound)startBgm();else stopBgm()}if(!fromNative)applyNativeSound(prefs.sound)}`
 
 ### `tron.html`
 **Control flow signals**
