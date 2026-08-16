@@ -28,7 +28,16 @@ jobs:
         run: |
           set -euo pipefail
           test -f .horse-jockey-upload/READY
-          cat .horse-jockey-upload/payload_* | base64 -d > /tmp/corrida_de_cavalos.html
+          cat \
+            .horse-jockey-upload/chunk_00 \
+            .horse-jockey-upload/chunk_01 \
+            .horse-jockey-upload/chunk_02 \
+            .horse-jockey-upload/chunk_03 \
+            .horse-jockey-upload/payload_01 \
+            .horse-jockey-upload/payload_02 \
+            .horse-jockey-upload/payload_03 \
+            .horse-jockey-upload/payload_04 \
+            | base64 -d > /tmp/corrida_de_cavalos.html
           echo '911faca7298b9356fc858bfef8aaea61182b3105a2563b464630404573dc60b6  /tmp/corrida_de_cavalos.html' | sha256sum -c -
           node - <<'NODE'
           const fs=require('fs');
@@ -40,6 +49,7 @@ jobs:
           }
           if(!s.includes('Jockey Challenge')) throw new Error('Jockey Challenge identity missing');
           if(!s.includes('Nova corrida · N / Enter')) throw new Error('Quick replay control missing');
+          if(!s.includes('id="sprintBar"')) throw new Error('Sprint bar missing');
           if(s.includes('Apostar R$') || s.includes('Painel de odds')) throw new Error('Legacy betting gameplay remains');
           console.log('Horse Jockey scripts parse OK');
           NODE
@@ -62,16 +72,14 @@ jobs:
           if 'Corridas, odds e gestão de banca' in s:
               raise SystemExit('Legacy horse betting menu description remains')
           p.write_text(s,encoding='utf-8')
-          PY
-          cat >> RELEASE_2026-08-16.md <<'EOF'
 
-          ## Hipódromo Estelar — Jockey Challenge
-          - A antiga mecânica de apostas foi substituída definitivamente por uma corrida de habilidade.
-          - A jogabilidade usa largada por reação, saltos com `M` e sprint recarregável com `N`.
-          - A barra de sprint recupera lentamente e recompensa uso estratégico durante a prova.
-          - Após o resultado, `N` ou `Enter` inicia rapidamente uma nova corrida.
-          - O menu principal foi atualizado para refletir a nova versão.
-          EOF
+          rp=Path('RELEASE_2026-08-16.md')
+          rs=rp.read_text(encoding='utf-8') if rp.exists() else '# Primata Web Quickplay — atualização 2026-08-16\n'
+          marker='## Hipódromo Estelar — Jockey Challenge'
+          if marker not in rs:
+              rs += '''\n\n## Hipódromo Estelar — Jockey Challenge\n- A antiga mecânica de apostas foi substituída definitivamente por uma corrida de habilidade.\n- A jogabilidade usa largada por reação, saltos com `M` e sprint recarregável com `N`.\n- A barra de sprint recupera lentamente e recompensa uso estratégico durante a prova.\n- Após o resultado, `N` ou `Enter` inicia rapidamente uma nova corrida.\n- O menu principal foi atualizado para refletir a nova versão.\n'''
+          rp.write_text(rs,encoding='utf-8')
+          PY
           rm -rf .horse-jockey-upload
 
       - name: Validate menu and game scripts
@@ -93,7 +101,7 @@ jobs:
           if(menu.includes('Corridas, odds e gestão de banca')) throw new Error('Legacy horse betting card remains');
           const horse=fs.readFileSync('corrida_de_cavalos.html','utf8');
           if(!horse.includes('Nova corrida · N / Enter')) throw new Error('Quick replay missing');
-          if(!horse.includes('Sprint reserva')) throw new Error('Sprint reserve UI missing');
+          if(!horse.includes('id="sprintBar"')) throw new Error('Sprint reserve UI missing');
           NODE
 
       - name: Build deterministic complete ZIP
