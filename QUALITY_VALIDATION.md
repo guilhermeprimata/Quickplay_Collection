@@ -13,7 +13,7 @@ Validation executed with Node.js syntax checking for every inline JavaScript blo
 | `corrida_de_cavalos.html` | 4 | 0 | ✅ | ✅ |
 | `domination_wars.html` | 1 | 0 | ✅ | ✅ |
 | `dropworks.html` | 3 | 0 | ✅ | ✅ |
-| `foguetinho.html` | 4 | 0 | ✅ | ✅ |
+| `foguetinho.html` | 1 | 0 | — | — |
 | `idle_trader.html` | 4 | 0 | ✅ | ✅ |
 | `jogo_da_forca.html` | 2 | 0 | ✅ | ✅ |
 | `jogo_da_velha.html` | 2 | 0 | — | ✅ |

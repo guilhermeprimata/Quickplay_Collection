@@ -13,7 +13,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 | `corrida_de_cavalos.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 48077 |
 | `domination_wars.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 47167 |
 | `dropworks.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 144991 |
-| `foguetinho.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 39582 |
+| `foguetinho.html` | v2 | — | — | ✅ | — | ✅ | ✅ | ✅ | 71237 |
 | `idle_trader.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 63644 |
 | `jogo_da_forca.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 61874 |
 | `jogo_da_velha.html` | v2 | — | ✅ | ✅ | — | ✅ | ✅ | ✅ | 22196 |
@@ -32,8 +32,8 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 ## Automated findings
 
 - Platform layer not v2: `alien_threat.html`, `brain_matrix.html`, `campo_minado.html`, `corrida_de_cavalos.html`, `dropworks.html`, `idle_trader.html`, `kombo_blocks.html`, `pong.html`, `rift_run.html`, `snowball_avalanche.html`
-- No native pause signal: `advinhe_o_numero.html`, `jogo_da_velha.html`, `reef_runner.html`, `salve_os_gatinhos.html`, `sudoku.html`, `torre_de_hanoi.html`
-- No native restart/new-game signal: `reef_runner.html`, `salve_os_gatinhos.html`, `sudoku.html`
+- No native pause signal: `advinhe_o_numero.html`, `foguetinho.html`, `jogo_da_velha.html`, `reef_runner.html`, `salve_os_gatinhos.html`, `sudoku.html`, `torre_de_hanoi.html`
+- No native restart/new-game signal: `foguetinho.html`, `reef_runner.html`, `salve_os_gatinhos.html`, `sudoku.html`
 - Canvas + keyboard but no native touch signal: `advinhe_o_numero.html`
 
 ## Per-game controls and balance candidates
@@ -322,30 +322,42 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 
 ### `foguetinho.html`
 **Control flow signals**
-- `L54: function restart(){if(paused)setPaused(false);if(typeof window.PPGGameRestart==='function'){window.PPGGameRestart();return}location.reload()}`
-- `L99: function startMusic(){stopMusic();musicTimer=setInterval(()=>{if(!playing||muted)return;const notes=[110,138.59,164.81,220,164.81,138.59];tone(notes[beat++%notes.length],.16,'triangle',.08);if(beat%4===0)tone(55,.08,'square',.05)},220)}`
-- `L102: function resetRocket(){Object.assign(rocket,{x:W/2,y:H-190,vx:0,vy:0,targetX:W/2,tilt:0})}`
-- `L128: canvas.addEventListener('pointerdown',e=>{pointer(e);canvas.setPointerCapture(e.pointerId)});canvas.addEventListener('pointermove',e=>{if(e.buttons||e.pointerType==='touch')pointer(e)});`
-- `L129: addEventListener('keydown',e=>{keys[e.key]=true;if(e.code==='Space'){e.preventDefault();playing?cashOut():start()}});addEventListener('keyup',e=>keys[e.key]=false);`
+- `L206: function startEngine(){`
+- `L211: function startMusic(){`
+- `L235: addEventListener('pointerdown',wakeAudio,{once:true});addEventListener('keydown',wakeAudio,{once:true});`
+- `L268: function resetRocket(){Object.assign(rocket,{x:W/2,y:H-182,vx:0,tilt:0})}`
+- `L407: canvas.addEventListener('pointerdown',e=>{pointer(e);canvas.setPointerCapture?.(e.pointerId)});canvas.addEventListener('pointermove',e=>{if(e.buttons||e.pointerType==='touch')pointer(e)});`
+- `L411: const modal=$('#modal'),mb=$('#modalBody');function openModal(html){mb.innerHTML=html;modal.classList.add('open')}function closeModal(){modal.classList.remove('open')}modal.addEventListener('click',e=>{if(e.target===modal||e.target.closest('.ppg-close'))closeModal()});addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});`
+- `L421: const lv=profile.upgrades[k],max=5,cost=upCost(k),isMax=lv>=max,can=!isMax&&balance>=cost,state=isMax?'maxed':can?'affordable':'unaffordable';`
 **Gameplay tuning signals**
-- `L25: const qs=new URLSearchParams(location.search);if(qs.get('preview')==='1'||qs.has('preview'))return;`
-- `L35: window.setTimeout=(fn,ms,...args)=>{if(typeof fn!=='function')return nativeSetTimeout(fn,ms,...args);const run=()=>{if(paused)return nativeSetTimeout(run,50);fn(...args)};return nativeSetTimeout(run,ms)};`
-- `L89: const W=480,H=720,ui={bank:document.querySelector('#bank'),best:document.querySelector('#best'),mult:document.querySelector('#multiplier'),status:document.querySelector('#status'),bet:document.querySelector('#bet'),action:document.querySelector('#action'),sound:document.querySelector('#sound'),flash:document.querySelector('#flash')};`
-- `L90: let bank=100,best=1,playing=false,over=false,stake=0,mult=1,time=0,last=0,spawn=0,difficulty=0,shake=0,muted=false,animationId,hull=100,lastHullHit=-99,hullInvulnUntil=0,dodges=0;`
-- `L92: const rocket={x:W/2,y:H-190,vx:0,vy:0,r:15,targetX:W/2,tilt:0};`
-- `L96: let ac,master,musicTimer,beat=0;`
-- `L97: function initAudio(){if(ac)return;ac=new (window.AudioContext||window.webkitAudioContext)();master=ac.createGain();master.gain.value=muted?0:.18;master.connect(ac.destination)}`
-- `L99: function startMusic(){stopMusic();musicTimer=setInterval(()=>{if(!playing||muted)return;const notes=[110,138.59,164.81,220,164.81,138.59];tone(notes[beat++%notes.length],.16,'triangle',.08);if(beat%4===0)tone(55,.08,'square',.05)},220)}`
-- `L102: function resetRocket(){Object.assign(rocket,{x:W/2,y:H-190,vx:0,vy:0,targetX:W/2,tilt:0})}`
-- `L104: function updateUI(){ui.bank.textContent=bank.toFixed(2);ui.best.textContent=best.toFixed(2);ui.mult.textContent=mult.toFixed(2)+'x'}`
-- `L106: const r=Math.random();return Math.min(12,1.15+(-Math.log(1-r))*1.7)}`
-- `L109: function cashOut(){if(!playing)return;bank+=stake*mult;best=Math.max(best,mult);playing=false;ui.action.textContent='Iniciar';ui.action.className='btn primary';ui.bet.disabled=false;setStatus('Resgate concluído: +'+(stake*mult).toFixed(2)+' créditos');tone(523,.1);setTimeout(()=>tone(659,.1),80);setTimeout(()=>tone(784,.25),160);stopMusic();updateUI()}`
-- `L112: function burst(x,y,c,n=8){for(let i=0;i<n;i++)particles.push({x,y,vx:(Math.random()-.5)*90,vy:(Math.random()-.5)*90,life:.2+Math.random()*.3,c,s:1+Math.random()*3})}`
-- `L114: function update(dt){stars.forEach(s=>{s.y+=s.z*(playing?55+mult*12:16)*dt;if(s.y>H){s.y=0;s.x=Math.random()*W}});particles.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=70*dt;p.life-=dt});for(let i=particles.length-1;i>=0;i--)if(particles[i].life<=0)particles.splice(i,1);if(!playing)return;`
-- `L115: time+=dt;if(hull<100&&time-lastHullHit>5)hull=Math.min(100,hull+3*dt);mult=1+time*.115+time*time*.0018;difficulty=Math.min(1,(mult-1)/5);if(mult>=crashAt){explode('Falha crítica no propulsor!');return}`
-- `L118: trail.push({x:rocket.x+(Math.random()-.5)*8,y:rocket.y+24,life:.25,s:2+Math.random()*5});if(trail.length>42)trail.shift();trail.forEach(t=>{t.y+=100*dt;t.life-=dt});`
-- `L119: spawn-=dt;if(spawn<=0){spawnRock();spawn=Math.max(.28,.82-difficulty*.40)}`
-- `L126: function loop(ts){const dt=Math.min(.033,(ts-last)/1000||0);last=ts;update(dt);draw();animationId=requestAnimationFrame(loop)}`
+- `L118: const W=480,H=720, PROFILE_KEY='ppg_crystal_xplorer_profile_v1', RECORD_KEY='ppg_crystal_xplorer_records_v1', PREF_KEY='ppg_platform_prefs_v2', STATS_KEY='ppg_minigames_stats_v1';`
+- `L124: if((profile.version||1)<2){profile.crystals.blue=Math.max(profile.crystals.blue||0,Math.floor(profile.reserve||0));profile.version=2}`
+- `L126: function crystalBalance(){return Math.max(0,Math.round(profile.crystals.blue*1+profile.crystals.violet*3+profile.crystals.core*8))}`
+- `L129: value=Math.max(0,Math.round(value));if(crystalBalance()<value)return false;`
+- `L140: function maxHull(){return 100+profile.upgrades.armor*18}`
+- `L141: function missionCost(){return 12+Math.max(0,profile.upgrades.thrusters-2)}`
+- `L142: function ensureEconomy(){if(profile.credits<missionCost()&&profile.reserve<5){profile.credits=Math.max(profile.credits,missionCost());setStatus('Contrato emergencial da estação: combustível liberado para evitar bloqueio de progresso.');save()}}`
+- `L143: if(!Number.isFinite(profile.hull)||profile.hull<=0)profile.hull=maxHull();profile.hull=clamp(profile.hull,1,maxHull());ensureEconomy();`
+- `L151: function setStatus(s,lock=0){ui.status.textContent=s;statusLock=Math.max(statusLock,lock)}`
+- `L156: function visualRisk(){const damage=(1-profile.hull/maxHull())*26;const v=(1-Math.exp(-hazard/42))*76+cargoRad*.52+damage;return clamp(v,2,100)}`
+- `L158: ui.credits.textContent=Math.floor(profile.credits);ui.reserve.textContent=Math.floor(profile.reserve);ui.cargo.textContent=cargo;ui.time.textContent=missionTime.toFixed(1);`
+- `L159: const mh=maxHull(),hp=clamp(profile.hull/mh*100,0,100);ui.hullText.textContent=Math.ceil(profile.hull)+'/'+mh;ui.hullBar.style.width=hp+'%';`
+- `L162: ui.boostBtn.textContent=profile.loadedBoost?(usedBoost?'BOOST USADO':boostName(profile.loadedBoost)):'SEM BOOST';ui.boostBtn.disabled=!profile.loadedBoost||usedBoost;ui.weaponLevel.textContent=profile.upgrades.weapon;ui.fireBtn.classList.toggle('ready',mode==='mission'&&fireCooldown<=0);ui.fireBtn.disabled=mode!=='mission';`
+- `L167: let ac=null,master=null,sfxBus=null,musicBus=null,compressor=null,musicTimer=null,beat=0,hangarBeat=0,engineOscA=null,engineOscB=null,engineGain=null,audioTickT=0;`
+- `L171: compressor.threshold.value=-18;compressor.knee.value=18;compressor.ratio.value=5;compressor.attack.value=.003;compressor.release.value=.18;`
+- `L177: o.type=type;o.frequency.setValueAtTime(Math.max(30,f),t);o.frequency.exponentialRampToValueAtTime(Math.max(30,f+slide),t+d);`
+- `L178: g.gain.setValueAtTime(Math.max(.0001,v),t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(dest);o.start(t);o.stop(t+d+.03)`
+- `L190: else if(k==='enemyBoom'){noise(.16,.13);tone(175,.2,'sawtooth',.13,-80)}`
+- `L191: else if(k==='enemyShot'){tone(205,.065,'square',.075,105)}`
+- `L192: else if(k==='enemyWarn'){tone(760,.05,'square',.052,-90)}`
+- `L201: else if(k==='error'){tone(125,.18,'square',.12,-45);noise(.05,.045)}`
+- `L202: else if(k==='boost'){tone(320,.11,'square',.11,250);tone(650,.18,'sine',.10,350,.075)}`
+- `L210: function stageTempo(){const s=riskStage()[1];return [370,330,285,235,195][s]}`
+- `L233: function setSound(on){prefs.sound=!!on;write(PREF_KEY,prefs);$('#ppg-sound').textContent=prefs.sound?'🔊 Som ON':'🔇 Som OFF';ui.soundBtn.textContent=prefs.sound?'🔊':'🔇';if(master)master.gain.setTargetAtTime(prefs.sound?.62:0,ac.currentTime,.025);if(!prefs.sound)stopMusic();else{initAudio();ac.resume?.().catch(()=>{});startMusic()}}`
+- `L241: function instabilitySpawnFactor(){const st=riskStage()[1],pressure=1+st*.13;return pressure*(dampenerT>0?.62:1)}`
+- `L245: anomalies.push({x:55+Math.random()*(W-110),y:-r-20,r,vy:64+st*12+Math.random()*20,phase:Math.random()*6.28,spin:(Math.random()<.5?-1:1)*(1.1+Math.random()*1.4),force:115+st*34,life:14});`
+- `L251: radZones.push({x:55+Math.random()*(W-110),y:-r-30,r,vy:70+st*10+Math.random()*18,phase:Math.random()*6.28,tick:.1+Math.random()*.35,life:16});`
+- `L256: emStormT=3.8+st*.75+Math.random()*1.6;emStormCooldown=(st===2?19:st===3?13:8)*(dampenerT>0?1.45:1);`
 
 ### `idle_trader.html`
 **Control flow signals**
