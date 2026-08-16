@@ -15,7 +15,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 | `dropworks.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 144991 |
 | `foguetinho.html` | v2 | — | — | ✅ | — | ✅ | ✅ | ✅ | 71237 |
 | `idle_trader.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 63644 |
-| `iron_delta.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 152600 |
+| `iron_delta.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 167632 |
 | `jogo_da_forca.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 61874 |
 | `jogo_da_velha.html` | v2 | — | ✅ | ✅ | — | ✅ | ✅ | ✅ | 22196 |
 | `kombo_blocks.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 118942 |
@@ -406,46 +406,46 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 ### `iron_delta.html`
 **Control flow signals**
 - `L62: let gameState = 'menu';`
-- `L115: $('#modal').addEventListener('click', (e) => { const target = e.target; if (target === $('#modal') || target.closest('.close'))`
-- `L153: gameState = state;`
-- `L158: if (state === 'playing') {`
-- `L163: else if (state === 'menu') {`
-- `L169: else if (state === 'paused' || state === 'photo') {`
-- `L174: else if (state === 'gameover') {`
-- `L195: if (state === 'gameover' && stats) {`
-- `L204: function startGame(daily = false) {`
-- `L214: function resumeCheckpoint() {`
-- `L224: function renderGameOver() {`
-- `L242: $('#pauseBtn').onclick = () => { if (gameState === 'playing')`
+- `L117: $('#modal').addEventListener('click', (e) => { const target = e.target; if (target === $('#modal') || target.closest('.close'))`
+- `L156: gameState = state;`
+- `L161: if (state === 'playing') {`
+- `L166: else if (state === 'menu') {`
+- `L172: else if (state === 'paused') {`
+- `L177: else if (state === 'photo') {`
+- `L182: else if (state === 'gameover') {`
+- `L203: if (state === 'gameover' && stats) {`
+- `L212: function startGame(daily = false, seedOverride = null) {`
+- `L224: function resumeCheckpoint() {`
+- `L242: function renderGameOver() {`
 **Gameplay tuning signals**
 - `L64: let lastScore = 0;`
-- `L67: const STATS = 'ppg_minigames_stats_v1', PREF = 'ppg_platform_prefs_v2', REC = 'ppg_records_v2_' + CFG.id;`
-- `L95: const gap = s.lastDay ? Math.round((new Date(day + 'T12:00:00').getTime() - new Date(s.lastDay + 'T12:00:00').getTime()) / 86400000) : 99;`
-- `L96: s.currentStreak = gap === 1 ? (s.currentStreak || 0) + 1 : 1;`
-- `L97: s.longestStreak = Math.max(s.longestStreak || 0, s.currentStreak);`
-- `L104: setInterval(() => { const now = performance.now(), db = read(STATS, {}), x = db[CFG.id] || s; x.totalSeconds = (x.totalSeconds || 0) + (now - last) / 1000; x.lastPlayed = Date.now(); last = now; db[CFG.id] = x; write(STATS, db); }, 5000);`
-- `L120: openModal('<button class="close">✕</button><h2>🏆 Placares locais</h2><div class="records">${r.length ? r.map((x, i) => '<div class="rec"><b>${i + 1}</b><span>${x.mode}<small>${new Date(x.when).toLocaleDateString()}</small></span><strong>${String(x.score).padStart(6, '0')}</strong></div>').join('') : '<p>Nenhuma missão registrada ainda.</p>'}</div>');`
-- `L198: rec.push({ score: score || 0, mode: '${difficulty}/${damageMode}', when: Date.now() });`
-- `L226: $('#finalScore').textContent = String(lastScore).padStart(6, '0');`
-- `L343: if (this.engine.isExploding || this.engine.invulnTimer > 0)`
-- `L345: this.engine.directorScore = Math.max(-10, this.engine.directorScore - 2);`
-- `L348: if (this.engine.shieldTimer > 0) {`
-- `L349: this.engine.shieldTimer = 0;`
-- `L350: this.engine.invulnTimer = 1.0;`
-- `L356: this.engine.combo = 0;`
-- `L357: this.engine.comboMultiplier = 1;`
-- `L363: if (this.engine.hp <= 0) {`
-- `L367: this.engine.invulnTimer = 1.5;`
-- `L375: this.engine.explosionTimer = 1.5; // duration of slow-mo death`
-- `L386: life: 0,`
-- `L387: maxLife: 0.5 + Math.random(),`
-- `L398: this.musicTempo = 2; // Hz`
-- `L427: this.musicTimerId = window.setTimeout(this.scheduler, 25);`
-- `L443: getSfxVolume() { return (this.engine.settings.sfxVolume / 100) * (1 + Math.min(10, this.engine.combo) * 0.05); }`
-- `L559: const targetPerc = combo >= 5 ? 0.05 + Math.min(10, combo - 5) * 0.01 : 0;`
-- `L560: this.musicNodes.percGain.gain.linearRampToValueAtTime(targetPerc, now + 0.5);`
-- `L562: const targetTen = fuel < 30 ? 0.1 : 0;`
-- `L563: this.musicNodes.tenGain.gain.linearRampToValueAtTime(targetTen, now + 1);`
+- `L69: const STATS = 'ppg_minigames_stats_v1', PREF = 'ppg_platform_prefs_v2', REC = 'ppg_records_v2_' + CFG.id;`
+- `L97: const gap = s.lastDay ? Math.round((new Date(day + 'T12:00:00').getTime() - new Date(s.lastDay + 'T12:00:00').getTime()) / 86400000) : 99;`
+- `L98: s.currentStreak = gap === 1 ? (s.currentStreak || 0) + 1 : 1;`
+- `L99: s.longestStreak = Math.max(s.longestStreak || 0, s.currentStreak);`
+- `L106: setInterval(() => { const now = performance.now(), db = read(STATS, {}), x = db[CFG.id] || s; x.totalSeconds = (x.totalSeconds || 0) + (now - last) / 1000; x.lastPlayed = Date.now(); last = now; db[CFG.id] = x; write(STATS, db); }, 5000);`
+- `L122: openModal('<button class="close">✕</button><h2>🏆 Placares locais</h2><div class="records">${r.length ? r.map((x, i) => '<div class="rec"><b>${i + 1}</b><span>${x.mode}<small>${new Date(x.when).toLocaleDateString()}</small></span><strong>${String(x.score).padStart(6, '0')}</strong></div>').join('') : '<p>Nenhuma missão registrada ainda.</p>'}</div>');`
+- `L143: const TOUCH_UI = matchMedia('(pointer:coarse)').matches || navigator.maxTouchPoints > 0;`
+- `L206: rec.push({ score: score || 0, mode: '${engine.isDaily ? 'daily/' : ''}${difficulty}/${damageMode}', when: Date.now() });`
+- `L244: $('#finalScore').textContent = String(lastScore).padStart(6, '0');`
+- `L247: const delta = Math.max(0, (target || 0) - lastScore);`
+- `L248: $('#runHint').innerHTML = newRecord ? '<b>Rota dominada.</b> Agora tente consolidar o recorde.' : (delta > 0 ? 'Faltaram <b>${delta.toLocaleString()}</b> pontos para o recorde. Repetir a mesma rota ajuda a aprender os gargalos.' : 'Repita a rota para dominar o padrão ou gere uma nova missão.');`
+- `L369: if (this.engine.isExploding || this.engine.invulnTimer > 0)`
+- `L371: this.engine.directorScore = Math.max(-10, this.engine.directorScore - 2);`
+- `L374: if (this.engine.shieldTimer > 0) {`
+- `L375: this.engine.shieldTimer = 0;`
+- `L376: this.engine.invulnTimer = 1.0;`
+- `L382: this.engine.combo = 0;`
+- `L383: this.engine.comboMultiplier = 1;`
+- `L389: if (this.engine.hp <= 0) {`
+- `L393: this.engine.invulnTimer = 1.5;`
+- `L401: this.engine.explosionTimer = 1.5; // duration of slow-mo death`
+- `L412: life: 0,`
+- `L413: maxLife: 0.5 + Math.random(),`
+- `L424: this.musicTempo = 2; // Hz`
+- `L454: this.musicTimerId = window.setTimeout(this.scheduler, 25);`
+- `L471: getSfxVolume() { return (this.engine.settings.sfxVolume / 100) * (1 + Math.min(10, this.engine.combo) * 0.04); }`
+- `L475: const length = Math.max(1, Math.floor(this.ctx.sampleRate * seconds));`
 
 ### `jogo_da_forca.html`
 **Control flow signals**
