@@ -1,0 +1,47 @@
+name: Apply Skate or Die refined build v2
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-skate-update-v2.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Reconstruct exact approved build by fragment hashes
+        run: python .github/scripts/apply_skate_update_v2.py
+
+      - name: Verify target HTML
+        run: |
+          echo "fd49ee6d6fab9dd79178170bdce111dca35101878cbd6863515cb1b28638c06b  skate_or_die.html" | sha256sum -c -
+          test "$(git hash-object skate_or_die.html)" = "aebe83d8103f58911e9f8a0c2752fec9f48c1f02"
+          git diff --check
+
+      - name: Commit canonical collection update and remove staging
+        run: |
+          git config user.name "Projeto Primata Games"
+          git config user.email "guilhermesteiglederdias@gmail.com"
+          git add skate_or_die.html
+          git rm -f .github/scripts/skate_payload_*.txt 2>/dev/null || true
+          git rm -f .github/scripts/skate_head_*.txt 2>/dev/null || true
+          git rm -f .github/scripts/skate_tail_*.txt 2>/dev/null || true
+          git rm -f .github/scripts/TEST_LOCAL_PATH_UPLOAD.txt 2>/dev/null || true
+          git rm -f .github/scripts/LOCAL_FILE_MARKER.txt 2>/dev/null || true
+          git rm -f .github/scripts/apply_skate_update.py 2>/dev/null || true
+          git rm -f .github/scripts/apply_skate_update_v2.py 2>/dev/null || true
+          git rm -f .github/workflows/apply-skate-update.yml 2>/dev/null || true
+          git rm -f .github/workflows/apply-skate-update-v2.yml 2>/dev/null || true
+          git diff --cached --check
+          git commit -m "Upgrade Skate or Die with FLOW and refined UI"
+          git push origin HEAD:main
