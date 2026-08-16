@@ -25,13 +25,14 @@ Validation executed with Node.js syntax checking for every inline JavaScript blo
 | `rift_run.html` | 1 | 0 | ✅ | ✅ |
 | `salve_os_gatinhos.html` | 2 | 0 | — | — |
 | `snowball_avalanche.html` | 2 | 0 | ✅ | ✅ |
+| `space_raid_2093.html` | 5 | 0 | ✅ | ✅ |
 | `sudoku.html` | 2 | 0 | — | — |
 | `the_worm.html` | 3 | 0 | ✅ | ✅ |
 | `torre_de_hanoi.html` | 2 | 0 | — | ✅ |
 
 ## Result
 
-- Games checked: **24**
+- Games checked: **25**
 - JavaScript syntax failures: **0**
 - External JavaScript dependencies: **0**
 - Direct Banco do Brasil branding signals: **0**
