@@ -11,7 +11,6 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 | `campo_minado.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 69630 |
 | `click_speed.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 35680 |
 | `corrida_de_cavalos.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 48077 |
-| `domination_war.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 30398 |
 | `domination_wars.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 36534 |
 | `dropworks.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 144991 |
 | `foguetinho.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 39582 |
@@ -29,7 +28,6 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 | `sudoku.html` | v2 | — | — | — | — | ✅ | ✅ | ✅ | 39066 |
 | `the_worm.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 34279 |
 | `torre_de_hanoi.html` | v2 | — | ✅ | ✅ | — | ✅ | ✅ | ✅ | 31009 |
-| `tron.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 46674 |
 
 ## Automated findings
 
@@ -271,26 +269,6 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 - `L472: const b = Math.max(0, Math.min(255, (value & 255) + amount));`
 - `L503: gain.gain.exponentialRampToValueAtTime(options.volume || 0.1, start + Math.min(.025, duration / 4));`
 - `L537: hoofbeatTimer = setInterval(scheduleGroup, 515);`
-
-### `domination_war.html`
-**Control flow signals**
-- `L73: function initAudio(){if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();if(prefs.sound&&musicOn&&!musicTimer)startMusic()}`
-- `L105: function setPaused(v){v=!!v;if(v===paused)return;paused=v;$('#pauseLayer').classList.toggle('open',paused);$('#pauseBtn').textContent=paused?'▶ Continuar':'⏸ Pausar';if(!paused)last=performance.now()}`
-- `L106: document.addEventListener('keydown',e=>{const map={ArrowUp:'up',w:'up',W:'up',ArrowDown:'down',s:'down',S:'down',ArrowLeft:'left',a:'left',A:'left',ArrowRight:'right',d:'right',D:'right'};if(e.key==='Escape'){e.preventDefault();setPaused(!paused);return}if(map[e.key]){e.preventDefault();setDir(map[e.key])}});`
-- `L107: document.querySelectorAll('.mobilePad button').forEach(b=>{const go=e=>{e.preventDefault();setDir(b.dataset.dir)};b.addEventListener('pointerdown',go);b.addEventListener('touchstart',go,{passive:false})});`
-- `L112: const modal=$('#modal'),modalBody=$('#modalBody');function openModal(html){modalBody.innerHTML=html;modal.classList.add('open')}function closeModal(){modal.classList.remove('open')}modal.addEventListener('click',e=>{if(e.target===modal||e.target.closest('.close'))closeModal()});`
-**Gameplay tuning signals**
-- `L66: let territory,player,ai,running=false,paused=false,last=0,elapsed=0,rafId=0,powerups=[],powerSpawn=8,damageParticles=[],damageShake=0,damageFlash=0;`
-- `L67: let audioCtx=null,sfxOn=true,musicOn=true,musicTimer=null,musicStep=0;`
-- `L68: const SCORE_KEY='dominationWarScoresV1',STATS_KEY='ppg_minigames_stats_v1',PREF_KEY='ppg_platform_prefs_v2',REC_KEY='ppg_records_v2_'+CFG.id;`
-- `L77: function makeUnit(x,y,dir,owner,color){return{x,y,dir,owner,color,trail:[],trailSet:new Set(),alive:true,area:0,life:100,lastDamage:-99,hitCooldown:0,shieldUntil:0,boostUntil:0,moveCredit:0,powerText:'',burnUntil:0,burnDps:0,burnReason:''}}`
-- `L87: function respawn(r){let best=null,bd=1e9;for(let y=0;y<ROWS;y+=2)for(let x=0;x<COLS;x+=2)if(territory[idx(x,y)]===r.owner){const d=Math.abs(x-r.x)+Math.abs(y-r.y);if(d<bd){bd=d;best={x,y}}}if(best){r.x=best.x;r.y=best.y;r.trail=[];r.trailSet.clear()}}`
-- `L89: function spawnPower(){const types=['boost','shield','repair','pulse'];for(let tries=0;tries<80;tries++){const x=5+Math.floor(Math.random()*(COLS-10)),y=5+Math.floor(Math.random()*(ROWS-10));if(territory[idx(x,y)]===0&&!player.trailSet.has(key(x,y))&&!ai.trailSet.has(key(x,y))){powerups.push({x,y,type:types[(Math.random()*types.length)|0],ttl:18});break}}}`
-- `L93: function recount(){let p=0,a=0;for(const v of territory){if(v===1)p++;else if(v===2)a++}player.area=p;ai.area=a;updateHUD()}`
-- `L96: function scoreDB(){return readJSON(SCORE_KEY,{})}function saveScore(area){const d=$('#difficulty'),dk=d.options[d.selectedIndex].text,db=scoreDB(),arr=db[dk]||[];arr.push({area,at:Date.now()});arr.sort((a,b)=>b.area-a.area);db[dk]=arr.slice(0,10);writeJSON(SCORE_KEY,db)}`
-- `L97: function upsertRecord(v){if(!Number.isFinite(v))return;let db=readJSON(REC_KEY,{});const dk=$('#difficulty').options[$('#difficulty').selectedIndex].text,r=Array.isArray(db[dk])?db[dk]:[];r.push({value:v,at:Date.now()});r.sort((a,b)=>b.value-a.value);db[dk]=r.slice(0,5);writeJSON(REC_KEY,db)}`
-- `L99: function message(t){const e=$('#message');e.textContent=t;e.classList.toggle('show',!!t);e.style.color=player&&player.life>0?'#18f7ff':'#ff9d21'}`
-- `L103: function loop(now){const dt=Math.min(.045,(now-last)/1000||0);last=now;update(dt);draw();rafId=requestAnimationFrame(loop)}`
 
 ### `domination_wars.html`
 **Control flow signals**
@@ -785,20 +763,3 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 - `L461: setTimeout(() => piece.remove(), 2600);`
 - `L489: await wait(Math.max(120, 500 - numDisks * 45));`
 - `L560: function setSound(on,fromNative=false){prefs.sound=!!on;write(PREF_KEY,prefs);document.getElementById('ppg-sound').textContent=prefs.sound?'🔊 Som ON':'🔇 Som OFF';if(GENERIC_AUDIO){initAudio();master.gain.setTargetAtTime(prefs.sound?.10:0,ac.currentTime,.02);if(prefs.sound)startBgm();else stopBgm()}if(!fromNative)applyNativeSound(prefs.sound)}`
-
-### `tron.html`
-**Control flow signals**
-- `L44: function restart(){if(paused)setPaused(false);if(typeof window.PPGGameRestart==='function'){window.PPGGameRestart();return}location.reload()}`
-**Gameplay tuning signals**
-- `L15: const qs=new URLSearchParams(location.search);if(qs.get('preview')==='1'||qs.has('preview'))return;`
-- `L25: window.setTimeout=(fn,ms,...args)=>{if(typeof fn!=='function')return nativeSetTimeout(fn,ms,...args);const run=()=>{if(paused)return nativeSetTimeout(run,50);fn(...args)};return nativeSetTimeout(run,ms)};`
-- `L61: const DIRS={up:{x:0,y:-1,opp:'down'},down:{x:0,y:1,opp:'up'},left:{x:-1,y:0,opp:'right'},right:{x:1,y:0,opp:'left'}};let territory,player,ai,running=false,last=0,elapsed=0,rafId=0,powerups=[],powerSpawn=8,damageParticles=[],damageShake=0,damageFlash=0;`
-- `L62: let audioCtx=null,sfxOn=true,musicOn=true,musicTimer=null,musicStep=0;const key=(x,y)=>x+','+y,inside=(x,y)=>x>=0&&x<COLS&&y>=0&&y<ROWS,idx=(x,y)=>y*COLS+x;`
-- `L64: function makeRider(x,y,dir,owner,color){return{x,y,dir,owner,color,trail:[],trailSet:new Set(),alive:true,area:0,life:100,lastDamage:-99,hitCooldown:0,shieldUntil:0,boostUntil:0,moveCredit:0,powerText:'',burnUntil:0,burnDps:0,burnReason:''}}`
-- `L68: function legalDirs(r){return Object.keys(DIRS).filter(d=>d!==DIRS[r.dir].opp)}function nextCell(r,d){return{x:r.x+DIRS[d].x,y:r.y+DIRS[d].y}}function isEnemyWall(r,x,y){return inside(x,y)&&territory[idx(x,y)]&&territory[idx(x,y)]!==r.owner}function isEnemyTrail(r,x,y){const op=r.owner===1?ai:player;return op.trailSet.has(key(x,y))}`
-- `L72: function applyBurn(r,dt){if(!r.alive||elapsed>=r.burnUntil){r.burnDps=0;return}if(elapsed<r.shieldUntil){r.burnUntil=elapsed;return}const loss=Math.min(r.life,r.burnDps*dt);if(loss<=0)return;r.life-=loss;r.lastDamage=elapsed;if(Math.random()<dt*20)spawnDamageFx(r.x,r.y,r,.28);if(r.life<=0){r.life=0;r.alive=false;finish()}}`
-- `L73: function regen(r,dt){if(!r.alive||r.life>=100||elapsed-r.lastDamage<5)return;r.life=Math.min(100,r.life+4*dt)}`
-- `L76: function respawn(r){let best=null,bd=1e9;for(let y=0;y<ROWS;y+=2)for(let x=0;x<COLS;x+=2)if(territory[idx(x,y)]===r.owner){const d=Math.abs(x-r.x)+Math.abs(y-r.y);if(d<bd){bd=d;best={x,y}}}if(best){r.x=best.x;r.y=best.y;r.trail=[];r.trailSet.clear()}}`
-- `L78: function spawnPower(){const types=['boost','shield','repair','pulse'];for(let tries=0;tries<80;tries++){const x=5+Math.floor(Math.random()*(COLS-10)),y=5+Math.floor(Math.random()*(ROWS-10));if(territory[idx(x,y)]===0&&!player.trailSet.has(key(x,y))&&!ai.trailSet.has(key(x,y))){powerups.push({x,y,type:types[(Math.random()*types.length)|0],ttl:18});break}}}`
-- `L82: function recount(){let p=0,a=0;for(const v of territory){if(v===1)p++;else if(v===2)a++}player.area=p;ai.area=a;updateHUD()}`
-- `L89: function loop(now){const dt=Math.min(.045,(now-last)/1000||0);last=now;update(dt);draw();if(running||damageParticles.length||damageFlash>0||damageShake>0)rafId=requestAnimationFrame(loop)}`
