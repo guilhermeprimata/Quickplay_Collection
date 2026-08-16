@@ -1,0 +1,42 @@
+name: Apply Skate or Die refined build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-skate-update.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Build exact Skate or Die HTML
+        run: python .github/scripts/apply_skate_update.py
+
+      - name: Verify exact build
+        run: |
+          echo "fd49ee6d6fab9dd79178170bdce111dca35101878cbd6863515cb1b28638c06b  skate_or_die.html" | sha256sum -c -
+          test "$(git hash-object skate_or_die.html)" = "aebe83d8103f58911e9f8a0c2752fec9f48c1f02"
+          git diff --check
+
+      - name: Commit collection update and clean staging
+        run: |
+          git config user.name "Projeto Primata Games"
+          git config user.email "guilhermesteiglederdias@gmail.com"
+          git add skate_or_die.html
+          git rm -f .github/scripts/skate_payload_*.txt
+          git rm -f .github/scripts/skate_tail_*.txt
+          git rm -f .github/scripts/apply_skate_update.py
+          git rm -f .github/workflows/apply-skate-update.yml
+          git diff --cached --check
+          git commit -m "Upgrade Skate or Die with FLOW and refined UI"
+          git push origin HEAD:main
