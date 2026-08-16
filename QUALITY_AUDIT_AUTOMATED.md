@@ -10,7 +10,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 | `brain_matrix.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 86497 |
 | `campo_minado.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 69630 |
 | `click_speed.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 35680 |
-| `corrida_de_cavalos.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 48077 |
+| `corrida_de_cavalos.html` | none | — | ✅ | ✅ | — | ✅ | ✅ | ✅ | 47510 |
 | `domination_wars.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 47167 |
 | `dropworks.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 144991 |
 | `foguetinho.html` | v2 | — | — | ✅ | — | ✅ | ✅ | ✅ | 71237 |
@@ -20,6 +20,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 | `kombo_blocks.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 118942 |
 | `memory_genius.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 55024 |
 | `pixel_bomberman.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 35170 |
+| `pixel_joust.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 39531 |
 | `pong.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 51921 |
 | `reef_runner.html` | v2 | — | — | ✅ | — | ✅ | ✅ | ✅ | 31004 |
 | `rift_run.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | — | 158626 |
@@ -32,8 +33,8 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 
 ## Automated findings
 
-- Platform layer not v2: `alien_threat.html`, `brain_matrix.html`, `campo_minado.html`, `corrida_de_cavalos.html`, `dropworks.html`, `idle_trader.html`, `kombo_blocks.html`, `pong.html`, `rift_run.html`, `snowball_avalanche.html`
-- No native pause signal: `advinhe_o_numero.html`, `foguetinho.html`, `jogo_da_velha.html`, `reef_runner.html`, `salve_os_gatinhos.html`, `sudoku.html`, `torre_de_hanoi.html`
+- Platform layer not v2: `alien_threat.html`, `brain_matrix.html`, `campo_minado.html`, `corrida_de_cavalos.html`, `dropworks.html`, `idle_trader.html`, `kombo_blocks.html`, `pixel_joust.html`, `pong.html`, `rift_run.html`, `snowball_avalanche.html`
+- No native pause signal: `advinhe_o_numero.html`, `corrida_de_cavalos.html`, `foguetinho.html`, `jogo_da_velha.html`, `reef_runner.html`, `salve_os_gatinhos.html`, `sudoku.html`, `torre_de_hanoi.html`
 - No native restart/new-game signal: `foguetinho.html`, `reef_runner.html`, `salve_os_gatinhos.html`, `sudoku.html`
 - Canvas + keyboard but no native touch signal: `advinhe_o_numero.html`
 
@@ -236,40 +237,36 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 
 ### `corrida_de_cavalos.html`
 **Control flow signals**
-- `L139: function restart(){if(paused)setPaused(false);if(typeof window.PPGGameRestart==='function'){window.PPGGameRestart();return}location.reload()}`
-- `L209: function startGame() {`
-- `L483: if (audioContext.state === 'suspended') audioContext.resume();`
-- `L509: function playStartBugle() {`
-- `L524: function startHoofbeats() {`
+- `L180: addEventListener('pointerdown',unlockAudio,{once:true});addEventListener('keydown',unlockAudio,{once:true});`
+- `L195: function resetHud(){$('#posHud').textContent='—';$('#timeHud').textContent='0,00 s';$('#scoreHud').textContent='0';$('#reactionText')&&($('#reactionText').textContent='—');$('#reactionGrade')&&($('#reactionGrade').textContent='AGUARDANDO')}`
+- `L243: $('#jumpTouch').addEventListener('pointerdown',e=>{e.preventDefault();doJump();e.currentTarget.classList.add('active')});['pointerup','pointercancel','pointerleave'].forEach(ev=>$('#jumpTouch').addEventListener(ev,e=>e.currentTarget.classList.remove('active')));`
+- `L244: $('#sprintTouch').addEventListener('pointerdown',e=>{e.preventDefault();registerLaunchInput();if(phase==='race'&&playerLaunched)setSprintHeld(true)});['pointerup','pointercancel','pointerleave'].forEach(ev=>$('#sprintTouch').addEventListener(ev,e=>setSprintHeld(false)));`
+- `L251: function drawStartLine(x,y,h){ctx.fillStyle='rgba(255,255,255,.78)';ctx.fillRect(x,y,3,h);ctx.save();ctx.translate(x+10,y+h/2);ctx.rotate(-Math.PI/2);ctx.fillStyle='rgba(255,255,255,.8)';ctx.font='900 11px Segoe UI';ctx.textAlign='center';ctx.fillText('LARGADA',0,0);ctx.restore()}`
+- `L259: function openModal(html){$('#modalBody').innerHTML=html;$('#modal').classList.add('open')}function closeModal(){$('#modal').classList.remove('open')}$('#modalClose').onclick=closeModal;$('#modal').addEventListener('click',e=>{if(e.target===$('#modal'))closeModal()});`
 **Gameplay tuning signals**
-- `L110: const qs=new URLSearchParams(location.search);if(qs.get('preview')==='1'||qs.has('preview'))return;`
-- `L120: window.setTimeout=(fn,ms,...args)=>{if(typeof fn!=='function')return nativeSetTimeout(fn,ms,...args);const run=()=>{if(paused)return nativeSetTimeout(run,50);fn(...args)};return nativeSetTimeout(run,ms)};`
-- `L201: let bank = 1000, bet = 100, raceInProgress = false, animationId = null;`
-- `L204: function money(value) { return value.toLocaleString('pt-BR', {style:'currency', currency:'BRL', maximumFractionDigits:0}); }`
-- `L223: const speed = 60 + Math.random() * 35;`
-- `L224: const stamina = 60 + Math.random() * 35;`
-- `L226: const rating = speed * .46 + stamina * .34 + temperament * .20;`
-- `L227: return { id: crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + i, name, color: horseColors[i], speed, stamina, temperament, rating, odds: 0, x: 62, lane: i, phase: Math.random() * Math.PI * 2, finished: false };`
-- `L235: h.odds = Math.max(1.35, Math.min(8.5, fair * .9));`
-- `L243: bet = Math.min(100, bank);`
-- `L245: document.getElementById('raceStatus').textContent = bank > 0 ? 'Selecione um cavalo e confirme sua aposta.' : 'Sua banca terminou. Recarregue a página para recomeçar.';`
-- `L247: updateBank(); showHorseButtons(); updateBetUI(); drawScene(0);`
-- `L248: document.getElementById('placeBetBtn').disabled = bank <= 0;`
-- `L255: btn.innerHTML = '<span class="horse-color" style="background:${horse.color}"></span><span class="horse-name">${index + 1}. ${horse.name}</span><span class="odds">${horse.odds.toFixed(2)}x</span>';`
-- `L268: bet = Number.isFinite(raw) ? Math.max(1, Math.floor(raw)) : 100;`
-- `L274: readBet(); bet = Math.max(1, Math.min(bank, bet + delta));`
-- `L288: if (bet <= 0 || bet > bank) return setMessage('Valor de aposta inválido.', 'error');`
-- `L304: const dt = Math.min(.032, (time - lastTime) / 1000 || .016); lastTime = time;`
-- `L309: const fatigue = progress > .7 ? (h.stamina / 100) : 1;`
-- `L312: h.x += (52 + h.speed * 1.08) * fatigue * variance * temperamentBurst * dt;`
-- `L313: h.phase += dt * (10 + h.speed / 10);`
-- `L364: const frame = Math.floor(h.phase / 1.6) % 4;`
-- `L456: const steps = Math.max(Math.abs(x2 - x1), Math.abs(y2 - y1));`
-- `L470: const r = Math.max(0, Math.min(255, (value >> 16) + amount));`
-- `L471: const g = Math.max(0, Math.min(255, ((value >> 8) & 255) + amount));`
-- `L472: const b = Math.max(0, Math.min(255, (value & 255) + amount));`
-- `L503: gain.gain.exponentialRampToValueAtTime(options.volume || 0.1, start + Math.min(.025, duration / 4));`
-- `L537: hoofbeatTimer = setInterval(scheduleGroup, 515);`
+- `L147: const STORAGE={prefs:'ppg_platform_prefs_v1',stats:'ppg_minigames_stats_v1',records:'ppg_records_corrida_habilidade_v2'};`
+- `L151: let horses=[],player=null,selectedIndex=0,obstacles=[];`
+- `L152: let phase='menu',raceStartPerf=0,raceElapsed=0,lastFrame=0,raf=0,countdownStarted=0,startGoAt=0,startSignalPerf=0;`
+- `L153: let sprintEnergy=100,sprintHeld=false,sprintLocked=false,falseStartPenalty=0,playerLaunched=false,startReaction=null,startBonus=0,startBoostTimer=0,falseStartQueued=false,launchLampStage=0;`
+- `L154: let jumpsPerfect=0,jumpsTotal=0,scoreLive=0;`
+- `L155: let finishers=[],feedbackTimer=0,screenShake=0,gameStartRegistered=false;`
+- `L156: let audioCtx=null,master=null,sfxBus=null,musicBus=null,compressor=null,bgmTimer=null,bgmStep=0;`
+- `L163: function fmtTime(v){return v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+' s'}`
+- `L183: function diffLabel(h){const avg=(h.speed+h.stam+h.control)/3;if(h.control<67)return'DIFÍCIL';if(avg>82)return'ELITE';if(h.stam>82)return'RESISTENTE';return'EQUILIBRADO'}`
+- `L195: function resetHud(){$('#posHud').textContent='—';$('#timeHud').textContent='0,00 s';$('#scoreHud').textContent='0';$('#reactionText')&&($('#reactionText').textContent='—');$('#reactionGrade')&&($('#reactionGrade').textContent='AGUARDANDO')}`
+- `L197: function loop(now){const dt=Math.min(.033,(now-lastFrame)/1000||.016);lastFrame=now;if(phase==='countdown')updateCountdown(now);else if(phase==='race')updateRace(dt,now);drawScene(now);if(phase==='countdown'||phase==='race')raf=requestAnimationFrame(loop)}`
+- `L209: function saveRecord(score,time,position){let r=readJSON(STORAGE.records,[]);r.push({score,time,position,horse:player.name,at:Date.now()});r.sort((a,b)=>b.score-a.score||a.time-b.time);writeJSON(STORAGE.records,r.slice(0,10))}`
+- `L216: if(!falseStartQueued){falseStartQueued=true;$('#startSignal').classList.add('false-start');setTimeout(()=>$('#startSignal').classList.remove('false-start'),550);setFeedback('LARGADA QUEIMADA!','hit');$('#startHeadline').textContent='QUEIMOU!';$('#startSubline').textContent='Você receberá atraso na saída.';sfx('miss');navigator.vibrate?.([35,25,35])}`
+- `L221: playerLaunched=true;startReaction=Math.max(0,(performance.now()-startSignalPerf)/1000);`
+- `L222: if(startReaction<=.18){startBonus=900;startBoostTimer=1.0;setFeedback('LARGADA PERFEITA!','perfect');$('#reactionGrade').textContent='PERFEITA';$('#reactionGrade').style.color='var(--gold)';sfx('perfect')}`
+- `L223: else if(startReaction<=.30){startBonus=600;startBoostTimer=.65;setFeedback('ÓTIMA LARGADA','perfect');$('#reactionGrade').textContent='ÓTIMA';$('#reactionGrade').style.color='var(--green)';sfx('good')}`
+- `L224: else if(startReaction<=.50){startBonus=300;startBoostTimer=.3;setFeedback('BOA LARGADA','');$('#reactionGrade').textContent='BOA';$('#reactionGrade').style.color='var(--cyan)';sfx('okay')}`
+- `L225: else{startBonus=0;setFeedback('LARGADA LENTA','hit');$('#reactionGrade').textContent='LENTA';$('#reactionGrade').style.color='var(--red)';sfx('miss')}`
+- `L226: $('#reactionText').textContent=Math.round(startReaction*1000)+' ms';updateStartSignal(99999);`
+- `L229: function doJump(){if(phase!=='race'||!playerLaunched||player.jumping)return;player.jumping=true;player.jumpT=0;$('#jumpCard').classList.add('active');setTimeout(()=>$('#jumpCard').classList.remove('active'),150);setFeedback('SALTO!','');sfx('jump')}`
+- `L230: function setFeedback(text,cls=''){const f=$('#feedback');f.textContent=text;f.className='feedback '+cls;feedbackTimer=.55}`
+- `L246: function drawScene(time){ctx.save();if(screenShake){ctx.translate((Math.random()-.5)*screenShake,(Math.random()-.5)*screenShake)}ctx.clearRect(-20,-20,canvas.width+40,canvas.height+40);drawTrack();drawObstacles();horses.forEach(h=>drawHorse(h.x,laneTop+h.lane*laneH+48-h.jumpY,h,time));drawProgress();drawStartOverlay(time);ctx.restore()}`
+- `L256: function pr(x,y,w,h,s){ctx.fillRect(x*s,y*s,w*s,h*s)}function leg(x1,y1,x2,y2,s){const st=Math.max(Math.abs(x2-x1),Math.abs(y2-y1));for(let i=0;i<=st;i++){const t=st?i/st:0;ctx.fillRect(Math.round(x1+(x2-x1)*t)*s,Math.round(y1+(y2-y1)*t)*s,s,s)}ctx.fillStyle='#171717';ctx.fillRect((x2-1)*s,y2*s,2*s,s)}`
 
 ### `domination_wars.html`
 **Control flow signals**
@@ -548,6 +545,39 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 - `L78: function placeBomb(){if(gameOver){restartGame();return}if(transitionFrames||bombs.length>=MAX_BOMBS||bombAt(player.x,player.y))return;bombs.push({x:player.x,y:player.y,timer:80});sfx(240,.045)}`
 - `L79: function flameCell(x,y){if(!map[y]||map[y][x]==='wall')return false;flames.push({x,y,timer:24});if(map[y][x]==='block'){map[y][x]='empty';score+=15;return false}const chained=bombs.find(b=>b.x===x&&b.y===y&&b.timer>2);if(chained)chained.timer=1;return true}`
 - `L81: function movePlayer(dx,dy){if(gameOver||transitionFrames||window.__PPG_PAUSED__)return;const nx=player.x+dx,ny=player.y+dy;if(dx||dy){if(canWalk(nx,ny)){player.x=nx;player.y=ny}else sfx(170,.02)}}`
+
+### `pixel_joust.html`
+**Control flow signals**
+- `L60: function portalPauseTime(){if(!portalSegmentStart)return;portalCommitActiveTime();portalSegmentStart=0}`
+- `L61: function portalResumeTime(){if(!PREVIEW&&portalSessionActive&&state==='playing'&&!paused&&!portalSegmentStart)portalSegmentStart=performance.now()}`
+- `L72: let state='menu',paused=false,last=0,simTime=0,slow=1,messageUntil=0,messageText='',messageSub='',shakeTimer=0,flash=0;`
+- `L137: function beginSudden(){sudden=true;suddenCount++;pass++;postT=-999;P.balance=clamp(P.balance+18,1,100);E.balance=clamp(E.balance+18,1,100);showMsg(T[lang].draw,'',1.3);setTimeout(()=>{if(state==='playing')beginPass()},750)}`
+- `L180: pointerButtons.forEach(b=>{let code=b.dataset.key;const on=e=>{e.preventDefault();keys[code]=true;b.classList.add('on')},off=e=>{e.preventDefault();keys[code]=false;b.classList.remove('on')};b.addEventListener('pointerdown',on);b.addEventListener('pointerup',off);b.addEventListener('pointercancel',off);b.addEventListener('pointerleave',off)});`
+- `L181: function togglePause(){paused=!paused;if(paused)portalPauseTime();else portalResumeTime();sfx('ui')}`
+**Gameplay tuning signals**
+- `L52: const QS=new URLSearchParams(location.search),PREVIEW=QS.get('preview')==='1',EMBEDDED=QS.get('embedded')==='1';`
+- `L53: const PORTAL_STATS_KEY='ppg_minigames_stats_v1',GAME_ID='pixel_joust';`
+- `L59: function portalCommitActiveTime(){if(PREVIEW||!portalSegmentStart)return;const all=portalRead(),st=all[GAME_ID]||{};st.totalSeconds=(st.totalSeconds||0)+Math.max(0,(performance.now()-portalSegmentStart)/1000);st.lastPlayed=Date.now();all[GAME_ID]=st;portalWrite(all);portalSegmentStart=performance.now()}`
+- `L64: window.addEventListener('pagehide',portalPauseTime);setInterval(()=>{if(portalSegmentStart)portalCommitActiveTime()},30000);`
+- `L72: let state='menu',paused=false,last=0,simTime=0,slow=1,messageUntil=0,messageText='',messageSub='',shakeTimer=0,flash=0;`
+- `L74: let pass=1,maxPasses=5,sudden=false,suddenCount=0,runT=0,impactDone=false,postT=0,scoreP=0,scoreE=0,judgeP=0,judgeE=0,totalHits=0,totalAttacks=0,breaks=0;`
+- `L76: const makeFighter=(player)=>({player,x:player?125:1075,y:515,aim:.48,aimVis:.48,shield:'high',couched:false,couchT:0,power:0,balance:100,lanceIntegrity:100,broken:false,recoil:0,fall:0,fallRot:0,hitFlash:0,scoreFlash:0,weaponDir:null,lastWeaponDir:null,aiTarget:.34,aiGuard:'high',aiThink:0,aiCommit:0,aiFeintDone:false});`
+- `L80: let AC=null,master=null,musicGain=null,sfxGain=null,muted=false,musicTimer=0,gallopTick=0;`
+- `L81: function audioInit(){if(AC)return; AC=new (window.AudioContext||window.webkitAudioContext)();master=AC.createGain();musicGain=AC.createGain();sfxGain=AC.createGain();master.gain.value=.7;musicGain.gain.value=.18;sfxGain.gain.value=.55;musicGain.connect(master);sfxGain.connect(master);master.connect(AC.destination)}`
+- `L85: function musicStep(dt){if(!AC||muted||state!=='playing'||paused)return;musicTimer-=dt;if(musicTimer<=0){musicTimer=.32;let seq=[110,147,165,147,123,147,196,165],i=Math.floor(simTime/.32)%seq.length;tone(seq[i],.22,'triangle',.035,0,musicGain);if(i%2===0)tone(seq[i]*2,.07,'square',.018,.04,musicGain)}}`
+- `L99: let target=dir==='high'?.30:.69;`
+- `L108: else{P.couched=false;P.weaponDir=null;P.couchT=Math.max(0,P.couchT-dt*.62);P.power=clamp(P.couchT/1.12,0,1)}`
+- `L114: if(!E.couched){let playerGuard=P.shield;E.aiTarget=(playerGuard==='high'?.68:.31)+rnd(-.045,.045)*(1-d.skill)}}`
+- `L115: if(runT>E.aiCommit&&!E.couched){E.couched=true;E.weaponDir=E.aiTarget<.49?'high':'low';E.lastWeaponDir=E.weaponDir;E.aim=E.aiTarget}`
+- `L117: if(!E.aiFeintDone&&E.couched&&Math.random()<d.feint*dt*1.35&&dist<430&&dist>245){E.aiTarget=E.aiTarget<.49?.69:.30;E.weaponDir=E.aiTarget<.49?'high':'low';E.aim=E.aiTarget;E.couchT*=.56;E.aiFeintDone=true}`
+- `L118: E.aim=lerp(E.aim,E.aiTarget,clamp(dt*(E.couched?3.4:2.5),0,1));let gallop=Math.sin(runT*27+1.7)*(.012*d.wobble*(1-E.power*.5));E.aimVis=clamp(lerp(E.aimVis,E.aim,clamp(dt*4.6,0,1))+gallop*dt*5,.23,.76);E.shield=E.aiGuard}`
+- `L119: function updateRun(dt){let d=DIF[difficulty];runT+=dt;handlePlayer(dt);handleAI(dt);let p=clamp(runT/d.run,0,1),speed=lerp(125,270,p*p);P.x+=speed*dt;E.x-=speed*dt;crowdPulse+=dt*speed*.02;musicStep(dt);gallopSound(dt);if(E.x-P.x<=158&&!impactDone)resolveImpact();if(runT>d.run+1&&!impactDone)resolveImpact()}`
+- `L127: let c=contacts[0],pts=0,bal=0,broke=false,label='hit';if(c.type==='shield'){let y=seg.y1+(seg.y2-seg.y1)*c.t,edge=Math.abs(y-m.shield.cy);if(edge>23){label='glance';pts=1;bal=5+power*10}else{label='block';bal=4+power*12}if(power>.92&&quality>.82&&Math.random()<.12){broke=true;bal+=8}}`
+- `L132: showMsg(label,sub,1.25);if(pr.broke||er.broke)sfx('break');else if(pr.label==='block'||pr.label==='glance'||er.label==='block'||er.label==='glance')sfx('block');else if(pr.label==='miss'&&er.label==='miss')sfx('swish');else sfx('hit');sfx('cheer');updateHUD();postT=0}`
+- `L134: if(sudden){if(scoreP!==scoreE){endGame(scoreP>scoreE);return}if(suddenCount>=3){if(Math.abs(P.balance-E.balance)>.5)endGame(P.balance>E.balance);else endGame(judgeP>=judgeE);return}beginSudden();return}`
+- `L139: function spawnImpact(x,y,n,big){for(let i=0;i<n;i++){let a=rnd(0,Math.PI*2),sp=rnd(big?100:70,big?420:260);particles.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-rnd(20,160),g:420,life:rnd(.35,.9),size:rnd(2,big?10:7),kind:i%4===0?'wood':i%5===0?'metal':'spark',rot:rnd(0,6)})}}`
+- `L140: function updateParticles(dt){for(let p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=p.g*dt;p.life-=dt;p.rot+=dt*8}particles=particles.filter(p=>p.life>0);for(let q of confetti){q.x+=q.vx*dt;q.y+=q.vy*dt;q.vy+=70*dt;q.r+=dt*4;q.life-=dt}confetti=confetti.filter(q=>q.life>0&&q.y<H+30)}`
+- `L183: setDiff(difficulty);setLang();if(PREVIEW){muted=true;if(master)master.gain.value=0;setLang();setTimeout(startGame,50)}`
 
 ### `pong.html`
 **Control flow signals**

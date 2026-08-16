@@ -10,7 +10,7 @@ Validation executed with Node.js syntax checking for every inline JavaScript blo
 | `brain_matrix.html` | 1 | 0 | ✅ | ✅ |
 | `campo_minado.html` | 5 | 0 | ✅ | ✅ |
 | `click_speed.html` | 4 | 0 | ✅ | ✅ |
-| `corrida_de_cavalos.html` | 4 | 0 | ✅ | ✅ |
+| `corrida_de_cavalos.html` | 1 | 0 | — | ✅ |
 | `domination_wars.html` | 1 | 0 | ✅ | ✅ |
 | `dropworks.html` | 3 | 0 | ✅ | ✅ |
 | `foguetinho.html` | 1 | 0 | — | — |
@@ -20,6 +20,7 @@ Validation executed with Node.js syntax checking for every inline JavaScript blo
 | `kombo_blocks.html` | 3 | 0 | ✅ | ✅ |
 | `memory_genius.html` | 5 | 0 | ✅ | ✅ |
 | `pixel_bomberman.html` | 4 | 0 | ✅ | ✅ |
+| `pixel_joust.html` | 1 | 0 | ✅ | ✅ |
 | `pong.html` | 2 | 0 | ✅ | ✅ |
 | `reef_runner.html` | 1 | 0 | — | — |
 | `rift_run.html` | 1 | 0 | ✅ | ✅ |
@@ -32,7 +33,7 @@ Validation executed with Node.js syntax checking for every inline JavaScript blo
 
 ## Result
 
-- Games checked: **25**
+- Games checked: **26**
 - JavaScript syntax failures: **0**
 - External JavaScript dependencies: **0**
 - Direct Banco do Brasil branding signals: **0**
