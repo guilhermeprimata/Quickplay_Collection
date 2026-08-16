@@ -8,7 +8,7 @@ on:
       - '*.md'
       - '*.txt'
       - '.nojekyll'
-      - '.crystal-xplorer-upload/**'
+      - '.pixel-joust-upload/**'
       - '.github/workflows/build-complete-zip.yml'
   workflow_dispatch:
 
@@ -27,106 +27,113 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Assemble Crystal Xplorer staged release when ready
+      - name: Check staged Pixel Joust upload
+        id: stage
+        shell: bash
+        run: |
+          if [ -d .pixel-joust-upload ] && [ ! -f .pixel-joust-upload/READY ]; then
+            echo 'ready=false' >> "$GITHUB_OUTPUT"
+            echo 'Pixel Joust upload is still being staged; package build skipped.'
+          else
+            echo 'ready=true' >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Assemble staged Pixel Joust
+        if: steps.stage.outputs.ready == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          if [ ! -f .crystal-xplorer-upload/READY ]; then
-            echo 'No staged Crystal Xplorer release to assemble.'
+          if [ ! -f .pixel-joust-upload/READY ]; then
+            echo 'No staged Pixel Joust release to assemble.'
             exit 0
           fi
-
-          cat .crystal-xplorer-upload/payload_* | base64 -d | gzip -dc > /tmp/foguetinho.html
-          echo 'd1abb2bd1ea61347fe46e30f6750b9f0ae34b44af17512e701070acaeab428ca  /tmp/foguetinho.html' | sha256sum -c -
-
+          cat .pixel-joust-upload/part_* | base64 -d > pixel_joust.html
+          echo '390e10a317f4f0dd1b8725cc30a213c8abf99aa03f1c63ae0925e8eff55434d4  pixel_joust.html' | sha256sum -c -
           node - <<'NODE'
           const fs=require('fs');
-          const s=fs.readFileSync('/tmp/foguetinho.html','utf8');
+          const s=fs.readFileSync('pixel_joust.html','utf8');
           const scripts=s.match(/<script[^>]*>([\s\S]*?)<\/script>/g)||[];
           for(const b of scripts){
             const js=b.replace(/^<script[^>]*>/,'').replace(/<\/script>$/,'');
             new Function(js);
           }
-          if(!s.includes('Crystal Xplorer')) throw new Error('Crystal Xplorer identity missing');
-          if(s.includes('Cosmo Crash')) throw new Error('Legacy Cosmo Crash identity still present');
-          console.log('Crystal Xplorer scripts parse OK');
+          for(const marker of ['GAME_ID=\'pixel_joust\'','ppg_minigames_stats_v1','preview','ppg-exit-game','ENTER / ESPAÇO / R']){
+            if(!s.includes(marker)) throw new Error('Pixel Joust release marker missing: '+marker);
+          }
+          if(/https?:\/\//i.test(s)) throw new Error('Pixel Joust contains an external URL/dependency');
+          console.log('Pixel Joust staged release: scripts and collection markers OK');
           NODE
+          rm -rf .pixel-joust-upload
 
-          cp /tmp/foguetinho.html foguetinho.html
-
+      - name: Integrate Pixel Joust in Tier B
+        if: steps.stage.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
           python - <<'PY'
           from pathlib import Path
+          game=Path('pixel_joust.html')
+          if not game.exists():
+              print('Pixel Joust not present yet; keeping current hall.')
+              raise SystemExit(0)
           p=Path('index.html')
           s=p.read_text(encoding='utf-8')
-          old="{file:'foguetinho.html',id:'cosmo_crash',name:'Cosmo Crash',emoji:'🚀',desc:'Arrisque créditos, pilote a nave e recolha antes do desastre.'},"
-          new="{file:'foguetinho.html',id:'crystal_xplorer',name:'CRYSTAL XPLORER',emoji:'💎',desc:'Mine cristais radioativos, enfrente hostis e retorne ao hangar para evoluir sua nave.',new:true},"
+          anchor="{file:'rift_run.html',id:'rift_run',name:'RIFT/RUN',emoji:'🛸',desc:'Corredor pseudo-3D de sobrevivência, combate, shield, grazes e canhão carregável.',new:true},"
+          card="{file:'pixel_joust.html',id:'pixel_joust',name:'Pixel Joust',emoji:'⚔️',desc:'Duelo medieval de precisão com espada, escudo, fintas e impactos físicos.',new:true},"
+          if "id:'pixel_joust'" not in s:
+              if anchor not in s:
+                  raise SystemExit('RIFT/RUN menu anchor not found')
+              s=s.replace(anchor,anchor+'\n'+card,1)
+          old="{id:'B',title:'Tier B',games:['toxic_stench','kombo_blocks','neon_pong','domination_wars','dropworks','pixel_bomber','rift_run']},"
+          new="{id:'B',title:'Tier B',games:['toxic_stench','kombo_blocks','neon_pong','domination_wars','dropworks','pixel_bomber','rift_run','pixel_joust']},"
           if old in s:
               s=s.replace(old,new,1)
           elif new not in s:
-              raise SystemExit('Could not locate Cosmo Crash game card in index.html')
-
-          s=s.replace("games:['corrida','cosmo_crash','idle_trader'", "games:['corrida','crystal_xplorer','idle_trader'")
-
-          fav_old="view.favorites=(view.favorites||[]).map(id=>id==='leaping_into_life'?'reef_runner':id).map(id=>id==='tron'||id==='domination_war'?'domination_wars':id);"
-          fav_new="view.favorites=(view.favorites||[]).map(id=>id==='leaping_into_life'?'reef_runner':id).map(id=>id==='tron'||id==='domination_war'?'domination_wars':id).map(id=>id==='cosmo_crash'?'crystal_xplorer':id);"
-          if fav_old in s: s=s.replace(fav_old,fav_new,1)
-
-          hid_old="view.hidden=(view.hidden||[]).map(id=>id==='leaping_into_life'?'reef_runner':id).map(id=>id==='tron'||id==='domination_war'?'domination_wars':id);"
-          hid_new="view.hidden=(view.hidden||[]).map(id=>id==='leaping_into_life'?'reef_runner':id).map(id=>id==='tron'||id==='domination_war'?'domination_wars':id).map(id=>id==='cosmo_crash'?'crystal_xplorer':id);"
-          if hid_old in s: s=s.replace(hid_old,hid_new,1)
-
-          marker="const read=(k,f)=>{try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}},write=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}};"
-          migration="""const read=(k,f)=>{try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}},write=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}};\ntry{const db=read(STATS,{});if(db.cosmo_crash){const o=db.cosmo_crash||{},n=db.crystal_xplorer||{};db.crystal_xplorer={...o,...n,starts:(o.starts||0)+(n.starts||0),totalSeconds:(o.totalSeconds||0)+(n.totalSeconds||0),longestStreak:Math.max(o.longestStreak||0,n.longestStreak||0),currentStreak:Math.max(o.currentStreak||0,n.currentStreak||0),lastDay:n.lastDay||o.lastDay||null,lastStarted:Math.max(o.lastStarted||0,n.lastStarted||0)||null,lastPlayed:Math.max(o.lastPlayed||0,n.lastPlayed||0)||null};delete db.cosmo_crash;write(STATS,db)}}catch{}"""
-          if 'delete db.cosmo_crash' not in s:
-              if marker not in s: raise SystemExit('Stats migration marker not found')
-              s=s.replace(marker,migration,1)
-
-          if "id:'cosmo_crash'" in s or "name:'Cosmo Crash'" in s:
-              raise SystemExit('Legacy Cosmo Crash menu entry remains')
-          if "id:'crystal_xplorer'" not in s:
-              raise SystemExit('Crystal Xplorer menu entry missing')
+              raise SystemExit('Tier B menu definition not found')
+          if s.count("id:'pixel_joust'") != 1:
+              raise SystemExit('Pixel Joust menu card must appear exactly once')
           p.write_text(s,encoding='utf-8')
+          print('Pixel Joust integrated into Tier B')
           PY
 
-          cat > RELEASE_2026-08-16.md <<'EOF'
-          # Primata Web Quickplay — atualização 2026-08-16
-
-          - `foguetinho.html` foi substituído definitivamente por **CRYSTAL XPLORER**.
-          - A antiga identidade **Cosmo Crash** foi removida do menu principal.
-          - Crystal Xplorer integra mineração de cristais por tipo, hangar, mercado, reparos, upgrades, armamento evolutivo, inimigos progressivos e instabilidade ambiental sistêmica sem morte aleatória inevitável.
-          - Estatísticas do menu migram automaticamente do antigo ID `cosmo_crash` para `crystal_xplorer`.
-          - O arquivo continua autocontido em um único HTML e integrado aos controles Quickplay.
-          - O pacote `Quickplay_Collection_COMPLETE.zip` passa a ser regenerado automaticamente por este workflow após alterações nos arquivos distribuíveis da coleção.
-          EOF
-
-          rm -rf .crystal-xplorer-upload
-
-      - name: Validate menu and game scripts
+      - name: Validate hall and release scripts
+        if: steps.stage.outputs.ready == 'true'
         shell: bash
         run: |
           set -euo pipefail
           node - <<'NODE'
           const fs=require('fs');
-          for(const f of ['index.html','foguetinho.html']){
+          function parseInline(f){
             const s=fs.readFileSync(f,'utf8');
             const scripts=s.match(/<script[^>]*>([\s\S]*?)<\/script>/g)||[];
-            for(const b of scripts){const js=b.replace(/^<script[^>]*>/,'').replace(/<\/script>$/,'');new Function(js)}
-            console.log(f+': scripts parse OK');
+            for(const b of scripts){
+              const open=b.match(/^<script[^>]*>/)?.[0]||'';
+              if(/type=["'](?:application\/json|importmap)["']/i.test(open)) continue;
+              const js=b.replace(/^<script[^>]*>/,'').replace(/<\/script>$/,'');
+              new Function(js);
+            }
           }
+          parseInline('index.html');
+          if(fs.existsSync('pixel_joust.html')) parseInline('pixel_joust.html');
           const menu=fs.readFileSync('index.html','utf8');
           const cards=[...menu.matchAll(/file:'([^']+)'/g)].map(m=>m[1]);
-          if(cards.length!==24) throw new Error('Expected 24 game cards, found '+cards.length);
-          if(!menu.includes("id:'crystal_xplorer'")) throw new Error('Crystal Xplorer missing from menu');
-          if(menu.includes("id:'cosmo_crash'")) throw new Error('Legacy Cosmo Crash still listed');
+          if(new Set(cards).size!==cards.length) throw new Error('Duplicate game files in hall');
+          for(const f of cards) if(!fs.existsSync(f)) throw new Error('Hall points to missing game: '+f);
+          if(fs.existsSync('pixel_joust.html')){
+            if(!menu.includes("id:'pixel_joust'")) throw new Error('Pixel Joust card missing from hall');
+            if(!menu.includes("'rift_run','pixel_joust']")) throw new Error('Pixel Joust is not in Tier B');
+          }
+          console.log('Hall OK:',cards.length,'games');
           NODE
 
       - name: Build deterministic complete ZIP
+        if: steps.stage.outputs.ready == 'true'
         shell: bash
         run: |
           set -euo pipefail
           python - <<'PY'
           from pathlib import Path
-          import zipfile, hashlib
+          import zipfile, hashlib, re
           root=Path('.')
           out=root/'Quickplay_Collection_COMPLETE.zip'
           include=[]
@@ -144,21 +151,32 @@ jobs:
                   z.writestr(info,p.read_bytes(),compress_type=zipfile.ZIP_DEFLATED,compresslevel=9)
           with zipfile.ZipFile(out) as z:
               names=set(z.namelist())
-              required={'index.html','menu_minigames.html','foguetinho.html','alien_threat.html','brain_matrix.html','rift_run.html','reef_runner.html'}
+              required={'index.html','menu_minigames.html'}
+              if Path('pixel_joust.html').exists(): required.add('pixel_joust.html')
               missing=required-names
               if missing: raise SystemExit('Missing from ZIP: '+','.join(sorted(missing)))
-              htmls=[n for n in names if n.endswith('.html')]
-              if len(htmls)!=26: raise SystemExit(f'Expected 26 HTML files, found {len(htmls)}')
-              game=z.read('foguetinho.html').decode('utf-8')
               menu=z.read('index.html').decode('utf-8')
-              if 'Crystal Xplorer' not in game: raise SystemExit('Crystal Xplorer missing from ZIP game')
-              if "id:'crystal_xplorer'" not in menu: raise SystemExit('Crystal Xplorer missing from ZIP menu')
+              cards=re.findall(r"file:'([^']+)'",menu)
+              missing_cards=[f for f in cards if f not in names]
+              if missing_cards: raise SystemExit('Hall games missing from ZIP: '+','.join(missing_cards))
+              print('Complete ZIP OK:',len(names),'files,',len(cards),'hall games')
           digest=hashlib.sha256(out.read_bytes()).hexdigest()
           Path('Quickplay_Collection_COMPLETE.zip.sha256').write_text(digest+'  Quickplay_Collection_COMPLETE.zip\n',encoding='ascii')
-          print('Complete ZIP OK:',len(names),'files,',len(htmls),'HTML files',digest)
+          print('SHA256',digest)
           PY
 
+      - name: Upload complete package artifact
+        if: steps.stage.outputs.ready == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Quickplay_Collection_COMPLETE
+          path: |
+            Quickplay_Collection_COMPLETE.zip
+            Quickplay_Collection_COMPLETE.zip.sha256
+          retention-days: 7
+
       - name: Commit refreshed collection and package
+        if: steps.stage.outputs.ready == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -169,5 +187,5 @@ jobs:
             echo 'Nothing changed.'
             exit 0
           fi
-          git commit -m 'Replace Cosmo Crash with Crystal Xplorer and refresh package'
+          git commit -m 'Add Pixel Joust to Tier B and refresh Quickplay package'
           git push origin HEAD:main
