@@ -1,0 +1,173 @@
+name: Build Quickplay complete ZIP
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '*.html'
+      - '*.md'
+      - '*.txt'
+      - '.nojekyll'
+      - '.crystal-xplorer-upload/**'
+      - '.github/workflows/build-complete-zip.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: quickplay-complete-package
+  cancel-in-progress: true
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Assemble Crystal Xplorer staged release when ready
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f .crystal-xplorer-upload/READY ]; then
+            echo 'No staged Crystal Xplorer release to assemble.'
+            exit 0
+          fi
+
+          cat .crystal-xplorer-upload/part_* | base64 -d > /tmp/foguetinho.html
+          echo 'd1abb2bd1ea61347fe46e30f6750b9f0ae34b44af17512e701070acaeab428ca  /tmp/foguetinho.html' | sha256sum -c -
+
+          node - <<'NODE'
+          const fs=require('fs');
+          const s=fs.readFileSync('/tmp/foguetinho.html','utf8');
+          const scripts=s.match(/<script[^>]*>([\s\S]*?)<\/script>/g)||[];
+          for(const b of scripts){
+            const js=b.replace(/^<script[^>]*>/,'').replace(/<\/script>$/,'');
+            new Function(js);
+          }
+          if(!s.includes('Crystal Xplorer')) throw new Error('Crystal Xplorer identity missing');
+          if(s.includes('Cosmo Crash')) throw new Error('Legacy Cosmo Crash identity still present');
+          console.log('Crystal Xplorer scripts parse OK');
+          NODE
+
+          cp /tmp/foguetinho.html foguetinho.html
+
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          old="{file:'foguetinho.html',id:'cosmo_crash',name:'Cosmo Crash',emoji:'🚀',desc:'Arrisque créditos, pilote a nave e recolha antes do desastre.'},"
+          new="{file:'foguetinho.html',id:'crystal_xplorer',name:'CRYSTAL XPLORER',emoji:'💎',desc:'Mine cristais radioativos, enfrente hostis e retorne ao hangar para evoluir sua nave.',new:true},"
+          if old in s:
+              s=s.replace(old,new,1)
+          elif new not in s:
+              raise SystemExit('Could not locate Cosmo Crash game card in index.html')
+
+          s=s.replace("games:['corrida','cosmo_crash','idle_trader'", "games:['corrida','crystal_xplorer','idle_trader'")
+
+          fav_old="view.favorites=(view.favorites||[]).map(id=>id==='leaping_into_life'?'reef_runner':id).map(id=>id==='tron'||id==='domination_war'?'domination_wars':id);"
+          fav_new="view.favorites=(view.favorites||[]).map(id=>id==='leaping_into_life'?'reef_runner':id).map(id=>id==='tron'||id==='domination_war'?'domination_wars':id).map(id=>id==='cosmo_crash'?'crystal_xplorer':id);"
+          if fav_old in s: s=s.replace(fav_old,fav_new,1)
+
+          hid_old="view.hidden=(view.hidden||[]).map(id=>id==='leaping_into_life'?'reef_runner':id).map(id=>id==='tron'||id==='domination_war'?'domination_wars':id);"
+          hid_new="view.hidden=(view.hidden||[]).map(id=>id==='leaping_into_life'?'reef_runner':id).map(id=>id==='tron'||id==='domination_war'?'domination_wars':id).map(id=>id==='cosmo_crash'?'crystal_xplorer':id);"
+          if hid_old in s: s=s.replace(hid_old,hid_new,1)
+
+          marker="const read=(k,f)=>{try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}},write=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}};"
+          migration="""const read=(k,f)=>{try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}},write=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}};\ntry{const db=read(STATS,{});if(db.cosmo_crash){const o=db.cosmo_crash||{},n=db.crystal_xplorer||{};db.crystal_xplorer={...o,...n,starts:(o.starts||0)+(n.starts||0),totalSeconds:(o.totalSeconds||0)+(n.totalSeconds||0),longestStreak:Math.max(o.longestStreak||0,n.longestStreak||0),currentStreak:Math.max(o.currentStreak||0,n.currentStreak||0),lastDay:n.lastDay||o.lastDay||null,lastStarted:Math.max(o.lastStarted||0,n.lastStarted||0)||null,lastPlayed:Math.max(o.lastPlayed||0,n.lastPlayed||0)||null};delete db.cosmo_crash;write(STATS,db)}}catch{}"""
+          if 'delete db.cosmo_crash' not in s:
+              if marker not in s: raise SystemExit('Stats migration marker not found')
+              s=s.replace(marker,migration,1)
+
+          if "id:'cosmo_crash'" in s or "name:'Cosmo Crash'" in s:
+              raise SystemExit('Legacy Cosmo Crash menu entry remains')
+          if "id:'crystal_xplorer'" not in s:
+              raise SystemExit('Crystal Xplorer menu entry missing')
+          p.write_text(s,encoding='utf-8')
+          PY
+
+          cat > RELEASE_2026-08-16.md <<'EOF'
+          # Primata Web Quickplay — atualização 2026-08-16
+
+          - `foguetinho.html` foi substituído definitivamente por **CRYSTAL XPLORER**.
+          - A antiga identidade **Cosmo Crash** foi removida do menu principal.
+          - Crystal Xplorer integra mineração de cristais por tipo, hangar, mercado, reparos, upgrades, armamento evolutivo, inimigos progressivos e instabilidade ambiental sistêmica sem morte aleatória inevitável.
+          - Estatísticas do menu migram automaticamente do antigo ID `cosmo_crash` para `crystal_xplorer`.
+          - O arquivo continua autocontido em um único HTML e integrado aos controles Quickplay.
+          - O pacote `Quickplay_Collection_COMPLETE.zip` passa a ser regenerado automaticamente por este workflow após alterações nos arquivos distribuíveis da coleção.
+          EOF
+
+          rm -rf .crystal-xplorer-upload
+
+      - name: Validate menu and game scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          for(const f of ['index.html','foguetinho.html']){
+            const s=fs.readFileSync(f,'utf8');
+            const scripts=s.match(/<script[^>]*>([\s\S]*?)<\/script>/g)||[];
+            for(const b of scripts){const js=b.replace(/^<script[^>]*>/,'').replace(/<\/script>$/,'');new Function(js)}
+            console.log(f+': scripts parse OK');
+          }
+          const menu=fs.readFileSync('index.html','utf8');
+          const cards=[...menu.matchAll(/file:'([^']+)'/g)].map(m=>m[1]);
+          if(cards.length!==24) throw new Error('Expected 24 game cards, found '+cards.length);
+          if(!menu.includes("id:'crystal_xplorer'")) throw new Error('Crystal Xplorer missing from menu');
+          if(menu.includes("id:'cosmo_crash'")) throw new Error('Legacy Cosmo Crash still listed');
+          NODE
+
+      - name: Build deterministic complete ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import zipfile, hashlib
+          root=Path('.')
+          out=root/'Quickplay_Collection_COMPLETE.zip'
+          include=[]
+          for p in root.iterdir():
+              if not p.is_file() or p.name in {out.name,'Quickplay_Collection_COMPLETE.zip.sha256'}:
+                  continue
+              if p.suffix.lower() in {'.html','.md','.txt'} or p.name=='.nojekyll':
+                  include.append(p)
+          include.sort(key=lambda p:p.name.lower())
+          with zipfile.ZipFile(out,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+              for p in include:
+                  info=zipfile.ZipInfo(p.name,date_time=(2026,8,16,12,0,0))
+                  info.compress_type=zipfile.ZIP_DEFLATED
+                  info.external_attr=0o644<<16
+                  z.writestr(info,p.read_bytes(),compress_type=zipfile.ZIP_DEFLATED,compresslevel=9)
+          with zipfile.ZipFile(out) as z:
+              names=set(z.namelist())
+              required={'index.html','menu_minigames.html','foguetinho.html','alien_threat.html','brain_matrix.html','rift_run.html','reef_runner.html'}
+              missing=required-names
+              if missing: raise SystemExit('Missing from ZIP: '+','.join(sorted(missing)))
+              htmls=[n for n in names if n.endswith('.html')]
+              if len(htmls)!=26: raise SystemExit(f'Expected 26 HTML files, found {len(htmls)}')
+              game=z.read('foguetinho.html').decode('utf-8')
+              menu=z.read('index.html').decode('utf-8')
+              if 'Crystal Xplorer' not in game: raise SystemExit('Crystal Xplorer missing from ZIP game')
+              if "id:'crystal_xplorer'" not in menu: raise SystemExit('Crystal Xplorer missing from ZIP menu')
+          digest=hashlib.sha256(out.read_bytes()).hexdigest()
+          Path('Quickplay_Collection_COMPLETE.zip.sha256').write_text(digest+'  Quickplay_Collection_COMPLETE.zip\n',encoding='ascii')
+          print('Complete ZIP OK:',len(names),'files,',len(htmls),'HTML files',digest)
+          PY
+
+      - name: Commit refreshed collection and package
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if git diff --cached --quiet; then
+            echo 'Nothing changed.'
+            exit 0
+          fi
+          git commit -m 'Replace Cosmo Crash with Crystal Xplorer and refresh package'
+          git push origin HEAD:main
