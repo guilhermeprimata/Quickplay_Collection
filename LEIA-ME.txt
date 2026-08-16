@@ -25,3 +25,10 @@ ATUALIZAÇÃO V13 — 08/08/2026
 - Fase 20 mantém a correção de vitória: desperdício afeta estrelas, mas não bloqueia a conclusão ao atingir a meta.
 - Pacote permanece com 20 jogos oficiais e todos os jogos em HTML autocontido.
 
+ATUALIZAÇÃO V14 — 16/08/2026
+- SKATE OR DIE integrado oficialmente ao Tier A da Quickplay Collection.
+- Build autocontida em um único HTML, sem Google Fonts, fetch de JSON, CDN ou API externa.
+- BGM/SFX procedural refinados, som ON/OFF, tema claro/escuro, Sobre e retorno ao menu.
+- Ranking e recordes locais preservados; telemetria do hub registra partidas, tempo e sequência de dias.
+- Preview ?preview=1 roda silencioso e não contamina estatísticas ou recordes.
+- Hall passa a conter 28 jogos oficiais.
