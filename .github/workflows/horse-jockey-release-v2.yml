@@ -1,0 +1,84 @@
+name: Finalize Horse Jockey Release
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/horse-jockey-release-v2.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Rebuild exact local candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat \
+            .horse-jockey-upload/chunk_00 \
+            .horse-jockey-upload/chunk_01 \
+            .horse-jockey-upload/chunk_02 \
+            .horse-jockey-upload/chunk_03 \
+            .horse-jockey-upload/payload_01 \
+            .horse-jockey-upload/payload_02 \
+            .horse-jockey-upload/payload_03 \
+            .horse-jockey-upload/tail_00 \
+            .horse-jockey-upload/tail_01 \
+            .horse-jockey-upload/tail_02 \
+            .horse-jockey-upload/tail_03 \
+            | base64 -d > /tmp/corrida_de_cavalos.html
+          echo '911faca7298b9356fc858bfef8aaea61182b3105a2563b464630404573dc60b6  /tmp/corrida_de_cavalos.html' | sha256sum -c -
+          node - <<'NODE'
+          const fs=require('fs'); const s=fs.readFileSync('/tmp/corrida_de_cavalos.html','utf8');
+          for(const b of (s.match(/<script[^>]*>([\s\S]*?)<\/script>/g)||[])) new Function(b.replace(/^<script[^>]*>/,'').replace(/<\/script>$/,''));
+          for(const needle of ['Jockey Challenge','Nova corrida · N / Enter','id="sprintBar"']) if(!s.includes(needle)) throw new Error('Missing '+needle);
+          for(const legacy of ['Painel de odds','Apostar R$']) if(s.includes(legacy)) throw new Error('Legacy betting remains: '+legacy);
+          console.log('Exact candidate and JS validation: OK');
+          NODE
+          cp /tmp/corrida_de_cavalos.html corrida_de_cavalos.html
+      - name: Replace menu card and clean staging
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html'); s=p.read_text(encoding='utf-8')
+          old="{file:'corrida_de_cavalos.html',id:'corrida',name:'Hipódromo Estelar',emoji:'🏇',desc:'Corridas, odds e gestão de banca em rodadas rápidas.'},"
+          new="{file:'corrida_de_cavalos.html',id:'corrida',name:'Hipódromo Estelar',emoji:'🏇',desc:'Corrida de habilidade com largada por reação, saltos e sprint estratégico.'},"
+          if old in s: s=s.replace(old,new,1)
+          elif new not in s: raise SystemExit('Horse menu card not found')
+          if 'Corridas, odds e gestão de banca' in s: raise SystemExit('Legacy horse description remains')
+          p.write_text(s,encoding='utf-8')
+          r=Path('RELEASE_2026-08-16.md'); text=r.read_text(encoding='utf-8') if r.exists() else '# Quickplay Collection — 2026-08-16\n'
+          marker='## Hipódromo Estelar — Jockey Challenge'
+          if marker not in text:
+              text += '\n\n'+marker+'\n- Corrida de habilidade substitui definitivamente a versão de apostas.\n- N reage à largada e controla o sprint recarregável; M salta.\n- Após o resultado, N ou Enter inicia uma nova corrida imediatamente.\n- Menu, pacote completo e GitHub Pages passam a usar esta versão.\n'
+          r.write_text(text,encoding='utf-8')
+          PY
+          rm -rf .horse-jockey-upload
+          rm -f .github/workflows/horse-jockey-release.yml .github/workflows/horse-jockey-release-v2.yml
+      - name: Final gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum corrida_de_cavalos.html
+          grep -q 'Nova corrida · N / Enter' corrida_de_cavalos.html
+          grep -q 'Corrida de habilidade com largada por reação, saltos e sprint estratégico.' index.html
+          ! grep -q 'Corridas, odds e gestão de banca' index.html
+          ! grep -q 'Painel de odds' corrida_de_cavalos.html
+          echo 'Final release gate: PASS'
+      - name: Commit release
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Replace horse betting game with Jockey Challenge'
+          git push origin HEAD:main
