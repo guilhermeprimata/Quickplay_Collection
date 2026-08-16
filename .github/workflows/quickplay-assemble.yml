@@ -18,108 +18,70 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Wait for ready marker
+      - name: Check ready marker
         id: ready
         shell: bash
         run: |
-          if [ ! -f .quickplay-upload/READY ]; then
+          if [ -f .quickplay-upload/READY ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
             echo "ready=false" >> "$GITHUB_OUTPUT"
             echo "Staging incomplete; nothing to assemble yet."
-          else
-            echo "ready=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Assemble and validate Quickplay release
+      - name: Assemble SKATE OR DIE release
         if: steps.ready.outputs.ready == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          cat .quickplay-upload/release3_bundle/part_* | base64 -d > /tmp/release3_bundle.tar.gz
-          echo 'e792870cf9dfd00e2163ef0b48f1be37906b4f9953ca5bf3c86739af5c9cdd66  /tmp/release3_bundle.tar.gz' | sha256sum -c -
-          tar -xzf /tmp/release3_bundle.tar.gz -C .
-
-          echo 'c7d0b08ac4cd9455c5decd7baa7574d81f2029a84f2f15ea557b54aad7f2ffff  brain_matrix.html' | sha256sum -c -
-          echo '9e457c6f8156df19c9ada2d8ffff17846c41823f2a8ffb28b29dbe0addff3f7e  rift_run.html' | sha256sum -c -
-          echo 'fc4e2f5eccb543174efbf6f0623ce3e14ba3e7f9b192528f963749de8bf0b755  index.html' | sha256sum -c -
-          echo 'ee5596e2d55d98bf89420952d4c8a933c9fe557a3c3bc2e9292c63353ba88cd4  menu_minigames.html' | sha256sum -c -
-          echo '2beb4f9e428aae369c1c098dfea34426044def8de2d87749d75ea10aefaa70ba  salve_os_gatinhos.html' | sha256sum -c -
-          echo '17f16ce89b1edc12a9d61c70adb46f1f49aaa943232db5e256dc5dc63ab95cd2  jogo_da_velha.html' | sha256sum -c -
-          echo 'cfbcd4647b7cff76349e3437f7111c23fef8c845c056a6c5e64940fe4573aec5  advinhe_o_numero.html' | sha256sum -c -
-          echo '7699870572b59fb9881740d0c92ded9adcefe92b32e516687ba8776d70fc11c3  torre_de_hanoi.html' | sha256sum -c -
-          echo 'abca702407f28f5df08be32da2be4262c3e89070d451c1e2cb2664ad935fa355  click_speed.html' | sha256sum -c -
-          echo 'a23b22a58672346d4c222a753294b7c9dc2ae096a4d0b1015155dbcc10a6b15f  foguetinho.html' | sha256sum -c -
-          echo 'ce8f06b01cce801c2ac84f463cf12eee4addb43ee7760541129e2d68fd715866  reef_runner.html' | sha256sum -c -
-          echo 'a8c4f6eebbbd0af8d378d371b3c1f7349781d3185a52f808ec4a47b5fb119537  sudoku.html' | sha256sum -c -
-
-          node - <<'NODE'
-          const fs=require('fs');
-          const files=['brain_matrix.html','rift_run.html','index.html','menu_minigames.html','salve_os_gatinhos.html','jogo_da_velha.html','advinhe_o_numero.html','torre_de_hanoi.html','click_speed.html','foguetinho.html','reef_runner.html','sudoku.html'];
-          for (const f of files) {
-            const s=fs.readFileSync(f,'utf8');
-            const scripts=s.match(/<script[^>]*>([\s\S]*?)<\/script>/g)||[];
-            for(const b of scripts){const js=b.replace(/^<script[^>]*>/,'').replace(/<\/script>$/,'');new Function(js)}
-            console.log(f+': scripts parse OK');
-          }
-          const menu=fs.readFileSync('index.html','utf8');
-          const cards=[...menu.matchAll(/file:'([^']+)'/g)].map(m=>m[1]);
-          if (cards.length !== 24) throw new Error('Expected 24 game cards, found '+cards.length);
-          if (cards.includes('leaping_into_life.html')) throw new Error('Legacy LEAP FROG still listed');
-          if (!cards.includes('reef_runner.html')) throw new Error('Reef Runner missing from menu');
-          if (!cards.includes('brain_matrix.html') || !cards.includes('rift_run.html')) throw new Error('Brain Matrix/RIFT missing from menu');
-          NODE
-
-          rm -f leaping_into_life.html
-
-          cat > RELEASE_2026-08-15.md <<'EOF'
-          # Primata Web Quickplay — release 2026-08-15
-
-          Fechamento do lote de 15/08/2026.
-
-          - Brain Matrix e RIFT//RUN integrados à coleção.
-          - Salve os Gatinhos, Velha Quântica, Adivinhe o Número, Torre de Hanói, Click Speed, Cosmo Crash/Foguetinho e Zen Sudoku substituem as versões anteriores.
-          - Reef Runner substitui definitivamente LEAP FROG / Leaping Into Life.
-          - O arquivo legado `leaping_into_life.html` foi removido.
-          - Menu principal com 24 jogos e estatísticas locais Quickplay.
-          - Arquivos de jogo permanecem autocontidos em HTML.
-          EOF
+          cat .quickplay-upload/skate_release/part_* | base64 -d > /tmp/skate_release_bundle.tar.gz
+          echo '01409033e229d5a76194fb735e101d57496c9223dad071fd3cf3f6a05085d482  /tmp/skate_release_bundle.tar.gz' | sha256sum -c -
+          tar -xzf /tmp/skate_release_bundle.tar.gz -C .
 
           python - <<'PY'
           from pathlib import Path
-          import zipfile
+          import re, zipfile
           root=Path('.')
+          menu=(root/'index.html').read_text(encoding='utf-8')
+          games=re.findall(r"\{file:'([^']+)',id:'([^']+)'", menu)
+          if len(games)!=28 or len({i for _,i in games})!=28:
+              raise SystemExit(f'Expected 28 unique games, found {len(games)}')
+          missing=[f for f,_ in games if not (root/f).is_file()]
+          if missing: raise SystemExit('Missing menu targets: '+', '.join(missing))
+          if not any(i=='skate_or_die' for _,i in games): raise SystemExit('SKATE OR DIE missing from menu')
+          tier=re.search(r"\{id:'A',title:'Tier A',games:\[([^\]]+)\]\}",menu)
+          if not tier or "'skate_or_die'" not in tier.group(1): raise SystemExit('SKATE OR DIE missing from Tier A')
+          skate=(root/'skate_or_die.html').read_text(encoding='utf-8')
+          forbidden=[r'<script[^>]+src=',r'<link[^>]+href=',r'fetch\s*\(']
+          for pat in forbidden:
+              if re.search(pat,skate,re.I): raise SystemExit('External dependency pattern in skate: '+pat)
           out=root/'Quickplay_Collection_COMPLETE.zip'
           include=[]
           for p in root.iterdir():
-              if not p.is_file() or p.name==out.name:
+              if not p.is_file() or p.name in {out.name,'Quickplay_Collection_COMPLETE.zip.sha256'}:
                   continue
-              if p.suffix.lower() in {'.html','.md','.txt'} or p.name=='.nojekyll':
-                  include.append(p)
+              if p.suffix.lower() in {'.html','.md','.txt'} or p.name=='.nojekyll': include.append(p)
           include.sort(key=lambda p:p.name.lower())
           with zipfile.ZipFile(out,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as z:
-              for p in include:
-                  z.write(p,p.name)
+              for p in include: z.write(p,p.name)
           with zipfile.ZipFile(out) as z:
               names=set(z.namelist())
-              required={'index.html','menu_minigames.html','reef_runner.html','brain_matrix.html','rift_run.html'}
-              missing=required-names
-              if missing: raise SystemExit('Missing from ZIP: '+','.join(sorted(missing)))
-              if 'leaping_into_life.html' in names: raise SystemExit('Legacy LEAP FROG leaked into ZIP')
+              if 'skate_or_die.html' not in names: raise SystemExit('SKATE missing from complete ZIP')
               htmls=[n for n in names if n.endswith('.html')]
-              if len(htmls)!=26: raise SystemExit(f'Expected 26 HTML files in complete ZIP, found {len(htmls)}')
-              print('Complete ZIP OK:',len(names),'files,',len(htmls),'HTML files')
+              if len(htmls)!=30: raise SystemExit(f'Expected 30 HTML files in complete ZIP, found {len(htmls)}')
+          print('Quickplay validation OK:',len(games),'games; ZIP HTMLs:',len(htmls))
           PY
 
           sha256sum Quickplay_Collection_COMPLETE.zip > Quickplay_Collection_COMPLETE.zip.sha256
+          rm -rf .quickplay-upload
 
-      - name: Commit assembled release
+      - name: Commit integrated release
         if: steps.ready.outputs.ready == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          rm -rf .quickplay-upload
-          rm -f .github/workflows/quickplay-assemble.yml
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
-          git commit -m 'Refresh Quickplay collection and replace LEAP FROG with Reef Runner'
+          git commit -m 'Integrate SKATE OR DIE into Tier A'
           git push origin HEAD:main
