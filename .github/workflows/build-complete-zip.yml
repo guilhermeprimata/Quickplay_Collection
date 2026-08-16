@@ -63,6 +63,7 @@ jobs:
           if(/https?:\/\//i.test(s)) throw new Error('Pixel Joust contains an external URL/dependency');
           console.log('Pixel Joust staged release: scripts and collection markers OK');
           NODE
+          cp pixel_joust.html /tmp/pixel_joust.html
           rm -rf .pixel-joust-upload
 
       - name: Integrate Pixel Joust in Tier B
@@ -84,12 +85,15 @@ jobs:
               if anchor not in s:
                   raise SystemExit('RIFT/RUN menu anchor not found')
               s=s.replace(anchor,anchor+'\n'+card,1)
-          old="{id:'B',title:'Tier B',games:['toxic_stench','kombo_blocks','neon_pong','domination_wars','dropworks','pixel_bomber','rift_run']},"
-          new="{id:'B',title:'Tier B',games:['toxic_stench','kombo_blocks','neon_pong','domination_wars','dropworks','pixel_bomber','rift_run','pixel_joust']},"
-          if old in s:
-              s=s.replace(old,new,1)
-          elif new not in s:
+          import re
+          m=re.search(r"\{id:'B',title:'Tier B',games:\[([^\]]*)\]\},",s)
+          if not m:
               raise SystemExit('Tier B menu definition not found')
+          games=[x.strip().strip("'") for x in m.group(1).split(',') if x.strip()]
+          if 'pixel_joust' not in games:
+              games.append('pixel_joust')
+              repl="{id:'B',title:'Tier B',games:["+','.join(repr(x) for x in games)+']},'
+              s=s[:m.start()]+repl+s[m.end():]
           if s.count("id:'pixel_joust'") != 1:
               raise SystemExit('Pixel Joust menu card must appear exactly once')
           p.write_text(s,encoding='utf-8')
@@ -121,7 +125,8 @@ jobs:
           for(const f of cards) if(!fs.existsSync(f)) throw new Error('Hall points to missing game: '+f);
           if(fs.existsSync('pixel_joust.html')){
             if(!menu.includes("id:'pixel_joust'")) throw new Error('Pixel Joust card missing from hall');
-            if(!menu.includes("'rift_run','pixel_joust']")) throw new Error('Pixel Joust is not in Tier B');
+            const tierB=menu.match(/\{id:'B',title:'Tier B',games:\[([^\]]*)\]\},/)?.[1]||'';
+            if(!tierB.includes("'pixel_joust'")) throw new Error('Pixel Joust is not in Tier B');
           }
           console.log('Hall OK:',cards.length,'games');
           NODE
@@ -175,17 +180,87 @@ jobs:
             Quickplay_Collection_COMPLETE.zip.sha256
           retention-days: 7
 
-      - name: Commit refreshed collection and package
+      - name: Publish refreshed collection safely
         if: steps.stage.outputs.ready == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A
-          if git diff --cached --quiet; then
-            echo 'Nothing changed.'
+          if [ ! -f /tmp/pixel_joust.html ] && [ ! -f pixel_joust.html ]; then
+            echo 'No Pixel Joust payload to publish; nothing to do.'
             exit 0
           fi
-          git commit -m 'Add Pixel Joust to Tier B and refresh Quickplay package'
-          git push origin HEAD:main
+          [ -f /tmp/pixel_joust.html ] || cp pixel_joust.html /tmp/pixel_joust.html
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for attempt in $(seq 1 12); do
+            echo "Publish attempt $attempt/12"
+            git fetch origin main
+            git reset --hard origin/main
+            cp /tmp/pixel_joust.html pixel_joust.html
+            rm -rf .pixel-joust-upload
+            python - <<'PY'
+          from pathlib import Path
+          import re, zipfile, hashlib
+          p=Path('index.html'); s=p.read_text(encoding='utf-8')
+          anchor="{file:'rift_run.html',id:'rift_run',name:'RIFT/RUN',emoji:'🛸',desc:'Corredor pseudo-3D de sobrevivência, combate, shield, grazes e canhão carregável.',new:true},"
+          card="{file:'pixel_joust.html',id:'pixel_joust',name:'Pixel Joust',emoji:'⚔️',desc:'Duelo medieval de precisão com espada, escudo, fintas e impactos físicos.',new:true},"
+          if "id:'pixel_joust'" not in s:
+              if anchor not in s: raise SystemExit('RIFT/RUN menu anchor not found')
+              s=s.replace(anchor,anchor+'\n'+card,1)
+          m=re.search(r"\{id:'B',title:'Tier B',games:\[([^\]]*)\]\},",s)
+          if not m: raise SystemExit('Tier B menu definition not found')
+          games=[x.strip().strip("'") for x in m.group(1).split(',') if x.strip()]
+          if 'pixel_joust' not in games:
+              games.append('pixel_joust')
+              repl="{id:'B',title:'Tier B',games:["+','.join(repr(x) for x in games)+']},'
+              s=s[:m.start()]+repl+s[m.end():]
+          p.write_text(s,encoding='utf-8')
+          root=Path('.'); out=root/'Quickplay_Collection_COMPLETE.zip'
+          include=[]
+          for f in root.iterdir():
+              if f.is_file() and f.name not in {out.name,'Quickplay_Collection_COMPLETE.zip.sha256'} and (f.suffix.lower() in {'.html','.md','.txt'} or f.name=='.nojekyll'):
+                  include.append(f)
+          include.sort(key=lambda f:f.name.lower())
+          with zipfile.ZipFile(out,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+              for f in include:
+                  info=zipfile.ZipInfo(f.name,date_time=(2026,8,16,12,0,0)); info.compress_type=zipfile.ZIP_DEFLATED; info.external_attr=0o644<<16
+                  z.writestr(info,f.read_bytes(),compress_type=zipfile.ZIP_DEFLATED,compresslevel=9)
+          with zipfile.ZipFile(out) as z:
+              names=set(z.namelist()); menu=z.read('index.html').decode('utf-8'); cards=re.findall(r"file:'([^']+)'",menu)
+              missing=[f for f in cards if f not in names]
+              if missing: raise SystemExit('Hall games missing from ZIP: '+','.join(missing))
+              if 'pixel_joust.html' not in names: raise SystemExit('Pixel Joust missing from ZIP')
+          digest=hashlib.sha256(out.read_bytes()).hexdigest()
+          Path('Quickplay_Collection_COMPLETE.zip.sha256').write_text(digest+'  Quickplay_Collection_COMPLETE.zip\n',encoding='ascii')
+          print('Rebuilt package on latest main:',len(include),'source files, SHA256',digest)
+          PY
+            node - <<'NODE'
+          const fs=require('fs');
+          for(const f of ['index.html','pixel_joust.html']){
+            const s=fs.readFileSync(f,'utf8');
+            for(const b of (s.match(/<script[^>]*>([\s\S]*?)<\/script>/g)||[])){
+              const open=b.match(/^<script[^>]*>/)?.[0]||'';
+              if(/type=["'](?:application\/json|importmap)["']/i.test(open)) continue;
+              new Function(b.replace(/^<script[^>]*>/,'').replace(/<\/script>$/,''));
+            }
+          }
+          const menu=fs.readFileSync('index.html','utf8');
+          if(!menu.includes("id:'pixel_joust'")) throw new Error('Pixel Joust card missing');
+          const tierB=menu.match(/\{id:'B',title:'Tier B',games:\[([^\]]*)\]\},/)?.[1]||'';
+          if(!tierB.includes("'pixel_joust'")) throw new Error('Pixel Joust not in Tier B');
+          console.log('Latest-main validation OK');
+          NODE
+            git add -A
+            if git diff --cached --quiet; then
+              echo 'Current main already contains the refreshed collection.'
+              exit 0
+            fi
+            git commit -m 'Add Pixel Joust to Tier B and refresh Quickplay package'
+            if git push origin HEAD:main; then
+              echo 'Published Pixel Joust successfully.'
+              exit 0
+            fi
+            echo 'main advanced concurrently; retrying from latest head.'
+          done
+          echo 'Could not publish after 12 concurrent-safe attempts.' >&2
+          exit 1
