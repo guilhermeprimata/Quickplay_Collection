@@ -11,6 +11,7 @@ Validation executed with Node.js syntax checking for every inline JavaScript blo
 | `campo_minado.html` | 5 | 0 | ✅ | ✅ |
 | `click_speed.html` | 4 | 0 | ✅ | ✅ |
 | `corrida_de_cavalos.html` | 4 | 0 | ✅ | ✅ |
+| `domination_war.html` | 1 | 0 | ✅ | ✅ |
 | `dropworks.html` | 3 | 0 | ✅ | ✅ |
 | `foguetinho.html` | 4 | 0 | ✅ | ✅ |
 | `idle_trader.html` | 4 | 0 | ✅ | ✅ |
@@ -31,7 +32,7 @@ Validation executed with Node.js syntax checking for every inline JavaScript blo
 
 ## Result
 
-- Games checked: **24**
+- Games checked: **25**
 - JavaScript syntax failures: **0**
 - External JavaScript dependencies: **0**
 - Direct Banco do Brasil branding signals: **0**
