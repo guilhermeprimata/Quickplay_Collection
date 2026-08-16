@@ -11,7 +11,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 | `campo_minado.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 69630 |
 | `click_speed.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 35680 |
 | `corrida_de_cavalos.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 48077 |
-| `domination_wars.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 36534 |
+| `domination_wars.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 47167 |
 | `dropworks.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 144991 |
 | `foguetinho.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 39582 |
 | `idle_trader.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 63644 |
@@ -272,19 +272,20 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 
 ### `domination_wars.html`
 **Control flow signals**
-- `L78: function initAudio(){if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();if(prefs.sound&&musicOn&&!musicTimer)startMusic()}`
-- `L117: function setPaused(v){v=!!v;if(v===paused)return;paused=v;$('#pauseLayer').classList.toggle('open',paused);$('#pauseBtn').textContent=paused?'▶ Continuar':'⏸ Pausar';if(!paused)last=performance.now()}`
-- `L125: const modal=$('#modal'),modalBody=$('#modalBody');function openModal(html){modalBody.innerHTML=html;modal.classList.add('open')}function closeModal(){modal.classList.remove('open')}modal.addEventListener('click',e=>{if(e.target===modal||e.target.closest('.close'))closeModal()});`
+- `L80: function initAudio(){if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();buildAudioGraph();if(audioCtx.state==='suspended')audioCtx.resume();if(prefs.sound&&musicOn&&!musicTimer)startMusic()}`
+- `L128: function setPaused(v){v=!!v;if(v===paused)return;paused=v;$('#pauseLayer').classList.toggle('open',paused);$('#pauseBtn').textContent=paused?'▶ Continuar':'⏸ Pausar';if(!paused)last=performance.now()}`
+- `L129: const keys=new Set();function updateInputs(){steer=(keys.has('ArrowRight')||keys.has('d')||keys.has('D')?1:0)-(keys.has('ArrowLeft')||keys.has('a')||keys.has('A')?1:0);throttle=(keys.has('ArrowUp')||keys.has('w')||keys.has('W')?1:0)-(keys.has('ArrowDown')||keys.has('s')||keys.has('S')?1:0)}function quickRestart(){initAudio();sfx('restart');resetGame()}`
+- `L136: const modal=$('#modal'),modalBody=$('#modalBody');function openModal(html){modalBody.innerHTML=html;modal.classList.add('open')}function closeModal(){modal.classList.remove('open')}modal.addEventListener('click',e=>{if(e.target===modal||e.target.closest('.close'))closeModal()});`
 **Gameplay tuning signals**
 - `L71: let territory,player,ai,running=false,paused=false,last=0,elapsed=0,rafId=0,powerups=[],powerSpawn=8,damageParticles=[],damageShake=0,damageFlash=0,steer=0,throttle=0;`
 - `L72: let audioCtx=null,sfxOn=true,musicOn=true,musicTimer=null,musicStep=0,organicTex=null,organicBlobs=[];`
-- `L73: const SCORE_KEY='dominationWarsScoresV1',STATS_KEY='ppg_minigames_stats_v1',PREF_KEY='ppg_platform_prefs_v2',REC_KEY='ppg_records_v2_'+CFG.id;`
-- `L82: function makeUnit(x,y,angle,owner,color){return{x,y,angle,owner,color,trailCells:[],trailSet:new Set(),trailPath:[],alive:true,area:0,life:100,lastDamage:-99,hitCooldown:0,shieldUntil:0,boostUntil:0,powerText:'',burnUntil:0,burnDps:0,targetAngle:angle,aiThink:0,throttle:1,exposed:false,lastCx:-1,lastCy:-1}}`
-- `L87: function speedProgress(t){return Math.min(1.55,1+Math.max(0,t-18)*.0045)}function unitSpeed(r){const dif={easy:68,medium:78,hard:88}[$('#difficulty').value],boost=elapsed<r.boostUntil?1.34:1;return dif*speedProgress(elapsed)*boost*(r===player?r.throttle:1)}function turnRate(){return {easy:2.45,medium:2.65,hard:2.8}[$('#difficulty').value]}`
-- `L96: function processCell(r,cx,cy){if(!insideCell(cx,cy))return 'border';if(enemyWall(r,cx,cy))return 'enemyWall';if(enemyTrail(r,cx,cy))return 'enemyTrail';const own=territory[idx(cx,cy)]===r.owner;if(own){if(r.exposed&&r.trailCells.length>4)consolidate(r);r.exposed=false}else{r.exposed=true;addTrailCell(r,cx,cy)}r.lastCx=cx;r.lastCy=cy;return 'ok'}`
-- `L97: function sweepPath(r,x0,y0,x1,y1){const dist=Math.hypot(x1-x0,y1-y0),steps=Math.max(1,Math.ceil(dist/(CELL*.35)));for(let i=1;i<=steps;i++){const t=i/steps,x=x0+(x1-x0)*t,y=y0+(y1-y0)*t,cx=Math.floor(x/CELL),cy=Math.floor(y/CELL);const hit=processCell(r,cx,cy);if(hit!=='ok')return {hit,x,y,cx,cy}}return null}`
-- `L104: function recount(){let p=0,a=0;for(const v of territory){if(v===1)p++;else if(v===2)a++}player.area=p;ai.area=a;updateHUD()}`
-- `L116: function loop(now){const dt=Math.min(.035,(now-last)/1000||0);last=now;update(dt);draw();rafId=requestAnimationFrame(loop)}`
+- `L74: const SCORE_KEY='dominationWarsScoresV1',STATS_KEY='ppg_minigames_stats_v1',PREF_KEY='ppg_platform_prefs_v2',REC_KEY='ppg_records_v2_'+CFG.id;`
+- `L85: function musicNoise(duration=.055,volume=.008,when=0,hp=900,lp=2400){if(!audioCtx||!prefs.sound||!musicOn)return;noise(duration,volume,when,musicBus,hp,lp)}`
+- `L88: function makeUnit(x,y,angle,owner,color){return{x,y,angle,owner,color,trailCells:[],trailSet:new Set(),trailPath:[],centerTrail:[],centerTrailIndex:new Map(),alive:true,area:0,life:100,lastDamage:-99,hitCooldown:0,shieldUntil:0,boostUntil:0,powerText:'',burnUntil:0,burnDps:0,targetAngle:angle,aiThink:0,throttle:1,exposed:false,lastCx:-1,lastCy:-1}}`
+- `L93: function speedProgress(t){return Math.min(1.55,1+Math.max(0,t-18)*.0045)}function unitSpeed(r){const dif={easy:68,medium:78,hard:88}[$('#difficulty').value],boost=elapsed<r.boostUntil?1.34:1;return dif*speedProgress(elapsed)*boost*(r===player?r.throttle:1)}function turnRate(){return {easy:2.45,medium:2.65,hard:2.8}[$('#difficulty').value]}`
+- `L103: function sweepPath(r,x0,y0,x1,y1){const dist=Math.hypot(x1-x0,y1-y0),steps=Math.max(1,Math.ceil(dist/(CELL*.35)));for(let i=1;i<=steps;i++){const t=i/steps,x=x0+(x1-x0)*t,y=y0+(y1-y0)*t,cx=Math.floor(x/CELL),cy=Math.floor(y/CELL);const hit=processCell(r,cx,cy);if(hit!=='ok')return {hit,x,y,cx,cy}}return null}`
+- `L110: function recount(){let p=0,a=0;for(const v of territory){if(v===1)p++;else if(v===2)a++}player.area=p;ai.area=a;territoryDirty=true;updateHUD()}`
+- `L127: function loop(now){const dt=Math.min(.035,(now-last)/1000||0);last=now;update(dt);draw();rafId=requestAnimationFrame(loop)}`
 
 ### `dropworks.html`
 **Control flow signals**
