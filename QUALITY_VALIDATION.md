@@ -26,6 +26,7 @@ Validation executed with Node.js syntax checking for every inline JavaScript blo
 | `reef_runner.html` | 1 | 0 | — | — |
 | `rift_run.html` | 1 | 0 | ✅ | ✅ |
 | `salve_os_gatinhos.html` | 2 | 0 | — | — |
+| `skate_or_die.html` | 1 | 0 | ✅ | ✅ |
 | `snowball_avalanche.html` | 2 | 0 | ✅ | ✅ |
 | `space_raid_2093.html` | 5 | 0 | ✅ | ✅ |
 | `sudoku.html` | 2 | 0 | — | — |
@@ -34,7 +35,7 @@ Validation executed with Node.js syntax checking for every inline JavaScript blo
 
 ## Result
 
-- Games checked: **27**
+- Games checked: **28**
 - JavaScript syntax failures: **0**
 - External JavaScript dependencies: **0**
 - Direct Banco do Brasil branding signals: **0**

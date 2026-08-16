@@ -26,6 +26,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 | `reef_runner.html` | v2 | — | — | ✅ | — | ✅ | ✅ | ✅ | 31004 |
 | `rift_run.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | — | 158626 |
 | `salve_os_gatinhos.html` | v2 | — | — | ✅ | — | ✅ | ✅ | ✅ | 40591 |
+| `skate_or_die.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 271934 |
 | `snowball_avalanche.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 207925 |
 | `space_raid_2093.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 364757 |
 | `sudoku.html` | v2 | — | — | — | — | ✅ | ✅ | ✅ | 39066 |
@@ -743,6 +744,50 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 - `L280: function addBurst(x, y, color, count = 10, speed = 80) {`
 - `L283: const s = Math.random() * speed + 20;`
 - `L288: life: 0.35 + Math.random() * 0.4,`
+
+### `skate_or_die.html`
+**Control flow signals**
+- `L1050: if (this.audioCtx && this.audioCtx.state === 'running') {`
+- `L1055: if (this.audioCtx && this.audioCtx.state === 'suspended') {`
+- `L1675: document.addEventListener('keydown', this.handleKeyDown.bind(this));`
+- `L1688: button.addEventListener('touchstart', (e) => {`
+- `L1702: button.addEventListener('touchend', (e) => {`
+- `L2084: const gameState = new GameState();`
+- `L2105: document.addEventListener('keydown', this.handleNavigation.bind(this));`
+- `L2108: document.getElementById('play-button').addEventListener('click', () => controls.start());`
+- `L2110: btn.addEventListener('click', () => {`
+- `L2118: document.getElementById('restart-button').addEventListener('click', () => controls.start());`
+- `L2119: document.getElementById('back-to-menu-button').addEventListener('click', () => controls.returnToMenu());`
+- `L2122: document.getElementById('resume-button').addEventListener('click', () => controls.togglePause());`
+**Gameplay tuning signals**
+- `L955: ObstacleType[ObstacleType["ButcherKnife"] = 0] = "ButcherKnife";`
+- `L956: ObstacleType[ObstacleType["Kukri"] = 1] = "Kukri";`
+- `L957: ObstacleType[ObstacleType["TrenchKnife"] = 2] = "TrenchKnife";`
+- `L958: ObstacleType[ObstacleType["ThrowingKnife"] = 3] = "ThrowingKnife";`
+- `L959: ObstacleType[ObstacleType["Kunai"] = 4] = "Kunai";`
+- `L960: ObstacleType[ObstacleType["DaggerSwarm"] = 5] = "DaggerSwarm";`
+- `L966: PowerUpType[PowerUpType["Speed"] = 1] = "Speed";`
+- `L976: const GRAVITY = 0.8;`
+- `L979: const FAST_FALL_VELOCITY = 25;`
+- `L988: const COMBO_TIMEOUT = 180; // 3 seconds`
+- `L1013: compressor.threshold.value = -18;`
+- `L1487: this.bgmInterval = window.setTimeout(tick, stepDuration * 1000);`
+- `L1539: return savedScore ? parseInt(savedScore, 10) : 0;`
+- `L1572: totalScore: 0,`
+- `L1576: obstaclesHit: 0,`
+- `L1618: this.statsKey = 'ppg_minigames_stats_v1';`
+- `L1635: getStats() { const all = this.read(this.statsKey, {}); return all[this.gameId] || { starts: 0, totalSeconds: 0, longestStreak: 0, currentStreak: 0, lastDay: null, lastStarted: null, lastPlayed: null, bestScore: 0 }; }`
+- `L1647: st.longestStreak = Math.max(st.longestStreak || 0, st.currentStreak || 1);`
+- `L1656: markScore(score) { const st = this.getStats(); st.bestScore = Math.max(st.bestScore || 0, Math.floor(score)); st.lastPlayed = Date.now(); this.saveStats(st); }`
+- `L1659: const delta = Math.max(0, (now - this.lastTick) / 1000);`
+- `L1665: installLifecycle() { setInterval(() => this.flushTime(), 5000); addEventListener('pagehide', () => this.flushTime()); document.addEventListener('visibilitychange', () => { this.flushTime(); if (!document.hidden)`
+- `L1850: this.score = 0;`
+- `L1851: this.hiScore = 0;`
+- `L1854: this.gameSpeed = 8;`
+- `L1855: this.baseSpeed = 8;`
+- `L1856: this.speedMultiplier = 1;`
+- `L1857: this.playerSpeedModifier = 1.0;`
+- `L1860: this.invincibleTimer = 0;`
 
 ### `snowball_avalanche.html`
 **Control flow signals**
