@@ -1,0 +1,85 @@
+name: Add Space Raid 2093
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.space-raid-upload/**'
+      - '.github/workflows/add-space-raid-2093.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Assemble, validate, and integrate
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f .space-raid-upload/part_000 || exit 0
+
+          cat .space-raid-upload/part_* | base64 -d | gzip -d > space_raid_2093.html
+          echo '5be751def711f233275c265ac49f7036501d837e3fbea137238e293218a49fc3  space_raid_2093.html' | sha256sum -c -
+
+          if grep -Eq '<script[^>]+src=|<link[^>]+href=|https?://|fetch\(' space_raid_2093.html; then
+            echo 'External dependency found in Space Raid 2093'
+            exit 1
+          fi
+
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          if "id:'space_raid_2093'" not in s:
+              lines = s.splitlines()
+              try:
+                  idx = next(i for i, line in enumerate(lines) if "file:'reef_runner.html'" in line)
+              except StopIteration:
+                  raise SystemExit('reef_runner card not found; refusing to guess menu location')
+              indent = re.match(r'\s*', lines[idx]).group(0)
+              lines.insert(idx + 1, indent + "{file:'space_raid_2093.html',id:'space_raid_2093',name:'SPACE RAID 2093',emoji:'🚀',desc:'Shooter espacial de campanha com 20 fases, upgrades persistentes e arsenal especial.',new:true},")
+              s = '\n'.join(lines) + '\n'
+
+          tier_pat = r"(\{id:'A',title:'Tier A',games:\[)([^\]]*)(\]\})"
+          def add_tier(m):
+              body = m.group(2)
+              if "'space_raid_2093'" not in body:
+                  body = body.rstrip() + ",'space_raid_2093'"
+              return m.group(1) + body + m.group(3)
+
+          s, n = re.subn(tier_pat, add_tier, s, count=1)
+          if n != 1:
+              raise SystemExit('Tier A block not found; refusing to guess')
+
+          s = s.replace('Quatro divisões, vinte e quatro jogos.', 'Quatro divisões, vinte e cinco jogos.')
+          p.write_text(s, encoding='utf-8')
+
+          if "file:'space_raid_2093.html'" not in s:
+              raise SystemExit('Space Raid card missing after patch')
+          if not re.search(r"\{id:'A',title:'Tier A',games:\[[^\]]*'space_raid_2093'", s):
+              raise SystemExit('Space Raid missing from Tier A after patch')
+          print('Menu integration OK')
+          PY
+
+          test "$(wc -c < space_raid_2093.html)" -eq 382104
+          grep -q 'Projeto Primata Games em 2026' space_raid_2093.html
+          grep -q 'ppg_minigames_stats_v1' space_raid_2093.html
+          grep -q "space_raid_2093.html" index.html
+
+          rm -rf .space-raid-upload
+          rm -f .github/workflows/add-space-raid-2093.yml
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Add Space Raid 2093 to Tier A'
+          git push origin HEAD:main
