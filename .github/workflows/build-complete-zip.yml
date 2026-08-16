@@ -36,7 +36,7 @@ jobs:
             exit 0
           fi
 
-          cat .crystal-xplorer-upload/part_* | base64 -d > /tmp/foguetinho.html
+          cat .crystal-xplorer-upload/payload_* | base64 -d | gzip -dc > /tmp/foguetinho.html
           echo 'd1abb2bd1ea61347fe46e30f6750b9f0ae34b44af17512e701070acaeab428ca  /tmp/foguetinho.html' | sha256sum -c -
 
           node - <<'NODE'
