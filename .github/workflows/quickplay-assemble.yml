@@ -35,7 +35,7 @@ jobs:
         run: |
           set -euo pipefail
           cat .quickplay-upload/skate_release/part_* | base64 -d > /tmp/skate_release_bundle.tar.gz
-          echo '01409033e229d5a76194fb735e101d57496c9223dad071fd3cf3f6a05085d482  /tmp/skate_release_bundle.tar.gz' | sha256sum -c -
+          echo '1627e1993f722cc11dd6f570beb78bb2515860cb8f44bc2d354f302b40c083f7  /tmp/skate_release_bundle.tar.gz' | sha256sum -c -
           tar -xzf /tmp/skate_release_bundle.tar.gz -C .
 
           python - <<'PY'
@@ -55,6 +55,7 @@ jobs:
           forbidden=[r'<script[^>]+src=',r'<link[^>]+href=',r'fetch\s*\(']
           for pat in forbidden:
               if re.search(pat,skate,re.I): raise SystemExit('External dependency pattern in skate: '+pat)
+          if re.search(r'^\s*export\s',skate,re.M): raise SystemExit('ES module export leaked into classic script')
           out=root/'Quickplay_Collection_COMPLETE.zip'
           include=[]
           for p in root.iterdir():
