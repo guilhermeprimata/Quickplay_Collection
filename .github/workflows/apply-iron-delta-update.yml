@@ -1,0 +1,58 @@
+name: Apply Iron Delta polished build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-iron-delta-update.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Reconstruct verified polished build and refresh hub
+        run: python .github/scripts/apply_iron_delta_update.py
+
+      - name: Validate release candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '85fd620548bf96b195af7e1593836f1ef170b4caabb167356c4e4e58e4e6d4c4  iron_delta.html' | sha256sum -c -
+          test "$(git hash-object iron_delta.html)" = "a7537cd55e2f5018050a2e6e5b30e6ec0a4aa611"
+          grep -F "Combate aéreo procedural sobre rios hostis" index.html
+          node - <<'NODE'
+          const fs=require('fs');
+          const s=fs.readFileSync('iron_delta.html','utf8');
+          const scripts=[...s.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]);
+          if(!scripts.length) throw new Error('No script blocks found');
+          for(const js of scripts) new Function(js);
+          for(const marker of ['IRON DELTA','ppg_minigames_stats_v1','Repetir rota','Nova rota','Desafio diário','ironDeltaCheckpoint']) {
+            if(!s.includes(marker)) throw new Error('Release marker missing: '+marker);
+          }
+          console.log('IRON DELTA scripts and release markers OK');
+          NODE
+          git diff --check
+
+      - name: Commit collection update and remove staging
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Projeto Primata Games"
+          git config user.email "guilhermesteiglederdias@gmail.com"
+          git add iron_delta.html index.html
+          git rm -f .github/scripts/iron_delta_patch_*.txt
+          git rm -f .github/scripts/iron_delta_update.patch 2>/dev/null || true
+          git rm -f .github/scripts/apply_iron_delta_update.py
+          git rm -f .github/workflows/apply-iron-delta-update.yml
+          git diff --cached --check
+          git commit -m "Polish Iron Delta and refresh Quickplay hub"
+          git push origin HEAD:main
