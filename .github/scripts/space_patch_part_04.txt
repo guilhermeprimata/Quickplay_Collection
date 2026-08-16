@@ -1,0 +1,62 @@
+    ('ru', 'readme_gameplay_desc', 'Уничтожайте врагов, набирайте очки и пройдите 20 секторов. В каждом секторе идут заданные волны атак со всё более опасными схемами поведения врагов. Собирайте бонусы: дополнительные жизни, щиты и самонаводящиеся ракеты. Используйте кредиты в меню улучшений, чтобы навсегда усилить корабль.'),
+    ('ru', 'options_scheme_cyberwave', 'Spectrum 2093'),
+    ('ru', 'main_campaign_button', 'Кампания'),
+    ('ru', 'campaign_map_title', 'Карта кампании'),
+    ('ru', 'campaign_map_back_button', 'Главное меню'),
+    ('ru', 'campaign_map_level', 'Сектор {{level}}'),
+    ('ru', 'gameover_retry_button', 'Повторить сектор'),
+    ('ru', 'gameover_retry_hint', 'R / Enter = Повтор · Esc = Меню'),
+    ('zh-CN', 'readme_gameplay_desc', '摧毁敌人获得分数并完成20个区域。每个区域都有预设的攻击波次，敌人的行动模式会越来越危险。收集额外生命、护盾和追踪导弹等强化道具。使用升级菜单中的积分永久强化飞船。'),
+    ('zh-CN', 'options_scheme_cyberwave', 'Spectrum 2093'),
+    ('zh-CN', 'main_campaign_button', '战役'),
+    ('zh-CN', 'campaign_map_title', '战役地图'),
+    ('zh-CN', 'campaign_map_back_button', '主菜单'),
+    ('zh-CN', 'campaign_map_level', '区域 {{level}}'),
+    ('zh-CN', 'gameover_retry_button', '重试区域'),
+    ('zh-CN', 'gameover_retry_hint', 'R / Enter = 重试 · Esc = 菜单'),
+]
+
+def sha(s: str) -> str:
+    return hashlib.sha256(s.encode('utf-8')).hexdigest()
+
+src = GAME.read_text(encoding='utf-8')
+if sha(src) != BASE_SHA:
+    raise SystemExit(f'Unexpected current SPACE RAID build: {sha(src)}')
+m = PATTERN.search(src)
+if not m:
+    raise SystemExit('Translations payload not found')
+translations = json.loads(m.group(1))
+work = src[:m.start()] + PLACEHOLDER + src[m.end():]
+if sha(work) != PLACEHOLDER_SHA:
+    raise SystemExit('Baseline placeholder hash mismatch')
+parts = work.splitlines(keepends=True)
+for i1, i2, new_text in reversed(OPS):
+    parts[i1:i2] = new_text.splitlines(keepends=True)
+work = ''.join(parts)
+for lang, key, value in TRANSLATION_UPDATES:
+    translations.setdefault(lang, {})[key] = value
+payload = json.dumps(translations, ensure_ascii=False, separators=(',', ':'))
+translation_script = '<script>window.__SPACE_RAID_TRANSLATIONS__=' + payload + ';</script>'
+target = work.replace(PLACEHOLDER, translation_script, 1)
+if sha(target) != TARGET_SHA:
+    raise SystemExit(f'Final SPACE RAID hash mismatch: {sha(target)}')
+GAME.write_text(target, encoding='utf-8')
+print('SPACE RAID 2093 polished build reconstructed exactly:', TARGET_SHA)
+
+INDEX = Path('index.html')
+BASE_INDEX_SHA = '34f6806912a04f2c6d90ab9d7d3fb3367fbf8f1c5c115fb4b20f2444bc47a9d4'
+TARGET_INDEX_SHA = 'bf88c3f1d10a5bcb2283c430062bb95406d3e95609f9dc9da7719a42aafc663a'
+index_src = INDEX.read_text(encoding='utf-8')
+if sha(index_src) != BASE_INDEX_SHA:
+    raise SystemExit(f'Unexpected current hub build: {sha(index_src)}')
+old_card = "{file:'space_raid_2093.html',id:'space_raid_2093',name:'SPACE RAID 2093',emoji:'🚀',desc:'Shooter espacial de campanha com 20 fases, upgrades persistentes e arsenal especial.',new:true},"
+new_card = "{file:'space_raid_2093.html',id:'space_raid_2093',name:'SPACE RAID 2093',emoji:'🚀',desc:'Shooter espacial de campanha com 20 setores, paleta Spectrum 2093, upgrades persistentes, arsenal especial e replay instantâneo.',new:true},"
+spectrum_css = '''\n/* SPACE RAID 2093 — Spectrum 2093 hub identity */\n.game-card[data-game="space_raid_2093"]{border-color:#66C2A548;box-shadow:0 18px 58px #0a0718aa,0 0 0 1px #E6F59818}.game-card[data-game="space_raid_2093"]:hover{border-color:#E6F598aa;box-shadow:0 24px 75px #0008,0 0 34px #66C2A532}.game-card[data-game="space_raid_2093"] .thumb-art{background:radial-gradient(circle at 50% 54%,#FFFFBF30 0 7%,transparent 24%),radial-gradient(circle at 22% 26%,#D53E4F42,transparent 30%),radial-gradient(circle at 76% 30%,#3288BD48,transparent 32%),radial-gradient(circle at 62% 82%,#66C2A542,transparent 30%),linear-gradient(145deg,#100d1c,#281631 52%,#172d49)}.game-card[data-game="space_raid_2093"] .thumb-art::after{border-color:#E6F59838;box-shadow:0 0 0 24px #66C2A50c,0 0 0 49px #FDAE6109,0 0 42px #3288BD35}.game-card[data-game="space_raid_2093"] .glyph{filter:drop-shadow(0 12px 18px #000a) drop-shadow(0 0 18px #FEE08B66)}\n'''
+marker = '.game-card[data-game="alien_threat"]{border-color:#78ff4b40'
+if index_src.count(old_card) != 1 or index_src.count(marker) != 1:
+    raise SystemExit('Hub anchors did not match expected canonical build')
+index_target = index_src.replace(old_card, new_card, 1).replace(marker, spectrum_css + marker, 1)
+if sha(index_target) != TARGET_INDEX_SHA:
+    raise SystemExit(f'Final hub hash mismatch: {sha(index_target)}')
+INDEX.write_text(index_target, encoding='utf-8')
+print('Quickplay hub updated exactly:', TARGET_INDEX_SHA)
