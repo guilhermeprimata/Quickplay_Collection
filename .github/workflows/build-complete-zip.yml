@@ -47,7 +47,7 @@ jobs:
             echo 'No staged Pixel Joust release to assemble.'
             exit 0
           fi
-          cat .pixel-joust-upload/part_* | base64 -d > pixel_joust.html
+          cat .pixel-joust-upload/part_* | base64 -d | gzip -dc > pixel_joust.html
           echo '390e10a317f4f0dd1b8725cc30a213c8abf99aa03f1c63ae0925e8eff55434d4  pixel_joust.html' | sha256sum -c -
           node - <<'NODE'
           const fs=require('fs');
