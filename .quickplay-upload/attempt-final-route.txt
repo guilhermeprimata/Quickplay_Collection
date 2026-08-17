@@ -1,0 +1,1 @@
+Will prefer GitHub-native temporary asset if supported; otherwise SHA-gated staging remains non-destructive.
