@@ -1,4 +1,4 @@
-name: Quickplay staged three-game assembly
+name: Quickplay staged assembly
 
 on:
   push:
@@ -9,10 +9,6 @@ on:
 
 permissions:
   contents: write
-
-concurrency:
-  group: quickplay-three-game-assembly
-  cancel-in-progress: true
 
 jobs:
   assemble:
@@ -33,20 +29,51 @@ jobs:
             echo "Staging incomplete; nothing to assemble yet."
           fi
 
-      - name: Assemble and validate three games
+      - name: Assemble SKATE OR DIE release
         if: steps.ready.outputs.ready == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          cat .quickplay-upload/three-games/part_* | base64 -d > /tmp/quickplay_three_games.tar.xz
-          echo '9617c2d99b9c933f4cc2ca50d86455254b8392555f634e649e5162a0408bf03f  /tmp/quickplay_three_games.tar.xz' | sha256sum -c -
-          tar -xJf /tmp/quickplay_three_games.tar.xz -C .
-          echo '6390e9c9e2791ec50c0303dea5db90c29cb2a1fcd83ffbd18f9cd7b99aee554f  bow_and_arrow.html' | sha256sum -c -
-          echo '17a779ea9b57cb2d6c111c4a6a3075fddb21e1b3284fd10fb67c776fb878cb15  campo_minado.html' | sha256sum -c -
-          echo 'e25bc20ac614b20d0feae71da2200874c0c93b47cc9847aec3194cf94f4a550e  salve_os_gatinhos.html' | sha256sum -c -
-          grep -Fq "file:'bow_and_arrow.html',id:'arqueiro'" index.html
-          grep -Fq "file:'campo_minado.html',id:'toxic_stench'" index.html
-          grep -Fq "file:'salve_os_gatinhos.html',id:'gatinhos'" index.html
+          cat .quickplay-upload/skate_release/part_* | base64 -d > /tmp/skate_release_bundle.tar.gz
+          echo '1627e1993f722cc11dd6f570beb78bb2515860cb8f44bc2d354f302b40c083f7  /tmp/skate_release_bundle.tar.gz' | sha256sum -c -
+          tar -xzf /tmp/skate_release_bundle.tar.gz -C .
+
+          python - <<'PY'
+          from pathlib import Path
+          import re, zipfile
+          root=Path('.')
+          menu=(root/'index.html').read_text(encoding='utf-8')
+          games=re.findall(r"\{file:'([^']+)',id:'([^']+)'", menu)
+          if len(games)!=28 or len({i for _,i in games})!=28:
+              raise SystemExit(f'Expected 28 unique games, found {len(games)}')
+          missing=[f for f,_ in games if not (root/f).is_file()]
+          if missing: raise SystemExit('Missing menu targets: '+', '.join(missing))
+          if not any(i=='skate_or_die' for _,i in games): raise SystemExit('SKATE OR DIE missing from menu')
+          tier=re.search(r"\{id:'A',title:'Tier A',games:\[([^\]]+)\]\}",menu)
+          if not tier or "'skate_or_die'" not in tier.group(1): raise SystemExit('SKATE OR DIE missing from Tier A')
+          skate=(root/'skate_or_die.html').read_text(encoding='utf-8')
+          forbidden=[r'<script[^>]+src=',r'<link[^>]+href=',r'fetch\s*\(']
+          for pat in forbidden:
+              if re.search(pat,skate,re.I): raise SystemExit('External dependency pattern in skate: '+pat)
+          if re.search(r'^\s*export\s',skate,re.M): raise SystemExit('ES module export leaked into classic script')
+          out=root/'Quickplay_Collection_COMPLETE.zip'
+          include=[]
+          for p in root.iterdir():
+              if not p.is_file() or p.name in {out.name,'Quickplay_Collection_COMPLETE.zip.sha256'}:
+                  continue
+              if p.suffix.lower() in {'.html','.md','.txt'} or p.name=='.nojekyll': include.append(p)
+          include.sort(key=lambda p:p.name.lower())
+          with zipfile.ZipFile(out,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+              for p in include: z.write(p,p.name)
+          with zipfile.ZipFile(out) as z:
+              names=set(z.namelist())
+              if 'skate_or_die.html' not in names: raise SystemExit('SKATE missing from complete ZIP')
+              htmls=[n for n in names if n.endswith('.html')]
+              if len(htmls)!=30: raise SystemExit(f'Expected 30 HTML files in complete ZIP, found {len(htmls)}')
+          print('Quickplay validation OK:',len(games),'games; ZIP HTMLs:',len(htmls))
+          PY
+
+          sha256sum Quickplay_Collection_COMPLETE.zip > Quickplay_Collection_COMPLETE.zip.sha256
           rm -rf .quickplay-upload
 
       - name: Commit integrated release
@@ -57,5 +84,5 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
-          git commit -m 'Update Arqueiro do Vale, Toxic Stench e Salve os Gatinhos'
+          git commit -m 'Integrate SKATE OR DIE into Tier A'
           git push origin HEAD:main
