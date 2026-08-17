@@ -23,7 +23,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 | `pixel_bomberman.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 35170 |
 | `pixel_joust.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 39531 |
 | `pong.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 51921 |
-| `reef_runner.html` | v2 | — | — | ✅ | — | ✅ | ✅ | ✅ | 31004 |
+| `reef_runner.html` | v2 | — | ✅ | ✅ | — | ✅ | ✅ | ✅ | 40013 |
 | `rift_run.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | — | 158626 |
 | `salve_os_gatinhos.html` | v2 | — | — | ✅ | — | ✅ | ✅ | ✅ | 40591 |
 | `skate_or_die.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 271934 |
@@ -37,7 +37,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 
 - Platform layer not v2: `alien_threat.html`, `brain_matrix.html`, `campo_minado.html`, `corrida_de_cavalos.html`, `dropworks.html`, `idle_trader.html`, `kombo_blocks.html`, `pixel_joust.html`, `pong.html`, `rift_run.html`, `snowball_avalanche.html`
 - No native pause signal: `advinhe_o_numero.html`, `corrida_de_cavalos.html`, `foguetinho.html`, `jogo_da_velha.html`, `reef_runner.html`, `salve_os_gatinhos.html`, `sudoku.html`, `torre_de_hanoi.html`
-- No native restart/new-game signal: `foguetinho.html`, `reef_runner.html`, `salve_os_gatinhos.html`, `sudoku.html`
+- No native restart/new-game signal: `foguetinho.html`, `salve_os_gatinhos.html`, `sudoku.html`
 - Canvas + keyboard but no native touch signal: `advinhe_o_numero.html`
 
 ## Per-game controls and balance candidates
@@ -648,14 +648,45 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 
 ### `reef_runner.html`
 **Control flow signals**
-- No compact control-flow signal detected.
+- `L107: modal.addEventListener('click',e=>{if(e.target===modal||e.target.closest('.close'))closeModal()});`
+- `L137: function unlockAudio(){if(PREVIEW)return;initAudio();if(AC.state==='suspended')AC.resume()}`
+- `L169: function startMusic(){`
+- `L192: addEventListener('pointerdown',unlockAudio,{once:true});`
+- `L193: addEventListener('keydown',unlockAudio,{once:true});`
+- `L253: function reset(){`
+- `L265: function start(){`
+- `L306: function restartNoImpulse(){`
+- `L317: addEventListener('keydown',e=>{`
+- `L325: canvas.addEventListener('pointerdown',e=>{e.preventDefault();impulse()});`
 **Gameplay tuning signals**
-- `L34: let frog={},obstacles=[],particles=[],fireflies=[],score=0,running=false,startAt=0,last=performance.now(),spawnDist=0,shake=0,flash=0,demo=PREVIEW,waterT=0;function fmt(s){s=Math.max(0,Math.floor(s||0));return '${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}'}`
-- `L37: function addObstacle(){let m=MODES[diffEl.value],margin=88,floor=632,level=Math.min(1,score/26),center=margin+Math.random()*(floor-margin*2),gap=Math.max(132,m.gap-level*34+Math.sin(score*.55)*7);center=Math.max(135,Math.min(floor-135,center));obstacles.push({x:W+60,w:76,top:center-gap/2,bottom:center+gap/2,passed:false,seed:Math.random()*10,level});}`
-- `L38: function burst(x,y,color,n=12){for(let i=0;i<n;i++){let a=Math.random()*Math.PI*2,sp=25+Math.random()*95;particles.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:.35+Math.random()*.55,size:1.5+Math.random()*4,color})}}`
-- `L92: for(let i=particles.length-1;i>=0;i--){let p=particles[i];p.life-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=55*dt;ctx.globalAlpha=Math.max(0,p.life*1.7);ctx.fillStyle=p.color;ctx.shadowColor=p.color;ctx.shadowBlur=p.size>2?6:0;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,7);ctx.fill();if(p.life<=0)particles.splice(i,1)}ctx.shadowBlur=0;ctx.globalAlpha=1`
-- `L95: function draw(dt){waterT+=dt;ctx.save();if(shake>0)ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);sky();effects(dt);for(let o of obstacles)treeObstacle(o);lake(waterT);frogDraw();if(flash>0){ctx.fillStyle='rgba(210,245,255,${flash*.16})';ctx.fillRect(0,0,W,H)}ctx.restore();shake=Math.max(0,shake-dt*24);flash=Math.max(0,flash-dt*2.8)}`
-- `L96: function frame(now){let dt=Math.min(.035,(now-last)/1000||0);last=now;update(dt);draw(dt);requestAnimationFrame(frame)}reset();requestAnimationFrame(frame);if(PREVIEW)setTimeout(start,60);`
+- `L58: const STATS='ppg_minigames_stats_v1';`
+- `L80: const gap=s.lastDay?Math.round((new Date(day+'T12:00:00')-new Date(s.lastDay+'T12:00:00'))/86400000):99;`
+- `L81: s.currentStreak=gap===1?(s.currentStreak||0)+1:1;`
+- `L82: s.longestStreak=Math.max(s.longestStreak||0,s.currentStreak);`
+- `L90: const delta=Math.min(6,(now-statsClock)/1000);`
+- `L122: let AC=null,master=null,sfxBus=null,musicBus=null,musicTimer=null,beat=0;`
+- `L143: o.frequency.setValueAtTime(Math.max(20,f),t);`
+- `L144: o.frequency.exponentialRampToValueAtTime(Math.max(20,end),t+d);`
+- `L145: g.gain.setValueAtTime(Math.max(.0001,v),t);`
+- `L161: else if(k==='score'){tone(590,.08,'triangle',.075);tone(830,.10,'sine',.055,.055)}`
+- `L177: const tension=Math.min(1,score/32);`
+- `L188: master.gain.setTargetAtTime(prefs.sound?0.88:0,AC.currentTime,.025);`
+- `L197: s=Math.max(0,Math.floor(s||0));`
+- `L233: pond:{gravity:885,jump:-326,speed:102,gap:224,space:274,drift:86},`
+- `L234: marsh:{gravity:945,jump:-338,speed:115,gap:208,space:254,drift:96},`
+- `L235: storm:{gravity:1015,jump:-350,speed:128,gap:194,space:238,drift:106}`
+- `L240: let score=0,running=false,startAt=0,last=performance.now(),spawnDist=0,shake=0,flash=0,waterT=0;`
+- `L241: let demo=PREVIEW,runMode='marsh',runTime=0,gameOverTimer=0,lastGapCenter=330;`
+- `L254: clearTimeout(gameOverTimer); gameOverTimer=0;`
+- `L260: score=0; runTime=0; perfectStreak=0; bestPerfect=0; perfects=0;`
+- `L261: scoreEl.textContent='0'; bestEl.textContent=modeBest(); timeEl.textContent='00:00';`
+- `L262: spawnDist=118; lastGapCenter=330; shake=0; flash=0;`
+- `L266: clearTimeout(gameOverTimer); gameOverTimer=0;`
+- `L286: overTitle.textContent=isRecord&&score>0?'🏆 Novo recorde!':(kind==='water'?'Ops, fundo do mar demais':'Ai, coral na testa');`
+- `L290: gameOverTimer=setTimeout(()=>{if(!running)overlay.classList.remove('hidden')},260);`
+- `L292: gameOverTimer=setTimeout(()=>{if(!running)start()},520);`
+- `L312: clearTimeout(gameOverTimer); gameOverTimer=0;`
+- `L330: feedback.push({text,x,y,life:1,color,size});`
 
 ### `rift_run.html`
 **Control flow signals**

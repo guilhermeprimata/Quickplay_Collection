@@ -23,7 +23,7 @@ Validation executed with Node.js syntax checking for every inline JavaScript blo
 | `pixel_bomberman.html` | 4 | 0 | ✅ | ✅ |
 | `pixel_joust.html` | 1 | 0 | ✅ | ✅ |
 | `pong.html` | 2 | 0 | ✅ | ✅ |
-| `reef_runner.html` | 1 | 0 | — | — |
+| `reef_runner.html` | 1 | 0 | — | ✅ |
 | `rift_run.html` | 1 | 0 | ✅ | ✅ |
 | `salve_os_gatinhos.html` | 2 | 0 | — | — |
 | `skate_or_die.html` | 1 | 0 | ✅ | ✅ |
