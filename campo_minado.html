@@ -19,6 +19,15 @@
             --bg-color: #8e9972;
             --cell-hidden-color: #7d8662;
             --cell-revealed-color: #b7b18b;
+            --contact-0: #b7b18b;
+            --contact-1: #aaa47c;
+            --contact-2: #9d966e;
+            --contact-3: #8f875f;
+            --contact-4: #817851;
+            --contact-5: #706943;
+            --contact-6: #5e5837;
+            --contact-7: #4c472c;
+            --contact-8: #393521;
             --border-color: #4e563d;
             --button-bg: #566439;
             --button-text: #ecf7ca;
@@ -32,13 +41,24 @@
         .dark-mode {
             --text-color: #eef6d8;
             --bg-color: #26301e;
-            --cell-hidden-color: #485338;
-            --cell-revealed-color: #34392b;
+            --cell-hidden-color: #3e4931;
+            --cell-revealed-color: #657052;
+            --contact-0: #657052;
+            --contact-1: #596349;
+            --contact-2: #4d5740;
+            --contact-3: #424b37;
+            --contact-4: #383f2f;
+            --contact-5: #2e3527;
+            --contact-6: #252b20;
+            --contact-7: #1d2219;
+            --contact-8: #151912;
             --border-color: #78845d;
             --button-bg: #b3d25c;
             --button-text: #223018;
             --button-hover-bg: #cce77a;
         }
+
+        *, *::before, *::after { box-sizing: border-box; }
 
         /* Estilo do corpo, usando a fonte Arial conforme o guia */
         body {
@@ -98,22 +118,95 @@
             border: 2px solid var(--border-color);
             border-radius: 16px;
             box-shadow: 0 18px 34px rgba(33,38,16,.35), inset 0 0 0 2px rgba(239,247,206,.08);
-            background: linear-gradient(180deg, rgba(99,112,66,.55), rgba(76,83,53,.8));
-            cursor: pointer;
+            background:
+              radial-gradient(circle at 18% 12%, rgba(197,247,106,.13), transparent 26%),
+              linear-gradient(180deg, rgba(99,112,66,.62), rgba(59,68,40,.88));
+            cursor: crosshair;
+            touch-action: manipulation;
             transition: border-color 0.3s;
             max-width: 100%;
             height: auto; 
         }
+        canvas.flag-cursor { cursor: cell; }
 
         .controls, .info, .credits-container, .ranking-container {
             margin-top: 1rem;
             text-align: center;
         }
         
-        .info span {
-            margin: 0 10px;
-            font-size: 1.1rem;
+        .info {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: .55rem;
+            margin-bottom: .65rem;
         }
+        .info span {
+            margin: 0;
+            padding: .46rem .72rem;
+            border: 1px solid rgba(255,255,255,.10);
+            border-radius: 999px;
+            background: rgba(43,53,29,.13);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+            font-size: 1rem;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .stench-legend {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: .5rem;
+            width: min(100%, 560px);
+            margin: 0 0 .7rem;
+            padding: .45rem .65rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,.08);
+            background: rgba(38,46,27,.10);
+            font-size: .78rem;
+            font-weight: 700;
+            color: color-mix(in srgb, var(--text-color) 82%, transparent);
+        }
+        .stench-gradient {
+            display: grid;
+            grid-template-columns: repeat(5, 18px);
+            gap: 2px;
+        }
+        .stench-gradient i {
+            width: 18px;
+            height: 11px;
+            display: block;
+            border: 1px solid rgba(0,0,0,.18);
+            border-radius: 3px;
+        }
+        .stench-gradient i:nth-child(1){background:var(--contact-0)}
+        .stench-gradient i:nth-child(2){background:var(--contact-2)}
+        .stench-gradient i:nth-child(3){background:var(--contact-4)}
+        .stench-gradient i:nth-child(4){background:var(--contact-6)}
+        .stench-gradient i:nth-child(5){background:var(--contact-8)}
+
+        .result-panel[hidden] { display: none !important; }
+        .result-panel {
+            width: min(100%, 560px);
+            margin-top: .75rem;
+            padding: .7rem .8rem;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            gap: .3rem .75rem;
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,.13);
+            background: linear-gradient(135deg, rgba(47,58,32,.90), rgba(84,96,74,.78));
+            color: #f2f8dc;
+            box-shadow: 0 10px 26px rgba(20,26,12,.20);
+        }
+        .result-panel strong { font-size: 1rem; }
+        .result-panel span { font-size: .82rem; opacity: .88; }
+        .result-panel button { grid-column: 2; grid-row: 1 / span 2; min-width: 132px; }
+        .result-panel.win { box-shadow: 0 0 0 1px rgba(196,247,106,.18), 0 12px 30px rgba(56,80,24,.24); }
+        .result-panel.loss { background: linear-gradient(135deg, rgba(79,49,29,.92), rgba(74,67,43,.84)); }
 
         .button-group {
             display: flex;
@@ -125,6 +218,7 @@
 
         /* Botões refinados para combinar melhor com o resto do projeto */
         button, .button-style {
+            background-color: var(--button-bg);
             background: linear-gradient(180deg, color-mix(in srgb, var(--button-bg) 88%, white 12%), var(--button-bg));
             color: var(--button-text);
             border: 1px solid rgba(255,255,255,.12);
@@ -188,6 +282,8 @@
             align-items: center;
             justify-content: center;
         }
+
+        .modal.open { display: flex; }
 
         .modal-content {
             background-color: var(--bg-color);
@@ -281,7 +377,10 @@
                 min-height: 40px;
                 border-radius: 10px;
             }
-            .info span { font-size: 1rem; }
+            .info span { font-size: .9rem; }
+            .stench-legend { font-size: .72rem; margin-bottom: .5rem; }
+            .result-panel { grid-template-columns: 1fr; text-align: center; }
+            .result-panel button { grid-column: 1; grid-row: auto; width: 100%; }
         }
 
         /* Estilo para a caixa de alerta personalizada */
@@ -298,65 +397,6 @@
             color: var(--nebula-deep);
         }
     </style>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/><style>
-    body {
-        font-size: 16px;
-        margin: 0;
-        padding: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-    }
-    .game-board {
-        display: grid;
-        grid-template-columns: repeat(10, 1fr);
-        gap: 2px;
-        width: 100%;
-        max-width: 400px;
-    }
-    .cell {
-        width: 100%;
-        padding-top: 100%;
-        position: relative;
-    }
-    .cell-content {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5em;
-    }
-    .controls {
-        display: flex;
-        justify-content: space-around;
-        width: 100%;
-        max-width: 400px;
-        margin-top: 10px;
-    }
-    .button {
-        flex: 1;
-        margin: 5px;
-        padding: 10px;
-        font-size: 1em;
-    }
-</style><script id="ppg-tone-shim">
-(function(){
-  if(window.Tone) return;
-  let ac=null;
-  const get=()=>ac||(ac=new (window.AudioContext||window.webkitAudioContext)());
-  const noteFreq=n=>{if(typeof n==='number')return n;const m=String(n).match(/^([A-G])([#b]?)(-?\d)$/);if(!m)return 440;const semi={C:0,D:2,E:4,F:5,G:7,A:9,B:11}[m[1]]+(m[2]==='#'?1:m[2]==='b'?-1:0);return 440*Math.pow(2,((+m[3]-4)*12+semi-9)/12)};
-  const durSec=d=>{if(typeof d==='number')return d; if(/^\d+(\.\d+)?$/.test(String(d)))return +d; return ({'1n':2,'2n':1,'4n':.5,'8n':.25,'16n':.125,'32n':.0625})[d]||.2};
-  class Synth{constructor(opts={}){this.opts=opts;this.volume={value:0}}toDestination(){return this}triggerAttackRelease(note,dur='8n',when){const A=get(),t=typeof when==='number'?when:A.currentTime,notes=Array.isArray(note)?note:[note];notes.forEach((n,i)=>{const o=A.createOscillator(),g=A.createGain(),d=durSec(dur),v=Math.pow(10,(this.volume.value||0)/20)*.10;o.type=this.opts.oscillator?.type||'sine';o.frequency.setValueAtTime(noteFreq(n),t);g.gain.setValueAtTime(v/Math.max(1,notes.length),t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(A.destination);o.start(t+i*.002);o.stop(t+d+.01)})}}
-  class PolySynth extends Synth{constructor(_Type,opts={}){super(opts)}}
-  class NoiseSynth extends Synth{triggerAttackRelease(dur='8n',when){const A=get(),t=typeof when==='number'?when:A.currentTime,d=durSec(dur),buf=A.createBuffer(1,Math.max(1,A.sampleRate*d),A.sampleRate),data=buf.getChannelData(0);for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*(1-i/data.length);const src=A.createBufferSource(),g=A.createGain();src.buffer=buf;g.gain.value=Math.pow(10,(this.volume.value||0)/20)*.12;src.connect(g).connect(A.destination);src.start(t)}}
-  window.Tone={Synth,PolySynth,NoiseSynth,start:async()=>{const A=get();if(A.state==='suspended')await A.resume()},now:()=>get().currentTime,get context(){return get()}};
-})();
-</script>
 <style id="ppg-viewport-fit">
 :root{--fitbar:var(--ppg-bar-h,48px)}@media(max-height:820px){body{min-height:100dvh!important}.game-container{padding:.35rem!important}header{margin-bottom:.25rem!important}header h1{font-size:clamp(20px,4vh,30px)!important;margin:.2rem 0}.info{margin-top:.2rem!important}.button-group{margin-top:.55rem!important;gap:.35rem!important}.button-group button{padding:.52rem .75rem!important;font-size:.78rem!important;min-height:34px!important}.credits-container{display:none}.ranking-container{margin-top:.35rem!important;max-height:78px;overflow:auto}.ranking-container h2{font-size:14px;margin:2px}.ranking-list{margin:2px}.ranking-list li{padding:3px!important;margin-bottom:2px!important;font-size:11px!important}}
 </style>
@@ -414,24 +454,30 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <span id="bombs-left">Cocôs: 0</span>
 <span id="timer">Tempo: 0s</span>
 </div>
-<canvas id="minesweeperCanvas"></canvas>
+<div class="stench-legend" aria-label="Quanto mais escuro o piso revelado, mais cocôs tóxicos existem nas casas vizinhas.">
+<span>Pista de odor: claro</span><span class="stench-gradient" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><span>escuro = mais perigo</span>
+</div>
+<canvas id="minesweeperCanvas" aria-label="Tabuleiro 16 por 16 de Toxic Stench"></canvas>
+<div class="result-panel" id="resultPanel" hidden>
+<div><strong id="resultTitle"></strong><br/><span id="resultSummary"></span></div>
+<button id="replayBtn" type="button">Jogar de Novo ↻</button>
+</div>
 <div class="loader" id="ranking-loader" style="display: none;"></div>
 <div class="ranking-container" id="rankingContainer" style="display: none;">
-<h2>Top 5 Menores Fedorômetros</h2>
+<h2>Top 5 · Menor Tempo</h2>
 <ol class="ranking-list" id="ranking-list"></ol>
 </div>
 <div class="button-group">
 <button id="new-game-btn">Novo Mapa</button>
 <button id="toggle-flag-btn">Marcar Cocô (🚩)</button>
-<button id="reset-all-btn">Resetar Tudo</button>
+<button id="reset-all-btn">Limpar Recordes</button>
 <button id="dark-mode-btn">Modo Escuro</button>
-<button id="back-btn">Voltar</button>
+<button id="back-btn">Menu Mini Games</button>
 </div>
 <div class="credits-container">
 <p class="credits">TOXIC STENCH · Projeto Primata Games · 2026</p>
 </div>
 </div>
-<!-- O elemento #ranking foi removido, pois o ranking será gerenciado dinamicamente via JS e localStorage -->
 <div class="modal" id="nameModal">
 <div class="modal-content">
 <h2>Novo Recorde!</h2>
@@ -445,23 +491,16 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <div class="modal" id="confirmResetModal">
 <div class="modal-content">
 <h2>Confirmar Reset</h2>
-<p>Tem certeza que deseja resetar tudo? Isso limpará o ranking e todos os dados salvos.</p>
+<p>Tem certeza que deseja apagar o Top 5 local deste jogo? Preferências de tema e som serão mantidas.</p>
 <div class="modal-buttons">
 <button class="button-style" id="confirmResetBtn">Confirmar</button>
 <button class="button-style" id="cancelResetBtn">Cancelar</button>
 </div>
 </div>
 </div>
-<script type="module">
-        // --- Removendo importações do Firebase Firestore para ranking local ---
+<script>
+        'use strict';
 
-        // --- Configuração Firebase (apenas para autenticação, se necessário) ---
-        // As variáveis __firebase_config e __app_id ainda são fornecidas pelo ambiente,
-        // mas o Firestore não será usado para o ranking.
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { /* Default local config if not provided */ };
-        // const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'; // Não mais necessário para ranking local
-        let userId; 
-        
         // --- Sound Synthesis (self-contained WebAudio) ---
         let soundsReady = false;
         let audioCtx = null;
@@ -506,15 +545,41 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
             osc.stop(t + duration + 0.02);
         }
 
-        function playClickSound() {
-            synthTone(520, 0.055, 'sine', 0.075, 0, 610);
+        function synthNoise(duration = 0.18, volume = 0.10, delay = 0) {
+            if (!soundsReady || !audioCtx || !soundAllowed()) return;
+            const t = audioCtx.currentTime + delay;
+            const length = Math.max(1, Math.floor(audioCtx.sampleRate * duration));
+            const buffer = audioCtx.createBuffer(1, length, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / length);
+            const source = audioCtx.createBufferSource();
+            const filter = audioCtx.createBiquadFilter();
+            const gain = audioCtx.createGain();
+            filter.type = 'lowpass';
+            filter.frequency.value = 680;
+            gain.gain.setValueAtTime(volume, t);
+            gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+            source.buffer = buffer;
+            source.connect(filter);
+            filter.connect(gain);
+            gain.connect(sfxMaster);
+            source.start(t);
+        }
+
+        function playRevealSound(proximity = 0) {
+            const p = Math.max(0, Math.min(8, proximity));
+            const base = 610 - p * 42;
+            synthTone(base, 0.055, 'triangle', 0.06, 0, Math.max(120, base - 45));
+            if (p >= 4) synthTone(base / 2, 0.06, 'sine', 0.025, 0.018);
         }
         function playFlagSound() {
-            synthTone(660, 0.075, 'triangle', 0.095, 0, 820);
+            synthTone(470, 0.055, 'square', 0.06, 0, 390);
+            synthTone(760, 0.045, 'triangle', 0.045, 0.035, 650);
         }
         function playBombSound() {
-            synthTone(105, 0.42, 'sawtooth', 0.16, 0, 42);
-            synthTone(62, 0.55, 'square', 0.08, 0.025, 30);
+            synthNoise(0.42, 0.18);
+            synthTone(105, 0.42, 'sawtooth', 0.15, 0, 42);
+            synthTone(62, 0.55, 'square', 0.07, 0.025, 30);
         }
         function playWinSound() {
             [523.25,659.25,783.99,1046.5].forEach((f,i)=>synthTone(f,0.20,'triangle',0.085,i*0.12));
@@ -598,6 +663,10 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
         const rankingContainer = document.getElementById('rankingContainer');
         const rankingListEl = document.getElementById('ranking-list');
         const rankingLoader = document.getElementById('ranking-loader');
+        const resultPanel = document.getElementById('resultPanel');
+        const resultTitle = document.getElementById('resultTitle');
+        const resultSummary = document.getElementById('resultSummary');
+        const replayBtn = document.getElementById('replayBtn');
 
 
         // --- Game Logic Functions ---
@@ -606,15 +675,12 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
         }
 
         function calculateCellSize() {
-            const padding = 20; 
-            const controlsHeight = 200; 
-            const availableWidth = Math.min(600, window.innerWidth - padding);
-            const availableHeight = window.innerHeight - controlsHeight - padding;
-            
-            const canvasMaxWidth = Math.min(availableWidth, 560); 
-            
-            cellSize = Math.floor(Math.min(canvasMaxWidth / GRID_SIZE, availableHeight / GRID_SIZE));
-            
+            const viewportWidth = Math.max(280, document.documentElement.clientWidth || window.innerWidth);
+            const viewportHeight = Math.max(360, window.innerHeight);
+            const canvasMaxWidth = Math.min(560, viewportWidth - 24);
+            const reservedHeight = viewportHeight < 760 ? 175 : 230;
+            const canvasMaxHeight = Math.max(240, viewportHeight - reservedHeight);
+            cellSize = Math.max(15, Math.floor(Math.min(canvasMaxWidth / GRID_SIZE, canvasMaxHeight / GRID_SIZE)));
             canvas.width = GRID_SIZE * cellSize;
             canvas.height = GRID_SIZE * cellSize;
         }
@@ -668,61 +734,62 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
             return count;
         }
         
-        async function revealCell(row, col, isPlayerAction = true) { 
-            if (row < 0 || row >= GRID_SIZE || col < 0 || col >= GRID_SIZE || board[row][col].isRevealed || board[row][col].isFlagged) {
-                return;
-            }
+        function revealSafeArea(startRow, startCol) {
+            const stack = [[startRow, startCol]];
+            while (stack.length) {
+                const [row, col] = stack.pop();
+                if (row < 0 || row >= GRID_SIZE || col < 0 || col >= GRID_SIZE) continue;
+                const cell = board[row][col];
+                if (cell.isRevealed || cell.isFlagged || cell.isBomb) continue;
 
-            if (firstClick) {
-                await initSounds(); 
-                NUM_BOMBS = getRandomBombs(); 
-                placeBombs(row, col);
-                startTimer();
-                firstClick = false;
-                updateBombsLeftDisplay(); 
-            }
-            
-            if (isPlayerAction) {
-                playClickSound();
-            }
-            
-            board[row][col].isRevealed = true;
-            revealedCount++;
-            
-            if (board[row][col].isBomb) {
-                if (isPlayerAction) { 
-                    gameOver = true;
-                    gameWon = false;
-                    stopTimer(); 
-                    
-                    ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
-                    ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
+                cell.isRevealed = true;
+                revealedCount++;
 
-                    createExplosionParticles(col * cellSize + cellSize / 2, row * cellSize + cellSize / 2); 
-                    
-                    revealAllBombs(false); 
-
-                    playBombSound(); 
-                    setTimeout(() => {
-                        showCustomAlert("Você pisou num cocô tóxico! Fim de jogo.");
-                        playGameOverSound(); 
-                    }, 1000); 
-
-                    if (!animationFrameId) { 
-                        animationFrameId = requestAnimationFrame(drawBoard);
-                    }
-                }
-            } else {
-                if (board[row][col].adjacentBombs === 0) {
+                if (cell.adjacentBombs === 0) {
                     for (let dr = -1; dr <= 1; dr++) {
                         for (let dc = -1; dc <= 1; dc++) {
-                            if (dr === 0 && dc === 0) continue;
-                            revealCell(row + dr, col + dc, false); 
+                            if (dr !== 0 || dc !== 0) stack.push([row + dr, col + dc]);
                         }
                     }
                 }
-                checkWinCondition();
             }
+        }
+
+        async function revealCell(row, col) {
+            if (gameOver || row < 0 || row >= GRID_SIZE || col < 0 || col >= GRID_SIZE) return;
+            const target = board[row][col];
+            if (target.isRevealed || target.isFlagged) return;
+
+            if (firstClick) {
+                await initSounds();
+                placeBombs(row, col);
+                startTimer();
+                firstClick = false;
+                updateBombsLeftDisplay();
+            }
+
+            if (target.isBomb) {
+                target.isRevealed = true;
+                revealedCount++;
+                gameOver = true;
+                gameWon = false;
+                stopTimer();
+                createExplosionParticles(col * cellSize + cellSize / 2, row * cellSize + cellSize / 2);
+                revealAllBombs(false);
+                playBombSound();
+                drawBoard();
+                startEffectLoop();
+                showResult(false);
+                setTimeout(() => {
+                    showCustomAlert('Você pisou num cocô tóxico!');
+                    playGameOverSound();
+                }, 420);
+                return;
+            }
+
+            playRevealSound(target.adjacentBombs);
+            revealSafeArea(row, col);
+            checkWinCondition();
             drawBoard();
         }
 
@@ -762,107 +829,123 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
             if (revealedCount === nonBombCells) {
                 gameOver = true;
                 gameWon = true;
-                playWinSound(); 
-                revealAllBombs(true); 
+                playWinSound();
+                revealAllBombs(true);
                 stopTimer();
+                showResult(true);
                 setTimeout(async () => {
-                    showCustomAlert("Parabéns! Você venceu!");
+                    showCustomAlert('Esgoto limpo! Você venceu.');
                     await checkAndSubmitScore();
-                }, 100);
+                }, 120);
             }
         }
         
-        function revealAllBombs(showMushrooms) {
+        function showResult(won) {
+            resultPanel.hidden = false;
+            resultPanel.classList.toggle('win', won);
+            resultPanel.classList.toggle('loss', !won);
+            resultTitle.textContent = won ? 'Esgoto limpo!' : 'Contato tóxico!';
+            resultSummary.textContent = won
+                ? `Tempo: ${secondsPassed}s · pressione R ou jogue de novo.`
+                : `Você resistiu ${secondsPassed}s · pressione R para um novo mapa.`;
+        }
+
+        function hideResult() {
+            resultPanel.hidden = true;
+            resultPanel.classList.remove('win', 'loss');
+        }
+
+        function revealAllBombs(highlightVictory) {
             for (let r = 0; r < GRID_SIZE; r++) {
                 for (let c = 0; c < GRID_SIZE; c++) {
                     if (board[r][c].isBomb) {
                         board[r][c].isRevealed = true;
-                        board[r][c].isMushroom = showMushrooms;
+                        board[r][c].isVictoryGlow = highlightVictory;
                     }
                 }
             }
         }
 
         // --- Drawing Functions ---
+        function getCanvasPalette() {
+            const styles = getComputedStyle(document.body);
+            const read = name => styles.getPropertyValue(name).trim();
+            return {
+                hidden: read('--cell-hidden-color'),
+                border: read('--border-color'),
+                contacts: Array.from({ length: 9 }, (_, i) => read(`--contact-${i}`))
+            };
+        }
+
         function drawBoard() {
+            if (!board || !cellSize) return;
+            const palette = getCanvasPalette();
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             for (let r = 0; r < GRID_SIZE; r++) {
-                for (let c = 0; c < GRID_SIZE; c++) {
-                    drawCell(r, c);
-                }
+                for (let c = 0; c < GRID_SIZE; c++) drawCell(r, c, palette);
             }
-            updateParticles(); 
-            drawParticles();   
-            
-            if (!gameOver || particles.length > 0) {
-                animationFrameId = requestAnimationFrame(drawBoard);
-            } else {
-                if (animationFrameId) {
-                    cancelAnimationFrame(animationFrameId);
-                    animationFrameId = null;
-                }
-            }
+            drawParticles();
         }
 
-        function drawCell(row, col) {
+        function startEffectLoop() {
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            const tick = () => {
+                updateParticles();
+                drawBoard();
+                if (particles.length > 0) animationFrameId = requestAnimationFrame(tick);
+                else animationFrameId = null;
+            };
+            animationFrameId = requestAnimationFrame(tick);
+        }
+
+        function drawCell(row, col, palette) {
             const x = col * cellSize;
             const y = row * cellSize;
-            const cell = board[row] && board[row][col] ? board[row][col] : null; 
+            const cell = board[row]?.[col];
+            if (!cell) return;
 
-            if (!cell) {
-                console.warn(`Attempted to draw undefined cell at (${row}, ${col}). Board state:`, board);
-                return; 
-            }
-
-            ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--border-color').trim();
-            ctx.lineWidth = 1;
-            ctx.strokeRect(x, y, cellSize, cellSize);
+            ctx.fillStyle = cell.isRevealed
+                ? (cell.isBomb ? palette.contacts[0] : palette.contacts[cell.adjacentBombs])
+                : palette.hidden;
+            ctx.fillRect(x, y, cellSize, cellSize);
 
             if (cell.isRevealed) {
-                ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--cell-revealed-color').trim();
-                ctx.fillRect(x, y, cellSize, cellSize);
-                ctx.fillStyle = 'rgba(93,75,49,.10)';
-                ctx.fillRect(x+2, y+2, cellSize*0.4, cellSize*0.18);
-                ctx.fillRect(x+cellSize*0.52, y+cellSize*0.62, cellSize*0.24, cellSize*0.12);
+                const density = cell.isBomb ? 0 : cell.adjacentBombs;
+                ctx.fillStyle = `rgba(42,35,22,${0.045 + density * 0.012})`;
+                ctx.fillRect(x + 2, y + 2, cellSize * 0.38, Math.max(2, cellSize * 0.15));
+                ctx.fillRect(x + cellSize * 0.54, y + cellSize * 0.64, cellSize * 0.22, Math.max(2, cellSize * 0.10));
+                if (density > 0) {
+                    const vignette = ctx.createRadialGradient(
+                        x + cellSize / 2, y + cellSize / 2, cellSize * 0.12,
+                        x + cellSize / 2, y + cellSize / 2, cellSize * 0.72
+                    );
+                    vignette.addColorStop(0, 'rgba(0,0,0,0)');
+                    vignette.addColorStop(1, `rgba(22,18,10,${Math.min(.34, density * .035)})`);
+                    ctx.fillStyle = vignette;
+                    ctx.fillRect(x, y, cellSize, cellSize);
+                }
 
                 if (cell.isBomb) {
-                    if (cell.isMushroom) { 
-                        drawMushroom(x, y);
-                    } else { 
-                        drawBomb(x, y);
-                    }
-                } else if (cell.adjacentBombs > 0) {
-                    ctx.fillStyle = getTextColorForNumber(cell.adjacentBombs);
-                    ctx.font = `${cellSize * 0.6}px Arial`;
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(cell.adjacentBombs.toString(), x + cellSize / 2, y + cellSize / 2 + 2);
+                    if (cell.isVictoryGlow) drawVictoryPoop(x, y);
+                    else drawBomb(x, y);
                 }
             } else {
-                ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--cell-hidden-color').trim();
-                ctx.fillRect(x, y, cellSize, cellSize);
-                ctx.fillStyle = 'rgba(196,247,106,.08)';
+                ctx.fillStyle = 'rgba(196,247,106,.075)';
                 ctx.beginPath();
-                ctx.arc(x + cellSize*0.28, y + cellSize*0.32, cellSize*0.08, 0, Math.PI*2);
-                ctx.arc(x + cellSize*0.72, y + cellSize*0.68, cellSize*0.05, 0, Math.PI*2);
+                ctx.arc(x + cellSize * 0.28, y + cellSize * 0.32, cellSize * 0.08, 0, Math.PI * 2);
+                ctx.arc(x + cellSize * 0.72, y + cellSize * 0.68, cellSize * 0.05, 0, Math.PI * 2);
                 ctx.fill();
-                if (cell.isFlagged) {
-                    drawFlag(x, y);
-                }
+                if (cell.isFlagged) drawFlag(x, y);
             }
-        }
 
-        function getTextColorForNumber(number) {
-            const colors = {
-                1: '#0000FF', 2: '#008000', 3: '#FF0000', 4: '#00008B',
-                5: '#8B0000', 6: '#008B8B', 7: '#000000', 8: '#808080'
-            };
-            return colors[number] || '#000000';
+            ctx.strokeStyle = palette.border;
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x + .5, y + .5, cellSize - 1, cellSize - 1);
         }
 
         function drawBomb(x, y) { return drawBombEmoji(x, y); }
 
-        function drawMushroom(x, y) { return drawMushroomEmoji(x, y); }
+        function drawVictoryPoop(x, y) { return drawVictoryPoopEmoji(x, y); }
 
         function drawBombEmoji(x, y) {
             const centerX = x + cellSize / 2;
@@ -916,7 +999,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
             ctx.restore();
         }
 
-        function drawMushroomEmoji(x, y) {
+        function drawVictoryPoopEmoji(x, y) {
             const centerX = x + cellSize / 2;
             const centerY = y + cellSize / 2;
             const t = performance.now() * 0.0022;
@@ -1024,13 +1107,10 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
                 isRevealed: false,
                 isFlagged: false,
                 adjacentBombs: 0,
-                isMushroom: false
+                isVictoryGlow: false
             })));
 
-            if (!soundsReady) { 
-                await initSounds();
-            }
-            NUM_BOMBS = getRandomBombs(); 
+            NUM_BOMBS = getRandomBombs();
             
             revealedCount = 0;
             flagsPlaced = 0;
@@ -1039,22 +1119,26 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
             firstClick = true;
             flagMode = false;
             toggleFlagBtn.classList.remove('active-flag-mode');
+            canvas.classList.remove('flag-cursor');
             toggleFlagBtn.textContent = 'Marcar Cocô (🚩)';
 
             stopTimer();
             secondsPassed = 0;
             timerEl.textContent = `Tempo: 0s`;
             updateBombsLeftDisplay();
-            calculateCellSize(); 
-            particles = []; 
-            
-            if (animationFrameId) { 
-                cancelAnimationFrame(animationFrameId);
-            }
-            animationFrameId = requestAnimationFrame(drawBoard);
+            calculateCellSize();
+            particles = [];
+            hideResult();
 
-            loadRanking(); 
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+            drawBoard();
+            loadRanking();
         }
+
+        window.PPGGameRestart = initGame;
         
         // --- Event Listeners ---
         canvas.addEventListener('click', (event) => {
@@ -1095,35 +1179,63 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
         newGameBtn.addEventListener('click', initGame);
 
         resetAllBtn.addEventListener('click', () => {
-            confirmResetModal.style.display = 'flex';
+            confirmResetModal.classList.add('open');
         });
 
         confirmResetBtn.addEventListener('click', async () => {
             await resetAllData();
-            confirmResetModal.style.display = 'none';
+            confirmResetModal.classList.remove('open');
         });
         
         cancelResetBtn.addEventListener('click', () => {
-            confirmResetModal.style.display = 'none';
+            confirmResetModal.classList.remove('open');
         });
+
+        function applyTheme(theme, persist = true) {
+            const dark = theme !== 'light';
+            document.body.classList.toggle('dark-mode', dark);
+            document.body.classList.toggle('ppg-dark', dark);
+            document.body.classList.toggle('ppg-light', !dark);
+            darkModeBtn.textContent = dark ? 'Modo Claro' : 'Modo Escuro';
+            const toolbarTheme = document.getElementById('ppg-theme');
+            if (toolbarTheme) toolbarTheme.textContent = dark ? '☀️ Claro' : '🌙 Escuro';
+            if (persist) {
+                try {
+                    const prefs = JSON.parse(localStorage.getItem('ppg_platform_prefs_v1') || '{}');
+                    prefs.theme = dark ? 'dark' : 'light';
+                    localStorage.setItem('ppg_platform_prefs_v1', JSON.stringify(prefs));
+                } catch (_) {}
+            }
+            drawBoard();
+        }
 
         darkModeBtn.addEventListener('click', () => {
-            document.body.classList.toggle('dark-mode');
-            darkModeBtn.textContent = document.body.classList.contains('dark-mode') ? 'Modo Claro' : 'Modo Escuro';
+            applyTheme(document.body.classList.contains('dark-mode') ? 'light' : 'dark');
         });
+        document.addEventListener('ppg:themechange', event => applyTheme(event.detail?.theme || 'dark', false));
 
         backBtn.addEventListener('click', () => {
-            window.history.back();
+            window.location.href = 'menu_minigames.html';
         });
 
         toggleFlagBtn.addEventListener('click', () => {
             flagMode = !flagMode;
             toggleFlagBtn.classList.toggle('active-flag-mode', flagMode);
+            canvas.classList.toggle('flag-cursor', flagMode);
             toggleFlagBtn.textContent = flagMode ? 'Revelar Célula (🧽)' : 'Marcar Cocô (🚩)';
         });
 
         window.addEventListener('resize', () => {
             calculateCellSize();
+            drawBoard();
+        });
+
+        replayBtn.addEventListener('click', initGame);
+        document.addEventListener('keydown', event => {
+            if ((event.key === 'r' || event.key === 'R') && gameOver && !nameModal.classList.contains('open')) {
+                event.preventDefault();
+                initGame();
+            }
         });
         
         // --- Funções de Ranking Local (usando localStorage) ---
@@ -1142,7 +1254,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
                     scores.sort((a, b) => a.time - b.time); 
                     scores.slice(0, 5).forEach((score, index) => { 
                         const li = document.createElement('li');
-                        li.textContent = `${index + 1}. ${score.name}: ${score.time}s`;
+                        li.textContent = `${index + 1}. ${score.name}: ${score.time}s${score.bombs ? ` · ${score.bombs} cocôs` : ''}`;
                         rankingListEl.appendChild(li);
                     });
                 } else {
@@ -1172,9 +1284,17 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
             scores.sort((a, b) => a.time - b.time);
 
             if (scores.length < 5 || secondsPassed < scores[scores.length - 1].time) {
-                nameModal.style.display = 'flex';
+                nameModal.classList.add('open');
+                setTimeout(() => playerNameInput.focus(), 0);
             }
         }
+
+        playerNameInput.addEventListener('keydown', event => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                submitScoreBtn.click();
+            }
+        });
 
         submitScoreBtn.addEventListener('click', async () => {
             const playerName = playerNameInput.value.trim();
@@ -1183,7 +1303,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
                 return;
             }
 
-            nameModal.style.display = 'none';
+            nameModal.classList.remove('open');
             rankingLoader.style.display = 'block';
 
             try {
@@ -1193,7 +1313,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
                     currentScores = JSON.parse(storedScores);
                 }
 
-                currentScores.push({ name: playerName, time: secondsPassed, date: new Date().toISOString() });
+                currentScores.push({ name: playerName, time: secondsPassed, bombs: NUM_BOMBS, date: new Date().toISOString() });
                 currentScores.sort((a, b) => a.time - b.time); 
                 const newTopScores = currentScores.slice(0, 5); 
 
@@ -1212,7 +1332,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
         async function resetAllData() {
             try {
                 localStorage.removeItem(LOCAL_STORAGE_KEY);
-                showCustomAlert("Todos os dados foram resetados!");
+                showCustomAlert("Top 5 local apagado.");
                 initGame(); 
             } catch (error) {
                 console.error("Erro ao resetar os dados locais: ", error);
@@ -1245,31 +1365,24 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
                 document.body.appendChild(alertBox);
             }
 
+            alertBox.style.backgroundColor = document.body.classList.contains('dark-mode') ? '#c4f76a' : '#6b7b32';
+            alertBox.style.color = document.body.classList.contains('dark-mode') ? '#223018' : '#eef6d8';
             alertBox.textContent = message;
-            alertBox.style.bottom = '30px'; 
+            alertBox.style.bottom = '30px';
             alertBox.style.opacity = '1';
-
-            setTimeout(() => {
+            clearTimeout(alertBox._hideTimer);
+            alertBox._hideTimer = setTimeout(() => {
                 alertBox.style.opacity = '0';
-                alertBox.style.bottom = '20px'; 
+                alertBox.style.bottom = '20px';
             }, duration);
         }
 
         // --- Initial Setup ---
-        // Função de inicialização principal
-        (async () => {
-            // Inicializa um userId local para consistência (não usado para ranking online)
-            userId = localStorage.getItem('localUserId');
-            if (!userId) {
-                userId = `anon_${crypto.randomUUID()}`;
-                localStorage.setItem('localUserId', userId);
-            }
-            console.log("User ID (local):", userId);
-
-            // Adiciona event listener para o novo botão de som
-            // Já adicionado acima, mas mantido aqui para clareza da ordem de inicialização
-            
-            initGame(); // Inicia o jogo
+        (() => {
+            let theme = 'dark';
+            try { theme = JSON.parse(localStorage.getItem('ppg_platform_prefs_v1') || '{}').theme || 'dark'; } catch (_) {}
+            applyTheme(theme, false);
+            initGame();
         })();
     </script>
 <style id="ppg-platform-style">
@@ -1282,7 +1395,7 @@ body.ppg-light{background-color:#edf1f8!important;color:#182038!important}body.p
 @media(max-width:720px){#ppg-toolbar{top:6px;right:6px}#ppg-toolbar button,#ppg-toolbar a{padding:6px 8px!important;font-size:11px!important}.ppg-card{padding:17px}}
 </style><script id="ppg-platform-script">
 (()=>{'use strict';
-const CFG={"id": "toxic_stench", "name": "Toxic Stench", "emoji": "💩", "desc": "Campo minado repaginado como um pesadelo fétido de esgoto, com cocôs tóxicos escondidos no mapa.", "how": "Revele casas seguras e marque onde acredita que os cocôs tóxicos estejam escondidos. Os números indicam quantos cocôs existem nas oito casas vizinhas.", "tip": "Abra primeiro regiões amplas. Quando um número já estiver satisfeito pelas bandeiras ao redor, o restante costuma ser terreno limpo.", "metric": "Casas seguras", "unit": " pts", "mode": "max"};
+const CFG={"id": "toxic_stench", "name": "Toxic Stench", "emoji": "💩", "desc": "Campo minado repaginado como um pesadelo fétido de esgoto, com cocôs tóxicos escondidos no mapa.", "how": "Revele casas seguras e marque onde acredita que os cocôs tóxicos estejam escondidos. Não há números: cada casa segura fica mais escura conforme aumenta a quantidade de cocôs nas oito casas vizinhas.", "tip": "Leia o tabuleiro como um mapa de calor: áreas claras são mais tranquilas; quanto mais o piso escurece, maior a concentração de perigo ao redor. Use bandeiras para isolar os focos antes de avançar.", "metric": "Melhor tempo", "unit": " s", "mode": "min"};
 const STATS_KEY='ppg_minigames_stats_v1', PREF_KEY='ppg_platform_prefs_v1', REC_KEY='ppg_records_'+CFG.id;
 const $=s=>document.querySelector(s), num=v=>{const m=String(v??'').replace(/\s/g,'').replace(/\.(?=\d{3}(\D|$))/g,'').replace(',','.').match(/-?\d+(?:\.\d+)?/);return m?+m[0]:null};
 const money=v=>{const s=String(v??'').replace(/R\$|◈|Créditos?|Banca:|💰/gi,'').trim();let m=s.match(/(-?[\d.,]+)\s*(K|M|B|T|Qa|Qi|Sx|Sp|Oc|No|Dc)?/i);if(!m)return null;let n=num(m[1]);const u=(m[2]||'').toLowerCase(),map={k:1e3,m:1e6,b:1e9,t:1e12,qa:1e15,qi:1e18,sx:1e21,sp:1e24,oc:1e27,no:1e30,dc:1e33};return n*(map[u]||1)};
@@ -1291,22 +1404,21 @@ function readJSON(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{r
 function dayKey(d=new Date()){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}function dayDiff(a,b){const A=new Date(a+'T12:00:00'),B=new Date(b+'T12:00:00');return Math.round((B-A)/86400000)}
 let all=readJSON(STATS_KEY,{}),st=all[CFG.id]||{starts:0,totalSeconds:0,longestStreak:0,currentStreak:0,lastDay:null};const today=dayKey();st.starts=(st.starts||0)+1;if(st.lastDay!==today){const dd=st.lastDay?dayDiff(st.lastDay,today):99;st.currentStreak=dd===1?(st.currentStreak||0)+1:1;st.longestStreak=Math.max(st.longestStreak||0,st.currentStreak);st.lastDay=today}st.lastStarted=Date.now();all[CFG.id]=st;writeJSON(STATS_KEY,all);
 let lastTick=performance.now();function flushTime(){const now=performance.now(),d=Math.max(0,(now-lastTick)/1000);lastTick=now;all=readJSON(STATS_KEY,{});const x=all[CFG.id]||st;x.totalSeconds=(x.totalSeconds||0)+d;x.lastPlayed=Date.now();all[CFG.id]=x;writeJSON(STATS_KEY,all)}setInterval(flushTime,5000);addEventListener('pagehide',flushTime);document.addEventListener('visibilitychange',()=>{if(document.hidden)flushTime();else lastTick=performance.now()});
-let prefs=readJSON(PREF_KEY,{theme:'dark',sound:true});document.body.classList.toggle('ppg-light',prefs.theme==='light');document.body.classList.toggle('ppg-dark',prefs.theme!=='light');
+let prefs=readJSON(PREF_KEY,{theme:'dark',sound:true});document.body.classList.toggle('ppg-light',prefs.theme==='light');document.body.classList.toggle('ppg-dark',prefs.theme!=='light');document.body.classList.toggle('dark-mode',prefs.theme!=='light');
 const toolbar=document.createElement('nav');toolbar.id='ppg-toolbar';toolbar.innerHTML=`<button id="ppg-theme" title="Alternar modo claro/escuro">${prefs.theme==='light'?'🌙 Escuro':'☀️ Claro'}</button><button id="ppg-sound" title="Som e música">${prefs.sound?'🔊 Som':'🔇 Som'}</button><button id="ppg-records">🏆 Recordes</button><button id="ppg-about">ⓘ Sobre</button><a href="menu_minigames.html" id="ppg-menu">↩ Menu de Mini Games</a>`;document.body.appendChild(toolbar);
 const modal=document.createElement('div');modal.className='ppg-modal';modal.id='ppg-modal';modal.innerHTML=`<div class="ppg-card"><button class="ppg-close" aria-label="Fechar">✕</button><div id="ppg-modal-body"></div></div>`;document.body.appendChild(modal);const body=$('#ppg-modal-body');function open(html){body.innerHTML=html;modal.classList.add('open')}function close(){modal.classList.remove('open')}modal.addEventListener('click',e=>{if(e.target===modal||e.target.closest('.ppg-close'))close()});addEventListener('keydown',e=>{if(e.key==='Escape')close()});
 $('#ppg-about').onclick=()=>open(`<h2>${CFG.name}</h2><p>${CFG.desc}</p><h3>Como jogar</h3><p>${CFG.how}</p><h3>Dica de estratégia</h3><p>${CFG.tip}</p><p class="ppg-credit">Produção: Projeto Primata Games em 2026.</p>`);
-$('#ppg-theme').onclick=()=>{prefs.theme=prefs.theme==='light'?'dark':'light';writeJSON(PREF_KEY,prefs);document.body.classList.toggle('ppg-light',prefs.theme==='light');document.body.classList.toggle('ppg-dark',prefs.theme==='dark');$('#ppg-theme').textContent=prefs.theme==='light'?'🌙 Escuro':'☀️ Claro';sfx(520,.05)};
+$('#ppg-theme').onclick=()=>{prefs.theme=prefs.theme==='light'?'dark':'light';writeJSON(PREF_KEY,prefs);document.body.classList.toggle('ppg-light',prefs.theme==='light');document.body.classList.toggle('ppg-dark',prefs.theme==='dark');document.body.classList.toggle('dark-mode',prefs.theme==='dark');$('#ppg-theme').textContent=prefs.theme==='light'?'🌙 Escuro':'☀️ Claro';document.dispatchEvent(new CustomEvent('ppg:themechange',{detail:{theme:prefs.theme}}));sfx(520,.05)};
 // Áudio procedural comum: garante BGM + SFX sem arquivos externos.
-let ac=null,master=null,music=null,beat=0;function initAudio(){if(ac)return;ac=new (window.AudioContext||window.webkitAudioContext)();master=ac.createGain();master.gain.value=prefs.sound?.12:0;master.connect(ac.destination)}function tone(f,d=.08,type='sine',vol=.08,when=0){if(!prefs.sound)return;initAudio();const t=ac.currentTime+when,o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(master);o.start(t);o.stop(t+d)}function sfx(f=420,d=.045){tone(f,d,'triangle',.11)}function startBgm(){if(music||!prefs.sound)return;initAudio();music=setInterval(()=>{if(document.hidden||!prefs.sound)return;const seq=[98,110,123.47,138.59,146.83,164.81,138.59,123.47,110,98,87.31,98,110,123.47,131.81,110],f=seq[beat++%seq.length];tone(f,.19,'triangle',.022);if(beat%8===1)tone(f/2,.12,'sine',.015);if(beat%8===5)tone(f*1.5,.07,'square',.008,.03)},430)}function stopBgm(){clearInterval(music);music=null}function unlock(){initAudio();ac?.resume();if(prefs.sound)startBgm()}addEventListener('pointerdown',unlock,{once:true});addEventListener('keydown',unlock,{once:true});document.addEventListener('click',e=>{if(e.target.closest('button,a,input,select'))sfx(380+Math.random()*80,.035)},true);
+let ac=null,master=null,music=null,beat=0;function initAudio(){if(ac)return;ac=new (window.AudioContext||window.webkitAudioContext)();master=ac.createGain();master.gain.value=prefs.sound?.12:0;master.connect(ac.destination)}function tone(f,d=.08,type='sine',vol=.08,when=0){if(!prefs.sound)return;initAudio();const t=ac.currentTime+when,o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(master);o.start(t);o.stop(t+d)}function sfx(f=420,d=.045){tone(f,d,'triangle',.11)}function startBgm(){if(music||!prefs.sound)return;initAudio();music=setInterval(()=>{if(document.hidden||!prefs.sound)return;const seq=[73.42,82.41,87.31,98,87.31,82.41,65.41,73.42,73.42,87.31,98,110,98,87.31,82.41,73.42],f=seq[beat++%seq.length];tone(f,.34,'sine',.018);if(beat%4===1)tone(f/2,.18,'triangle',.012);if(beat%6===3)tone(410+(beat%5)*37,.035,'triangle',.006,.12);if(beat%12===7)tone(54,.42,'sine',.010,.04)},520)}function stopBgm(){clearInterval(music);music=null}function unlock(){initAudio();ac?.resume();if(prefs.sound)startBgm()}addEventListener('pointerdown',unlock,{once:true});addEventListener('keydown',unlock,{once:true});document.addEventListener('click',e=>{if(e.target.closest('button,a,input,select'))sfx(380+Math.random()*80,.035)},true);
 $('#ppg-sound').onclick=e=>{e.stopPropagation();prefs.sound=!prefs.sound;writeJSON(PREF_KEY,prefs);initAudio();master.gain.setTargetAtTime(prefs.sound?.12:0,ac.currentTime,.02);if(prefs.sound){ac.resume();startBgm();sfx(660,.08)}else stopBgm();$('#ppg-sound').textContent=prefs.sound?'🔊 Som':'🔇 Som'};
-// Ranking local por sessão. A mesma sessão é atualizada em vez de poluir o top 5 com cada incremento.
-const sessionId=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7);function formatValue(v){if(v==null)return '—';if(Math.abs(v)>=1e9)return v.toLocaleString('pt-BR',{notation:'compact',maximumFractionDigits:2})+CFG.unit;return (Number.isInteger(v)?v:v.toFixed(2).replace('.',','))+CFG.unit}function metric(){try{const num=window.__ppgHelpers.num,money=window.__ppgHelpers.money;return (()=>{const el=document.querySelector('#timer'); return el?num(el.textContent):null})()}catch{return null}}function upsert(v){if(v==null||!Number.isFinite(v)||(CFG.mode==='min'&&v<=0))return;let r=readJSON(REC_KEY,[]),me=r.find(x=>x.sessionId===sessionId);if(me){const better=CFG.mode==='min'?v<me.value:v>me.value;if(!better)return;me.value=v;me.at=Date.now()}else r.push({sessionId,value:v,at:Date.now()});r.sort((a,b)=>CFG.mode==='min'?a.value-b.value:b.value-a.value);writeJSON(REC_KEY,r.slice(0,5))}setInterval(()=>upsert(metric()),800);addEventListener('pagehide',()=>upsert(metric()));
-function renderRecords(){const r=readJSON(REC_KEY,[]);const list=r.length?`<div class="ppg-record-list">${r.map((x,i)=>`<div class="ppg-record"><b>#${i+1}</b><span><strong>${formatValue(x.value)}</strong><br><small>${new Date(x.at).toLocaleDateString('pt-BR')}</small></span><small>${CFG.metric}</small></div>`).join('')}</div>`:`<div class="ppg-empty">Ainda não há marca registrada neste navegador. Jogue uma partida e ela aparece aqui.</div>`;open(`<h2>Recordes locais</h2><p>Top 5 persistente deste jogo, salvo somente neste navegador.</p>${list}`)}$('#ppg-records').onclick=renderRecords;
+// Recordes: usa o mesmo Top 5 real da partida, evitando uma segunda tabela concorrente.
+function renderRecords(){const r=readJSON('toxic_stench_top_scores',[]).sort((a,b)=>a.time-b.time).slice(0,5);const list=r.length?`<div class="ppg-record-list">${r.map((x,i)=>`<div class="ppg-record"><b>#${i+1}</b><span><strong>${x.name||'Anônimo'} · ${x.time}s</strong><br><small>${x.bombs?x.bombs+' cocôs · ':''}${x.date?new Date(x.date).toLocaleDateString('pt-BR'):''}</small></span><small>Melhor tempo</small></div>`).join('')}</div>`:`<div class="ppg-empty">Ainda não há marca registrada neste navegador. Limpe o esgoto uma vez e seu tempo aparece aqui.</div>`;open(`<h2>Recordes locais</h2><p>Top 5 persistente deste jogo, salvo somente neste navegador.</p>${list}`)}$('#ppg-records').onclick=renderRecords;
 })();
 </script>
 
 <!-- PPG_FULLSCREEN_LANDSCAPE_V1 -->
-<style id="ppg-fs-style">#ppgFullscreenBtn{position:fixed;right:10px;top:10px;z-index:2147483646;width:42px;height:36px;padding:0;border:2px outset #eee;border-radius:7px;background:#111b;color:#fff;font:700 20px/1 system-ui;cursor:pointer;backdrop-filter:blur(4px)}#ppgRotateHint{display:none;position:fixed;inset:0;z-index:2147483645;place-items:center;padding:28px;text-align:center;background:#080b12e8;color:#fff;font:800 18px/1.4 system-ui}#ppgRotateHint b{font-size:42px;display:block;margin-bottom:8px}@media (orientation:portrait) and (max-width:900px){body.ppg-needs-landscape #ppgRotateHint{display:grid}}</style>
+<style id="ppg-fs-style">#ppgFullscreenBtn{position:fixed;left:10px;top:10px;z-index:2147483646;width:42px;height:36px;padding:0;border:2px outset #eee;border-radius:7px;background:#111b;color:#fff;font:700 20px/1 system-ui;cursor:pointer;backdrop-filter:blur(4px)}#ppgRotateHint{display:none;position:fixed;inset:0;z-index:2147483645;place-items:center;padding:28px;text-align:center;background:#080b12e8;color:#fff;font:800 18px/1.4 system-ui}#ppgRotateHint b{font-size:42px;display:block;margin-bottom:8px}@media (orientation:portrait) and (max-width:900px){body.ppg-needs-landscape #ppgRotateHint{display:grid}}</style>
 <button id="ppgFullscreenBtn" type="button" title="Tela cheia" aria-label="Tela cheia">⛶</button><div id="ppgRotateHint"><div><b>↻</b>Gire o dispositivo para jogar em modo paisagem.</div></div>
 <script id="ppg-fs-runtime">(()=>{'use strict';const q=new URLSearchParams(location.search),embedded=q.get('embedded')==='1',auto=q.get('autofs')==='1';const btn=document.getElementById('ppgFullscreenBtn');const mobile=()=>matchMedia('(max-width:900px)').matches||/Android|iPhone|iPad|Mobile/i.test(navigator.userAgent);function markOrientation(){document.body.classList.toggle('ppg-needs-landscape',mobile()&&innerHeight>innerWidth)}async function lockLandscape(){if(!mobile())return true;try{if(screen.orientation&&screen.orientation.lock){await screen.orientation.lock('landscape');markOrientation();return true}}catch(e){}markOrientation();return false}async function goFS(){try{if(embedded&&parent!==window){const pd=parent.document,el=pd.getElementById('ppgGameLauncher')||pd.documentElement;if(!pd.fullscreenElement&&el.requestFullscreen)await el.requestFullscreen({navigationUI:'hide'});}else if(!document.fullscreenElement&&document.documentElement.requestFullscreen){await document.documentElement.requestFullscreen({navigationUI:'hide'})}}catch(e){}await lockLandscape();markOrientation()}btn?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();goFS()});addEventListener('resize',markOrientation);addEventListener('orientationchange',markOrientation);document.addEventListener('fullscreenchange',markOrientation);markOrientation();if(auto){const once=()=>{goFS();removeEventListener('pointerdown',once,true);removeEventListener('keydown',once,true)};addEventListener('pointerdown',once,true);addEventListener('keydown',once,true)}if(embedded&&parent!==window){document.addEventListener('click',e=>{const a=e.target.closest('a,button');if(!a)return;const href=(a.getAttribute('href')||'').toLowerCase();const txt=(a.textContent||'').toLowerCase();if(href==='index.html'||href.endsWith('/index.html')||href.includes('menu_minigames')||txt.includes('voltar ao menu')||txt.includes('back to menu')){e.preventDefault();e.stopPropagation();parent.postMessage({type:'ppg-exit-game'},location.origin)}},true)}})();</script>
 </body>
