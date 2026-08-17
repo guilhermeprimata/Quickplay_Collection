@@ -1,0 +1,62 @@
+name: Finalize canonical Quickplay release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/finalize-release24.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: quickplay-release24-finalize
+  cancel-in-progress: false
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download and verify canonical delta
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL='https://filebin.net/qp24-e2e4061cc40bd0fe8-20260817/release24.qpd.xz'
+          EXPECTED='e2e4061cc40bd0fe859c7d85b598a0df0ed3669656a523d512a478524e1492ee'
+          curl --fail --location --silent --show-error --retry 3 --retry-all-errors "$URL" -o /tmp/release24.qpd.xz
+          printf '%s  %s\n' "$EXPECTED" /tmp/release24.qpd.xz | sha256sum --check --strict
+
+      - name: Apply canonical games, update hub and rebuild package
+        run: python .github/scripts/finalize_release24.py . /tmp/release24.qpd.xz
+
+      - name: Remove release staging debris
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .quickplay-upload .release24-upload
+          rm -f .github/scripts/finalize_release24.py
+          rm -f .github/scripts/CONNECTOR_CAPABILITY_NOTE.txt
+          rm -f .github/scripts/LOCAL_FILE_MARKER.txt
+          rm -f .github/scripts/TEST_LOCAL_PATH_UPLOAD.txt
+          rm -f .github/scripts/UPLOAD_PROBE.txt
+
+      - name: Commit integrated canonical release
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if git diff --cached --quiet; then
+            echo 'No changes to commit.'
+            exit 0
+          fi
+          git commit -m 'Integrate canonical Quickplay release with Atomic Raid'
+          git push origin HEAD:main
