@@ -1,0 +1,165 @@
+name: Quickplay direct batch integration
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.quickplay-upload/READY'
+      - '.github/workflows/quickplay-direct.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: quickplay-direct-integration
+  cancel-in-progress: false
+
+jobs:
+  integrate:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Require READY marker
+        id: gate
+        shell: bash
+        run: |
+          if [[ -f .quickplay-upload/READY ]]; then
+            echo 'ready=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'ready=false' >> "$GITHUB_OUTPUT"
+            echo 'READY marker absent; no integration.'
+          fi
+
+      - name: Decode and verify archive
+        if: steps.gate.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -f .quickplay-upload/archive.b64 ]]
+          [[ -f .quickplay-upload/SHA256 ]]
+          tr -d '\r\n ' < .quickplay-upload/archive.b64 | base64 -d > /tmp/quickplay_batch.tar.xz
+          expected="$(awk '{print $1}' .quickplay-upload/SHA256)"
+          actual="$(sha256sum /tmp/quickplay_batch.tar.xz | awk '{print $1}')"
+          echo "expected=$expected"
+          echo "actual=$actual"
+          [[ "$actual" == "$expected" ]]
+          mkdir -p /tmp/quickplay_batch
+          tar -xJf /tmp/quickplay_batch.tar.xz -C /tmp/quickplay_batch
+
+      - name: Verify seven revised games
+        if: steps.gate.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib, json, pathlib
+          manifest=json.loads(pathlib.Path('.quickplay-upload/BATCH_SHA256.json').read_text())
+          root=pathlib.Path('/tmp/quickplay_batch')
+          expected={'kombo_blocks.html','jogo_da_forca.html','domination_wars.html','pong.html','snowball_avalanche.html','alien_threat.html','brain_matrix.html'}
+          if set(manifest)!=expected:
+              raise SystemExit(f'Unexpected manifest keys: {sorted(manifest)}')
+          for name, want in manifest.items():
+              p=root/name
+              if not p.is_file(): raise SystemExit(f'Missing {name}')
+              got=hashlib.sha256(p.read_bytes()).hexdigest()
+              if got != want: raise SystemExit(f'Hash mismatch {name}: {got} != {want}')
+              print(name, got)
+          PY
+
+      - name: Install canonical game files and refresh hub
+        if: steps.gate.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in kombo_blocks.html jogo_da_forca.html domination_wars.html pong.html snowball_avalanche.html alien_threat.html brain_matrix.html; do
+            cp "/tmp/quickplay_batch/$f" "$f"
+          done
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+
+          # Known stale label from the previous catalog.
+          s=s.replace('Tron: Domínio','DOMINATION WARS').replace('TRON: DOMÍNIO','DOMINATION WARS')
+
+          updates={
+            'domination_wars':('DOMINATION WARS','Guerra territorial orgânica com curvas contínuas, trilhas vulneráveis, power-ups e IA agressiva.'),
+            'neon_pong':('NEON PONG','Pong hyper-arcade com combos, supers, power-ups, arenas caóticas e IA em três níveis.'),
+            'jogo_da_forca':('FORCA NEON','Forca neon com dicas progressivas, streak, pontuação e ranking local por idioma.'),
+          }
+
+          def patch_object(text, gid, title, desc):
+              needles=[f"id:'{gid}'",f'id:"{gid}"',f"id: '{gid}'",f'id: "{gid}"',f"\"id\":\"{gid}\"",f"\"id\": \"{gid}\""]
+              pos=next((text.find(n) for n in needles if text.find(n)>=0),-1)
+              if pos<0:
+                  print(f'Hub object not found for {gid}; link validation will still protect the catalog.')
+                  return text
+              start=text.rfind('{',0,pos)
+              end=text.find('}',pos)
+              if start<0 or end<0: return text
+              block=text[start:end+1]
+              def replace_field(block, keys, value):
+                  for key in keys:
+                      pat=rf"({re.escape(key)}\s*:\s*)(['\"])(.*?)(\2)"
+                      nb,n=re.subn(pat,lambda m:m.group(1)+m.group(2)+value+m.group(2),block,count=1,flags=re.S)
+                      if n: return nb
+                  return block
+              block=replace_field(block,['name','title'],title)
+              block=replace_field(block,['desc','description','subtitle'],desc)
+              return text[:start]+block+text[end+1:]
+
+          for gid,(title,desc) in updates.items():
+              s=patch_object(s,gid,title,desc)
+
+          p.write_text(s,encoding='utf-8')
+          PY
+
+      - name: Validate hub targets and rebuild complete ZIP
+        if: steps.gate.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          hub=Path('index.html').read_text(encoding='utf-8')
+          required=['kombo_blocks.html','jogo_da_forca.html','domination_wars.html','pong.html','snowball_avalanche.html','alien_threat.html','brain_matrix.html']
+          for f in required:
+              if f not in hub: raise SystemExit(f'Hub missing target: {f}')
+              if not Path(f).is_file(): raise SystemExit(f'Missing target file: {f}')
+          for href in re.findall(r'href=[\"\']([^\"\']+\.html)(?:[?#][^\"\']*)?[\"\']',hub,re.I):
+              if href.startswith(('http://','https://','//')): continue
+              if not Path(href).is_file(): raise SystemExit(f'Broken hub HTML link: {href}')
+          print('Hub links validated.')
+          PY
+          rm -f Quickplay_Collection_COMPLETE.zip Quickplay_Collection_COMPLETE.zip.sha256
+          zip -qr Quickplay_Collection_COMPLETE.zip . \
+            -x '.git/*' '.github/*' '.quickplay-upload/*' 'Quickplay_Collection_COMPLETE.zip' 'Quickplay_Collection_COMPLETE.zip.sha256'
+          sha256sum Quickplay_Collection_COMPLETE.zip > Quickplay_Collection_COMPLETE.zip.sha256
+          unzip -t Quickplay_Collection_COMPLETE.zip >/dev/null
+          for f in index.html menu_minigames.html kombo_blocks.html jogo_da_forca.html domination_wars.html pong.html snowball_avalanche.html alien_threat.html brain_matrix.html; do
+            unzip -l Quickplay_Collection_COMPLETE.zip "$f" | grep -q "$f"
+          done
+
+      - name: Commit integrated collection
+        if: steps.gate.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .quickplay-upload
+          rm -f .github/workflows/quickplay-direct.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if git diff --cached --quiet; then
+            echo 'No changes to commit.'
+            exit 0
+          fi
+          git commit -m 'Atualiza lote revisado de 7 jogos e hub'
+          git push origin HEAD:main
