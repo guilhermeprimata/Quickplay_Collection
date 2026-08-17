@@ -6,6 +6,7 @@ Validation executed with Node.js syntax checking for every inline JavaScript blo
 |---|---:|---:|:---:|:---:|
 | `advinhe_o_numero.html` | 2 | 0 | — | ✅ |
 | `alien_threat.html` | 10 | 0 | ✅ | ✅ |
+| `atomic_raid.html` | 3 | 0 | ✅ | ✅ |
 | `bow_and_arrow.html` | 4 | 0 | ✅ | ✅ |
 | `brain_matrix.html` | 1 | 0 | ✅ | ✅ |
 | `campo_minado.html` | 4 | 0 | ✅ | ✅ |
@@ -35,7 +36,7 @@ Validation executed with Node.js syntax checking for every inline JavaScript blo
 
 ## Result
 
-- Games checked: **28**
+- Games checked: **29**
 - JavaScript syntax failures: **0**
 - External JavaScript dependencies: **0**
 - Direct Banco do Brasil branding signals: **0**

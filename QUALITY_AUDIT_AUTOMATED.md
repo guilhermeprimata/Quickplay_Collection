@@ -6,6 +6,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 |---|---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|---:|
 | `advinhe_o_numero.html` | v2 | — | ✅ | — | ⚠️ | ✅ | ✅ | ✅ | 22428 |
 | `alien_threat.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 485488 |
+| `atomic_raid.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 363869 |
 | `bow_and_arrow.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 77498 |
 | `brain_matrix.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 86497 |
 | `campo_minado.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 73963 |
@@ -35,7 +36,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 
 ## Automated findings
 
-- Platform layer not v2: `alien_threat.html`, `brain_matrix.html`, `campo_minado.html`, `corrida_de_cavalos.html`, `dropworks.html`, `idle_trader.html`, `kombo_blocks.html`, `pixel_joust.html`, `pong.html`, `rift_run.html`, `snowball_avalanche.html`
+- Platform layer not v2: `alien_threat.html`, `atomic_raid.html`, `brain_matrix.html`, `campo_minado.html`, `corrida_de_cavalos.html`, `dropworks.html`, `idle_trader.html`, `kombo_blocks.html`, `pixel_joust.html`, `pong.html`, `rift_run.html`, `snowball_avalanche.html`
 - No native pause signal: `advinhe_o_numero.html`, `corrida_de_cavalos.html`, `foguetinho.html`, `jogo_da_velha.html`, `reef_runner.html`, `salve_os_gatinhos.html`, `sudoku.html`, `torre_de_hanoi.html`
 - No native restart/new-game signal: `foguetinho.html`, `salve_os_gatinhos.html`, `sudoku.html`
 - Canvas + keyboard but no native touch signal: `advinhe_o_numero.html`
@@ -98,6 +99,50 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 - `L281: function crawlSfx(){if(!cfg.sound||state!=='play')return;let size=clamp(p.r/300,0,1),speed=clamp(p.speed/260,0,1),base=48-size*15;filteredNoise(.12+.08*size,'lowpass',135+speed*95,.009+.014*size);tone(base,.09+.07*size,'sine',.01+.012*size,'sfx');if(size>.45)tone(base*.66,.16,'triangle',.006+.008*size,'sfx',.025)}`
 - `L311: function windGust(intensity=.5){alienPulseSfx(.3+intensity*.5)}`
 - `L312: function updateEnvironmentalAudio(dt){if(!cfg.sound||state!=='play')return;crawlAudioTimer-=dt;crowdAudioTimer-=dt;if(crawlAudioTimer<=0){crawlSfx();crawlAudioTimer=clamp(.48-p.speed*.0007-p.r*.00035,.17,.48)}if(crowdAudioTimer<=0){let danger=musicTension();if(Math.random()<.18+danger*.2)alienPulseSfx(.25+danger*.55);crowdAudioTimer=rnd(2.4,4.8)}}`
+
+### `atomic_raid.html`
+**Control flow signals**
+- `L1346: window.addEventListener('keydown', e => {`
+- `L1721: async function initializeAudioContextAndBuffers() { if (isAudioContextStarted) return; audioContext = new (window.AudioContext || window.webkitAudioContext)(); if (audioContext.state === 'suspended') { await audioContext.resume(); } initializeAudioBuffers(); isAudioContextStarted = true; updateAudioButtonUIState(); }`
+- `L1790: function drawNewPlayerEvolution(ctx, level, x, y, w, h) {`
+- `L2589: function startGameTimer() {`
+- `L2628: function togglePause() {`
+- `L3389: submitScoreBtn.addEventListener('click', () => {`
+- `L3403: function resetAllProgress() {`
+- `L3514: window.addEventListener('keydown', (e) => {`
+- `L3601: startButton.addEventListener('click', async () => { loadingOverlay.classList.add('hidden'); await initializeAudioContextAndBuffers(); initGame(); });`
+- `L3602: newGameBtn.addEventListener('click', async () => {`
+- `L3606: confirmNewGameBtn.addEventListener('click', () => { newGameConfirmModal.classList.add('hidden'); showGameUI(); initGame(); });`
+- `L3607: cancelNewGameBtn.addEventListener('click', () => { newGameConfirmModal.classList.add('hidden'); if (gamePaused) togglePause(); showGameUI(); if (typeof draw === 'function') draw(); });`
+**Gameplay tuning signals**
+- `L1006: var isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints>0);`
+- `L1050: window.__i18n__ = { t, get lang(){return currentLang}, set lang(v){`
+- `L1057: I18N = (window.__AR_LOCALES__ && (window.__AR_LOCALES__[lang] || window.__AR_LOCALES__.en)) || {};`
+- `L1058: window.__AR_I18N_CURRENT__ = I18N;`
+- `L1120: window.__i18n__.lang = next;`
+- `L1182: function __T(s){ try { return (window.__i18n__ && window.__i18n__.t) ? window.__i18n__.t(s, s) : s; } catch(e){ return s; } }`
+- `L1305: playerSpeed: 0,`
+- `L1306: bulletSpeed: 0,`
+- `L1307: bulletDamage: 0,`
+- `L1329: deathsByEnemyBullet: 0,`
+- `L1332: megaBombsFound: 0,`
+- `L1333: megaBombsUsed: 0,`
+- `L1334: extraLivesFound: 0,`
+- `L1362: if (levelUpBuffer.length > 5) levelUpBuffer = levelUpBuffer.slice(-5);`
+- `L1397: const PLAYER_BULLET_SPEED_BASE = 6.4 * 1.15;`
+- `L1398: const ENEMY_BULLET_WIDTH = 3 * SIZE_MODIFIER, ENEMY_BULLET_HEIGHT = 6 * SIZE_MODIFIER;`
+- `L1399: const INITIAL_ENEMY_BULLET_SPEED = 5 * 1.15;`
+- `L1400: const ENEMY_WIDTH = 28 * SIZE_MODIFIER, ENEMY_HEIGHT = 28 * SIZE_MODIFIER;`
+- `L1406: const INITIAL_PLAYER_SPEED_BASE = 4 * 1.05;`
+- `L1410: const INITIAL_LIVES = 3;`
+- `L1411: const MAX_LIVES = 7;`
+- `L1412: const MAX_PLAYER_DAMAGE_BASE = 75;`
+- `L1414: const FUEL_STATION_SPAWN_INTERVAL = 550;`
+- `L1415: const AMMO_BOX_SPAWN_INTERVAL = 1000;`
+- `L1417: const LEVEL_UP_TIME_SECONDS = 60 * 0.95;`
+- `L1418: const INITIAL_RIVER_MIN_WIDTH_PERCENT = 0.60, INITIAL_RIVER_MAX_WIDTH_PERCENT = 0.70;`
+- `L1419: const INITIAL_SCROLL_SPEED = 0.77 * 1.2075;`
+- `L1420: const isTouchDevice = ('ontouchstart' in window || navigator.maxTouchPoints > 0);`
 
 ### `bow_and_arrow.html`
 **Control flow signals**
