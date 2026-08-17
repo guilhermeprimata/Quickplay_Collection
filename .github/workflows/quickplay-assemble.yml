@@ -29,33 +29,63 @@ jobs:
             echo "Staging incomplete; nothing to assemble yet."
           fi
 
-      - name: Assemble SKATE OR DIE release
+      - name: Assemble reviewed Quickplay batch
         if: steps.ready.outputs.ready == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          cat .quickplay-upload/skate_release/part_* | base64 -d > /tmp/skate_release_bundle.tar.gz
-          echo '1627e1993f722cc11dd6f570beb78bb2515860cb8f44bc2d354f302b40c083f7  /tmp/skate_release_bundle.tar.gz' | sha256sum -c -
-          tar -xzf /tmp/skate_release_bundle.tar.gz -C .
+          cat .quickplay-upload/batch/part_* | base64 -d > /tmp/quickplay_batch.tar.xz
+          expected="$(tr -d '[:space:]' < .quickplay-upload/SHA256)"
+          actual="$(sha256sum /tmp/quickplay_batch.tar.xz | awk '{print $1}')"
+          test "$actual" = "$expected" || { echo "Archive SHA mismatch: $actual != $expected"; exit 1; }
+
+          rm -rf /tmp/quickplay_batch
+          mkdir -p /tmp/quickplay_batch
+          tar -xJf /tmp/quickplay_batch.tar.xz -C /tmp/quickplay_batch
 
           python - <<'PY'
           from pathlib import Path
-          import re, zipfile
+          import hashlib, json, re, shutil, zipfile
+
           root=Path('.')
-          menu=(root/'index.html').read_text(encoding='utf-8')
+          staged=Path('/tmp/quickplay_batch')
+          manifest=json.loads((staged/'BATCH_SHA256.json').read_text(encoding='utf-8'))
+          expected_files=[
+              'kombo_blocks.html','jogo_da_forca.html','domination_wars.html','pong.html',
+              'snowball_avalanche.html','alien_threat.html','brain_matrix.html'
+          ]
+          if sorted(manifest)!=sorted(expected_files):
+              raise SystemExit('Unexpected batch manifest: '+repr(sorted(manifest)))
+          for name in expected_files:
+              src=staged/name
+              if not src.is_file(): raise SystemExit('Missing staged game: '+name)
+              digest=hashlib.sha256(src.read_bytes()).hexdigest()
+              if digest!=manifest[name]: raise SystemExit(f'SHA mismatch for {name}')
+              text=src.read_text(encoding='utf-8')
+              if '<html' not in text.lower() or '</html>' not in text.lower():
+                  raise SystemExit('Invalid HTML envelope: '+name)
+              shutil.copy2(src,root/name)
+
+          menu_path=root/'index.html'
+          menu=menu_path.read_text(encoding='utf-8')
+          # Keep canonical filenames/IDs stable while refreshing visible catalog copy.
+          menu=menu.replace("{file:'domination_wars.html',id:'domination_wars',name:'Tron: Domínio',emoji:'⚡',desc:'Guerra territorial orgânica com curvas contínuas, trilhas vulneráveis e IA de heading livre.',new:true}",
+                            "{file:'domination_wars.html',id:'domination_wars',name:'DOMINATION WARS',emoji:'⚡',desc:'Guerra territorial orgânica com curvas contínuas, trilhas vulneráveis, power-ups e IA agressiva.',new:true}")
+          menu=menu.replace("{file:'pong.html',id:'neon_pong',name:'Neon Pong',emoji:'🏓',desc:'Pong pixelado contra uma IA adaptativa.'}",
+                            "{file:'pong.html',id:'neon_pong',name:'Neon Pong',emoji:'🏓',desc:'Pong hyper-arcade com combos, supers, power-ups, arenas caóticas e IA em três níveis.'}")
+          menu=menu.replace("{file:'jogo_da_forca.html',id:'forca_neon',name:'Forca Neon',emoji:'🔤',desc:'Forca temática com dicas progressivas e ranking por tempo.'}",
+                            "{file:'jogo_da_forca.html',id:'forca_neon',name:'Forca Neon',emoji:'🔤',desc:'Forca neon com dicas progressivas, streak, pontuação e ranking local por idioma.'}")
+          menu_path.write_text(menu,encoding='utf-8')
+
           games=re.findall(r"\{file:'([^']+)',id:'([^']+)'", menu)
-          if len(games)!=28 or len({i for _,i in games})!=28:
-              raise SystemExit(f'Expected 28 unique games, found {len(games)}')
-          missing=[f for f,_ in games if not (root/f).is_file()]
-          if missing: raise SystemExit('Missing menu targets: '+', '.join(missing))
-          if not any(i=='skate_or_die' for _,i in games): raise SystemExit('SKATE OR DIE missing from menu')
-          tier=re.search(r"\{id:'A',title:'Tier A',games:\[([^\]]+)\]\}",menu)
-          if not tier or "'skate_or_die'" not in tier.group(1): raise SystemExit('SKATE OR DIE missing from Tier A')
-          skate=(root/'skate_or_die.html').read_text(encoding='utf-8')
-          forbidden=[r'<script[^>]+src=',r'<link[^>]+href=',r'fetch\s*\(']
-          for pat in forbidden:
-              if re.search(pat,skate,re.I): raise SystemExit('External dependency pattern in skate: '+pat)
-          if re.search(r'^\s*export\s',skate,re.M): raise SystemExit('ES module export leaked into classic script')
+          ids={i for _,i in games}
+          required={'kombo_blocks','forca_neon','domination_wars','neon_pong','snowball_avalanche','alien_threat','brain_matrix'}
+          missing_ids=sorted(required-ids)
+          if missing_ids: raise SystemExit('Hub missing IDs: '+', '.join(missing_ids))
+          missing_targets=[f for f,_ in games if not (root/f).is_file()]
+          if missing_targets: raise SystemExit('Missing menu targets: '+', '.join(missing_targets))
+
+          # Rebuild canonical complete snapshot after integrating the reviewed games.
           out=root/'Quickplay_Collection_COMPLETE.zip'
           include=[]
           for p in root.iterdir():
@@ -67,10 +97,9 @@ jobs:
               for p in include: z.write(p,p.name)
           with zipfile.ZipFile(out) as z:
               names=set(z.namelist())
-              if 'skate_or_die.html' not in names: raise SystemExit('SKATE missing from complete ZIP')
-              htmls=[n for n in names if n.endswith('.html')]
-              if len(htmls)!=30: raise SystemExit(f'Expected 30 HTML files in complete ZIP, found {len(htmls)}')
-          print('Quickplay validation OK:',len(games),'games; ZIP HTMLs:',len(htmls))
+              for name in expected_files+['index.html','menu_minigames.html']:
+                  if name not in names: raise SystemExit('Complete ZIP missing '+name)
+          print('Quickplay batch validation OK:',len(games),'menu games; updated',len(expected_files),'games')
           PY
 
           sha256sum Quickplay_Collection_COMPLETE.zip > Quickplay_Collection_COMPLETE.zip.sha256
@@ -84,5 +113,5 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
-          git commit -m 'Integrate SKATE OR DIE into Tier A'
+          git commit -m 'Atualiza lote revisado de 7 jogos e hub'
           git push origin HEAD:main
