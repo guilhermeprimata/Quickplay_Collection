@@ -1,0 +1,1 @@
+Integration is SHA-gated. Temporary staging files are removed automatically after successful assembly.
