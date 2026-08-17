@@ -1,0 +1,1 @@
+Tail transport uses verified small chunks; integration remains gated by archive SHA-256.
