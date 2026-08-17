@@ -71,16 +71,17 @@ jobs:
               s = s[:gs] + block + s[ge+2:]
 
           ts = s.index('const TIERS=', gs)
-          m = re.search(r"\bA\s*:\s*\[([^\]]*)\]", s[ts:], re.S)
+          tier_slice = s[ts:]
+          m = re.search(r"(\{\s*id\s*:\s*['\"]A['\"][^{}]*?\bgames\s*:\s*\[)([^\]]*)(\])", tier_slice, re.S)
           if not m:
-              raise SystemExit('Tier A missing')
-          inner = m.group(1)
+              raise SystemExit('Tier A object missing')
+          inner = m.group(2)
           if not re.search(r"['\"]atomic_raid['\"]", inner):
               trimmed = inner.rstrip()
               add = ("," if trimmed and not trimmed.endswith(',') else '') + "'atomic_raid'"
               newinner = trimmed + add + inner[len(trimmed):]
-              a = ts + m.start(1)
-              b = ts + m.end(1)
+              a = ts + m.start(2)
+              b = ts + m.end(2)
               s = s[:a] + newinner + s[b:]
 
           p.write_text(s, 'utf-8')
@@ -117,7 +118,7 @@ jobs:
               raise SystemExit('Broken hub targets: ' + ', '.join(missing))
 
           tier_text = hub[ts:]
-          ma = re.search(r"\bA\s*:\s*\[([^\]]*)\]", tier_text, re.S)
+          ma = re.search(r"\{\s*id\s*:\s*['\"]A['\"][^{}]*?\bgames\s*:\s*\[([^\]]*)\]", tier_text, re.S)
           if not ma or not re.search(r"['\"]atomic_raid['\"]", ma.group(1)):
               raise SystemExit('Atomic Raid not in Tier A')
           print('Hub games:', len(ids), '- Atomic Raid OK')
