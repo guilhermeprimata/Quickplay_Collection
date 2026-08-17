@@ -1,0 +1,157 @@
+name: Publish Atomic Raid
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.atomic-upload/READY'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-atomic-raid
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Rebuild and verify Atomic Raid
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(find .atomic-upload -maxdepth 1 -type f -name 'part_*' | wc -l)" -eq 12
+          cat .atomic-upload/part_* | base64 -d > /tmp/atomic_raid.html.xz
+          printf '%s  %s\n' 'aa83acd2ddc283d706234c68f94940628e01418223c2031e0ca1d6523ec9f422' /tmp/atomic_raid.html.xz | sha256sum --check --strict
+          xz -dc /tmp/atomic_raid.html.xz > atomic_raid.html
+          printf '%s  %s\n' '301d32d121da5f3cd87eb12708910029cc3752a6a28bf752b2778a988515f0f6' atomic_raid.html | sha256sum --check --strict
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib
+          b = Path('atomic_raid.html').read_bytes()
+          got = hashlib.sha1(f'blob {len(b)}\0'.encode() + b).hexdigest()
+          exp = '55756941d06eab3dc29e0cb07799bbdf70aebeb2'
+          assert got == exp, (got, exp)
+          text = b.decode('utf-8', errors='strict').lstrip().lower()
+          assert '<!doctype html' in text[:300]
+          assert '</html>' in text[-1000:]
+          print('Atomic Raid verified:', len(b), got)
+          PY
+
+      - name: Add Atomic Raid to hub
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path('index.html')
+          s = p.read_text('utf-8')
+          gs = s.index('const GAMES=[')
+          ts = s.index('const TIERS=', gs)
+          ge = s.rfind('];', gs, ts)
+          if ge < 0:
+              raise SystemExit('GAMES closing bracket missing')
+
+          block = s[gs:ge+2]
+          if not re.search(r"\bid\s*:\s*['\"]atomic_raid['\"]", block):
+              atomic = "{id:'atomic_raid',name:'ATOMIC RAID',emoji:'☢️',file:'atomic_raid.html',desc:'Arcade shooter procedural autocontido: pilote, combata, gerencie combustível e evolua sua nave.',new:true}"
+              close = block.rfind(']')
+              before = block[:close].rstrip()
+              sep = '' if before.endswith(('[', ',')) else ','
+              block = before + sep + '\n  ' + atomic + '\n' + block[close:]
+              s = s[:gs] + block + s[ge+2:]
+
+          ts = s.index('const TIERS=', gs)
+          m = re.search(r"\bA\s*:\s*\[([^\]]*)\]", s[ts:], re.S)
+          if not m:
+              raise SystemExit('Tier A missing')
+          inner = m.group(1)
+          if not re.search(r"['\"]atomic_raid['\"]", inner):
+              trimmed = inner.rstrip()
+              add = ("," if trimmed and not trimmed.endswith(',') else '') + "'atomic_raid'"
+              newinner = trimmed + add + inner[len(trimmed):]
+              a = ts + m.start(1)
+              b = ts + m.end(1)
+              s = s[:a] + newinner + s[b:]
+
+          p.write_text(s, 'utf-8')
+          PY
+
+      - name: Validate hub and rebuild package
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib, re, zipfile
+
+          root = Path('.')
+          hub = (root / 'index.html').read_text('utf-8')
+          gs = hub.index('const GAMES=[')
+          ts = hub.index('const TIERS=', gs)
+          objs = re.findall(r'\{[^{}]*\}', hub[gs:ts], re.S)
+          ids, files = [], []
+          for obj in objs:
+              mi = re.search(r"\bid\s*:\s*(['\"])(.*?)\1", obj, re.S)
+              mf = re.search(r"\bfile\s*:\s*(['\"])(.*?)\1", obj, re.S)
+              if mi and mf:
+                  ids.append(mi.group(2))
+                  files.append(mf.group(2))
+
+          if ids.count('atomic_raid') != 1:
+              raise SystemExit('Atomic card count != 1')
+          if files.count('atomic_raid.html') != 1:
+              raise SystemExit('Atomic file target count != 1')
+          if len(set(ids)) != len(ids):
+              raise SystemExit('Duplicate hub IDs')
+          missing = [f for f in files if not (root / f).is_file()]
+          if missing:
+              raise SystemExit('Broken hub targets: ' + ', '.join(missing))
+
+          tier_text = hub[ts:]
+          ma = re.search(r"\bA\s*:\s*\[([^\]]*)\]", tier_text, re.S)
+          if not ma or not re.search(r"['\"]atomic_raid['\"]", ma.group(1)):
+              raise SystemExit('Atomic Raid not in Tier A')
+          print('Hub games:', len(ids), '- Atomic Raid OK')
+
+          z = root / 'Quickplay_Collection_COMPLETE.zip'
+          sf = root / 'Quickplay_Collection_COMPLETE.zip.sha256'
+          if z.exists():
+              z.unlink()
+          inc = []
+          for f in root.iterdir():
+              if not f.is_file() or f.name in {z.name, sf.name}:
+                  continue
+              if f.suffix.lower() in {'.html', '.md', '.txt'} or f.name == '.nojekyll':
+                  inc.append(f)
+          inc.sort(key=lambda f: f.name.lower())
+          with zipfile.ZipFile(z, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zz:
+              for f in inc:
+                  zz.write(f, f.name)
+          digest = hashlib.sha256(z.read_bytes()).hexdigest()
+          sf.write_text(digest + '  ' + z.name + '\n', 'ascii')
+          print('ZIP rebuilt:', z.stat().st_size, digest)
+          PY
+
+      - name: Clean staging and commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .atomic-upload
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if git diff --cached --quiet; then
+            echo 'No changes to commit.'
+            exit 0
+          fi
+          git commit -m 'Add Atomic Raid to Quickplay hub'
+          git push origin HEAD:main
