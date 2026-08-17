@@ -1,0 +1,1 @@
+Temporary transport only; final integration is verified by SHA-256.
