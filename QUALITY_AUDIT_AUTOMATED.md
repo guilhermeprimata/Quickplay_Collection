@@ -6,9 +6,9 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 |---|---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|---:|
 | `advinhe_o_numero.html` | v2 | — | ✅ | — | ⚠️ | ✅ | ✅ | ✅ | 22428 |
 | `alien_threat.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 485488 |
-| `bow_and_arrow.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 55300 |
+| `bow_and_arrow.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 77498 |
 | `brain_matrix.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 86497 |
-| `campo_minado.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 69630 |
+| `campo_minado.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 73963 |
 | `click_speed.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 35680 |
 | `corrida_de_cavalos.html` | none | — | ✅ | ✅ | — | ✅ | ✅ | ✅ | 47510 |
 | `domination_wars.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 47167 |
@@ -25,7 +25,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 | `pong.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 51921 |
 | `reef_runner.html` | v2 | — | ✅ | ✅ | — | ✅ | ✅ | ✅ | 40013 |
 | `rift_run.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | — | 158626 |
-| `salve_os_gatinhos.html` | v2 | — | — | ✅ | — | ✅ | ✅ | ✅ | 40591 |
+| `salve_os_gatinhos.html` | v2 | — | — | ✅ | — | ✅ | ✅ | ✅ | 51273 |
 | `skate_or_die.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 271934 |
 | `snowball_avalanche.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 207925 |
 | `space_raid_2093.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 378452 |
@@ -102,39 +102,38 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 ### `bow_and_arrow.html`
 **Control flow signals**
 - `L43: function restart(){if(paused)setPaused(false);if(typeof window.PPGGameRestart==='function'){window.PPGGameRestart();return}location.reload()}`
-- `L99: function audio(){if(!audioOn)return;if(!AC){const A=window.AudioContext||window.webkitAudioContext;if(A)AC=new A()}if(AC&&AC.state==='suspended')AC.resume()}`
-- `L108: function reset(){score=0;combo=0;lives=LIVES_MAX;phase=1;totalTime=0;phaseTime=35;spawnTimer=.5;arrows.length=0;targets.length=0;particles.length=0;rainDrops.length=0;charging=false;charge=0;tripleShotTime=0;screenShake=0;lightning=0;chooseWeather(1);hud();showBanner('FASE 1 • '+currentWeather.name)}`
-- `L109: function start(){if(running)return;audio();reset();running=true;$('menu').className='menu hidden';startMusic()}`
-- `L115: canvas.addEventListener('mousedown',down);addEventListener('mousemove',move);addEventListener('mouseup',up);canvas.addEventListener('touchstart',down,{passive:false});canvas.addEventListener('touchmove',move,{passive:false});canvas.addEventListener('touchend',up,{passive:false});`
+- `L141: function audio(){if(!audioOn)return;if(!AC){const A=window.AudioContext||window.webkitAudioContext;if(A)AC=new A()}if(AC&&AC.state==='suspended')AC.resume()}`
+- `L152: function start(mode=runMode){if(running)return;configureMode(mode);audio();reset();running=true;$('menu').className='menu hidden';document.dispatchEvent(new CustomEvent('ppg:run-start',{detail:{game:'arqueiro',mode:runMode,date:dailyDate}}));startMusic()}`
+- `L176: function restartGame(){running=false;charging=false;stopMusic();start()}`
 **Gameplay tuning signals**
 - `L14: const qs=new URLSearchParams(location.search);if(qs.get('preview')==='1'||qs.has('preview'))return;`
 - `L24: window.setTimeout=(fn,ms,...args)=>{if(typeof fn!=='function')return nativeSetTimeout(fn,ms,...args);const run=()=>{if(paused)return nativeSetTimeout(run,50);fn(...args)};return nativeSetTimeout(run,ms)};`
-- `L59: const PREVIEW=new URLSearchParams(location.search).get('preview')==='1';`
-- `L61: let W=800,H=600,DPR=1,last=performance.now(),running=false,charging=false,charge=0,score=0,combo=0,lives=12,phase=1,totalTime=0,phaseTime=35,spawnTimer=.55,bannerTime=0;`
-- `L62: const LIVES_MAX=12,aim={x:600,y:250},arrows=[],targets=[],particles=[],rainDrops=[];`
-- `L63: let audioOn=!PREVIEW,AC=null,musicTimer=null,musicStep=0,currentWeather=null,tripleShotTime=0,screenShake=0,lightning=0,frameErrors=0;`
-- `L64: const wind={value:0,target:0,change:0};`
-- `L67: balloon:{name:'Balão',points:10,r:31,hp:1,speed:25,material:'soft'},`
-- `L68: bird:{name:'Pássaro',points:25,r:21,hp:1,speed:54,material:'soft'},`
-- `L69: kite:{name:'Pipa',points:40,r:29,hp:1,speed:39,material:'soft'},`
-- `L70: drone:{name:'Drone',points:70,r:30,hp:3,speed:28,material:'dense'},`
-- `L71: ghost:{name:'Fantasma',points:85,r:27,hp:1,speed:37,material:'soft'},`
-- `L72: meteor:{name:'Meteoro',points:100,r:30,hp:2,speed:57,material:'dense'},`
-- `L73: saucer:{name:'Disco',points:120,r:30,hp:2,speed:50,material:'dense'},`
-- `L74: rocket:{name:'Foguete',points:145,r:24,hp:2,speed:66,material:'dense'},`
-- `L75: boss:{name:'Mini-chefe',points:200,r:40,hp:4,speed:33,material:'dense'},`
-- `L76: dragon:{name:'Dragão',points:350,r:44,hp:4,speed:44,material:'dense'},`
-- `L77: gift:{name:'Presente',points:0,r:33,hp:1,speed:18,material:'soft',power:true}`
-- `L81: {name:'Sol aberto',key:'sunny',clouds:3,rain:0,storm:false,windBase:12,windSwing:18,skyTop:'#3e96ef',skyMid:'#83d1ff',skyBot:'#ffe0a2'},`
-- `L82: {name:'Poucas nuvens',key:'fair',clouds:6,rain:0,storm:false,windBase:18,windSwing:24,skyTop:'#5088db',skyMid:'#9bd8f5',skyBot:'#f7d8a5'},`
-- `L83: {name:'Nublado',key:'cloudy',clouds:10,rain:0,storm:false,windBase:23,windSwing:30,skyTop:'#69798e',skyMid:'#b4c2cf',skyBot:'#d9c8ad'},`
-- `L84: {name:'Chuva',key:'rain',clouds:13,rain:60,storm:false,windBase:31,windSwing:38,skyTop:'#536272',skyMid:'#8095a9',skyBot:'#b9bea8'},`
-- `L85: {name:'Tempestade',key:'storm',clouds:16,rain:88,storm:true,windBase:39,windSwing:46,skyTop:'#2e3d57',skyMid:'#556273',skyBot:'#777665'}`
-- `L89: if(hudLeft&&!$('weatherLabel')){const a=document.createElement('span');a.className='weather-chip';a.innerHTML='Clima <b id="weatherLabel">—</b>';hudLeft.appendChild(a);const b=document.createElement('span');b.className='wind-chip';b.innerHTML='Vento <b id="windLabel">↔ 0</b>';hudLeft.appendChild(b)}`
-- `L91: const intro=$('menu').querySelector('p');if(intro)intro.innerHTML='Sobreviva a 10 fases com <b>'+LIVES_MAX+' vidas</b>. Mire, tensione e solte. Clima e vento alteram a física; presentes carregados por balões liberam poderes.';`
-- `L94: function showError(msg){frameErrors++;const box=$('errorBox');box.textContent='Falha recuperável: '+msg;box.style.display='block';clearTimeout(showError.t);showError.t=setTimeout(()=>box.style.display='none',3500)}`
-- `L96: function resize(){DPR=Math.min(devicePixelRatio||1,2);W=Math.max(320,innerWidth);H=Math.max(240,innerHeight);canvas.width=Math.round(W*DPR);canvas.height=Math.round(H*DPR);ctx.setTransform(DPR,0,0,DPR,0,0);if(currentWeather)seedClouds(false)}`
-- `L98: function archer(){return{x:Math.max(92,W*.11),y:H*.72}}`
+- `L61: const PREVIEW=new URLSearchParams(location.search).get('preview')==='1';`
+- `L63: const LIVES_MAX=12, COMBO_STEP=4, BEST_KEY='ppg_arqueiro_best_v3', DAILY_KEY='ppg_arqueiro_daily_v1';`
+- `L64: let W=800,H=600,DPR=1,last=performance.now(),running=false,charging=false,charge=0,score=0,combo=0,lives=LIVES_MAX,phase=1,totalTime=0,phaseTime=22,spawnTimer=.55,bannerTime=0;`
+- `L65: let runMode='normal',dailyDate='',gameRng=Math.random,weatherRng=Math.random,currentObjective=null,objectivesCompleted=0,objectiveBonusTotal=0,hitStreak=0,criticalStreak=0,bossDefeated=false,phaseStartLives=LIVES_MAX;`
+- `L66: const aim={x:600,y:250},arrows=[],targets=[],particles=[],rainDrops=[],floaters=[];`
+- `L67: let shots=0,hitShots=0,kills=0,bestCombo=0,perfectHits=0,volleySeq=0;`
+- `L69: let audioOn=!PREVIEW,AC=null,NOISE_BUFFER=null,musicTimer=null,musicStep=0,currentWeather=null,tripleShotTime=0,screenShake=0,lightning=0,frameErrors=0;`
+- `L70: const wind={value:0,target:0,change:0};`
+- `L73: balloon:{name:'Balão',points:10,r:31,hp:1,speed:25,material:'soft'},`
+- `L74: bird:{name:'Pássaro',points:25,r:21,hp:1,speed:54,material:'soft'},`
+- `L75: kite:{name:'Pipa',points:40,r:29,hp:1,speed:39,material:'soft'},`
+- `L76: drone:{name:'Drone',points:70,r:30,hp:3,speed:28,material:'dense'},`
+- `L77: ghost:{name:'Fantasma',points:85,r:27,hp:1,speed:37,material:'soft'},`
+- `L78: meteor:{name:'Meteoro',points:100,r:30,hp:2,speed:57,material:'dense'},`
+- `L79: saucer:{name:'Disco',points:120,r:30,hp:2,speed:50,material:'dense'},`
+- `L80: rocket:{name:'Foguete',points:145,r:24,hp:2,speed:66,material:'dense'},`
+- `L81: boss:{name:'Mini-chefe',points:200,r:40,hp:4,speed:33,material:'dense'},`
+- `L82: dragon:{name:'Dragão',points:350,r:64,hp:20,speed:44,material:'dense'},`
+- `L83: fireball:{name:'Bola de Fogo',points:35,r:18,hp:1,speed:92,material:'soft'},`
+- `L84: gift:{name:'Presente',points:0,r:33,hp:1,speed:18,material:'soft',power:true}`
+- `L87: {name:'Festival dos Balões',duration:22,types:['balloon','balloon','balloon','balloon','bird'],rate:1.05,weather:[0,0,1],objective:{type:'killsType',targetType:'balloon',target:7,label:'Estoure 7 balões',bonus:160}},`
+- `L88: {name:'Bando ao Entardecer',duration:23,types:['bird','bird','bird','balloon'],rate:.94,weather:[0,1,1],objective:{type:'volleyStreak',target:5,label:'Acerte 5 disparos seguidos',bonus:200}},`
+- `L89: {name:'Dança dos Ventos',duration:24,types:['kite','kite','bird','kite'],rate:.92,weather:[1,1,2],objective:{type:'criticalStreak',target:3,label:'Faça 3 críticos seguidos',bonus:240}},`
+- `L90: {name:'Patrulha Mecânica',duration:25,types:['drone','drone','balloon','drone'],rate:1.00,weather:[1,2,2],objective:{type:'killsType',targetType:'drone',target:2,label:'Derrube 2 drones antes que escapem',bonus:280}},`
+- `L91: {name:'Névoa dos Antigos',duration:25,types:['ghost','ghost','kite','ghost'],rate:.88,weather:[2,2,3],objective:{type:'killsType',targetType:'ghost',target:5,label:'Dissipe 5 fantasmas',bonus:300}},`
+- `L92: {name:'Chuva de Pedra',duration:25,types:['meteor','meteor','bird','meteor'],rate:.90,weather:[2,3,3],objective:{type:'survive',target:1,label:'Atravesse a chuva sem perder vida',bonus:360}},`
 
 ### `brain_matrix.html`
 **Control flow signals**
@@ -182,47 +181,47 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 
 ### `campo_minado.html`
 **Control flow signals**
-- `L357: window.Tone={Synth,PolySynth,NoiseSynth,start:async()=>{const A=get();if(A.state==='suspended')await A.resume()},now:()=>get().currentTime,get context(){return get()}};`
-- `L398: function restart(){if(paused)setPaused(false);if(typeof window.PPGGameRestart==='function'){window.PPGGameRestart();return}location.reload()}`
-- `L489: if (audioCtx.state === 'suspended') await audioCtx.resume();`
-- `L523: function playGameOverSound() {`
-- `L1002: function startTimer() {`
-- `L1060: canvas.addEventListener('click', (event) => {`
-- `L1095: newGameBtn.addEventListener('click', initGame);`
-- `L1097: resetAllBtn.addEventListener('click', () => {`
-- `L1101: confirmResetBtn.addEventListener('click', async () => {`
-- `L1106: cancelResetBtn.addEventListener('click', () => {`
-- `L1110: darkModeBtn.addEventListener('click', () => {`
-- `L1115: backBtn.addEventListener('click', () => {`
+- `L438: function restart(){if(paused)setPaused(false);if(typeof window.PPGGameRestart==='function'){window.PPGGameRestart();return}location.reload()}`
+- `L528: if (audioCtx.state === 'suspended') await audioCtx.resume();`
+- `L588: function playGameOverSound() {`
+- `L890: function startEffectLoop() {`
+- `L1085: function startTimer() {`
+- `L1144: canvas.addEventListener('click', (event) => {`
+- `L1179: newGameBtn.addEventListener('click', initGame);`
+- `L1181: resetAllBtn.addEventListener('click', () => {`
+- `L1185: confirmResetBtn.addEventListener('click', async () => {`
+- `L1190: cancelResetBtn.addEventListener('click', () => {`
+- `L1212: darkModeBtn.addEventListener('click', () => {`
+- `L1217: backBtn.addEventListener('click', () => {`
 **Gameplay tuning signals**
-- `L369: const qs=new URLSearchParams(location.search);if(qs.get('preview')==='1'||qs.has('preview'))return;`
-- `L379: window.setTimeout=(fn,ms,...args)=>{if(typeof fn!=='function')return nativeSetTimeout(fn,ms,...args);const run=()=>{if(paused)return nativeSetTimeout(run,50);fn(...args)};return nativeSetTimeout(run,ms)};`
-- `L500: if (endFreq) osc.frequency.exponentialRampToValueAtTime(Math.max(25, endFreq), t + duration);`
-- `L501: gain.gain.setValueAtTime(Math.max(0.0001, volume), t);`
-- `L557: this.radius = Math.random() * 3 + 1;`
-- `L567: this.alpha -= 1 / this.life;`
-- `L575: ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);`
-- `L611: const availableWidth = Math.min(600, window.innerWidth - padding);`
-- `L614: const canvasMaxWidth = Math.min(availableWidth, 560);`
-- `L624: while (bombsToPlace > 0) {`
-- `L663: if (nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE && board[nr][nc].isBomb) {`
-- `L701: createExplosionParticles(col * cellSize + cellSize / 2, row * cellSize + cellSize / 2);`
-- `L716: if (board[row][col].adjacentBombs === 0) {`
-- `L834: } else if (cell.adjacentBombs > 0) {`
-- `L839: ctx.fillText(cell.adjacentBombs.toString(), x + cellSize / 2, y + cellSize / 2 + 2);`
-- `L887: ctx.lineWidth = Math.max(1.4, cellSize * 0.04);`
-- `L903: ctx.shadowBlur = Math.max(3, cellSize * 0.10);`
-- `L907: ctx.lineWidth = Math.max(1.2, cellSize * 0.03);`
-- `L945: ctx.shadowBlur = Math.max(8, cellSize * 0.18);`
-- `L951: ctx.lineWidth = Math.max(1.2, cellSize * 0.03);`
-- `L957: ctx.lineWidth = Math.max(2, cellSize * 0.06);`
-- `L962: ctx.lineWidth = Math.max(1, cellSize * 0.025);`
-- `L989: if (particles[i].life <= 0) {`
-- `L1026: adjacentBombs: 0,`
-- `L1046: timerEl.textContent = 'Tempo: 0s';`
-- `L1141: if (scores.length > 0) {`
-- `L1143: scores.slice(0, 5).forEach((score, index) => {`
-- `L1145: li.textContent = '${index + 1}. ${score.name}: ${score.time}s';`
+- `L409: const qs=new URLSearchParams(location.search);if(qs.get('preview')==='1'||qs.has('preview'))return;`
+- `L419: window.setTimeout=(fn,ms,...args)=>{if(typeof fn!=='function')return nativeSetTimeout(fn,ms,...args);const run=()=>{if(paused)return nativeSetTimeout(run,50);fn(...args)};return nativeSetTimeout(run,ms)};`
+- `L539: if (endFreq) osc.frequency.exponentialRampToValueAtTime(Math.max(25, endFreq), t + duration);`
+- `L540: gain.gain.setValueAtTime(Math.max(0.0001, volume), t);`
+- `L551: const length = Math.max(1, Math.floor(audioCtx.sampleRate * duration));`
+- `L570: const p = Math.max(0, Math.min(8, proximity));`
+- `L572: synthTone(base, 0.055, 'triangle', 0.06, 0, Math.max(120, base - 45));`
+- `L622: this.radius = Math.random() * 3 + 1;`
+- `L632: this.alpha -= 1 / this.life;`
+- `L640: ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);`
+- `L678: const viewportWidth = Math.max(280, document.documentElement.clientWidth || window.innerWidth);`
+- `L679: const viewportHeight = Math.max(360, window.innerHeight);`
+- `L680: const canvasMaxWidth = Math.min(560, viewportWidth - 24);`
+- `L681: const reservedHeight = viewportHeight < 760 ? 175 : 230;`
+- `L682: const canvasMaxHeight = Math.max(240, viewportHeight - reservedHeight);`
+- `L683: cellSize = Math.max(15, Math.floor(Math.min(canvasMaxWidth / GRID_SIZE, canvasMaxHeight / GRID_SIZE)));`
+- `L690: while (bombsToPlace > 0) {`
+- `L729: if (nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE && board[nr][nc].isBomb) {`
+- `L748: if (cell.adjacentBombs === 0) {`
+- `L777: createExplosionParticles(col * cellSize + cellSize / 2, row * cellSize + cellSize / 2);`
+- `L908: ? (cell.isBomb ? palette.contacts[0] : palette.contacts[cell.adjacentBombs])`
+- `L913: const density = cell.isBomb ? 0 : cell.adjacentBombs;`
+- `L915: ctx.fillRect(x + 2, y + 2, cellSize * 0.38, Math.max(2, cellSize * 0.15));`
+- `L916: ctx.fillRect(x + cellSize * 0.54, y + cellSize * 0.64, cellSize * 0.22, Math.max(2, cellSize * 0.10));`
+- `L923: vignette.addColorStop(1, 'rgba(22,18,10,${Math.min(.34, density * .035)})');`
+- `L970: ctx.lineWidth = Math.max(1.4, cellSize * 0.04);`
+- `L986: ctx.shadowBlur = Math.max(3, cellSize * 0.10);`
+- `L990: ctx.lineWidth = Math.max(1.2, cellSize * 0.03);`
 
 ### `click_speed.html`
 **Control flow signals**
@@ -734,47 +733,47 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 
 ### `salve_os_gatinhos.html`
 **Control flow signals**
-- `L51: let state = 'menu', score = 0, lives = 3, combo = 1, best = 0, elapsed = 0;`
-- `L90: if (ac.state === 'suspended') ac.resume();`
-- `L140: function startBGM() {`
-- `L146: if (state === 'play' && !muted) {`
-- `L171: function reset() {`
-- `L187: state = 'play';`
-- `L200: function gameOver() {`
-- `L201: state = 'over';`
-- `L757: el.addEventListener('pointerdown', on);`
-- `L758: el.addEventListener('pointerup', off);`
-- `L759: el.addEventListener('pointercancel', off);`
-- `L760: el.addEventListener('pointerleave', off);`
+- `L103: let state = 'menu';`
+- `L207: if (ac.state === 'suspended') ac.resume().catch(() => {});`
+- `L278: function startBGM() {`
+- `L325: function reset() {`
+- `L350: state = 'play';`
+- `L373: function gameOver() {`
+- `L375: state = 'over';`
+- `L490: function resetInput() {`
+- `L907: el.addEventListener('pointerdown', on);`
+- `L908: el.addEventListener('pointerup', off);`
+- `L909: el.addEventListener('pointercancel', off);`
+- `L910: el.addEventListener('lostpointercapture', off);`
 **Gameplay tuning signals**
-- `L51: let state = 'menu', score = 0, lives = 3, combo = 1, best = 0, elapsed = 0;`
-- `L52: let spawnTimer = 1.4, sceneCheckTimer = 3.0, shake = 0, flash = 0, muted = false;`
-- `L57: const player = { x: 430, y: 444, w: 106, h: 26, vx: 0, maxSpeed: 540, acc: 2900, drag: 11.5 };`
-- `L81: let ac = null, masterGain = null, bgmTimer = null, bgmStep = 0;`
-- `L102: osc.frequency.exponentialRampToValueAtTime(Math.max(20, freq + slide), t + dur);`
-- `L120: const baseFreq = 340 + Math.min(param, 10) * 45;`
-- `L162: { name: 'orange', color: '#f69d3b', inner: '#ffd383', points: 100 },`
-- `L172: score = 0;`
-- `L173: lives = 3;`
-- `L174: combo = 1;`
-- `L176: spawnTimer = 1.6;`
-- `L177: sceneCheckTimer = 2.0;`
-- `L194: ui.score.textContent = String(score).padStart(6, '0');`
-- `L196: ui.combo.style.transform = combo > 1 ? 'scale(1.15)' : 'scale(1)';`
-- `L197: ui.lives.textContent = '♥ '.repeat(Math.max(0, lives)).trim() || 'SEM VIDAS';`
-- `L211: const difficulty = Math.min(1, elapsed / 130);`
-- `L212: let availableWindows = windows.filter(w => w.f < 3 && !w.fire);`
-- `L217: availableWindows = availableWindows.filter(w => Math.abs(w.x - lastCat.x) < 420);`
-- `L218: if (availableWindows.length === 0) availableWindows = windows.filter(w => w.f < 3 && !w.fire);`
-- `L221: const win = availableWindows[(Math.random() * availableWindows.length) | 0];`
-- `L222: const isGolden = Math.random() < (0.04 + difficulty * 0.05);`
-- `L228: const vx = (Math.random() - 0.5) * (20 + difficulty * 20) + centerPull * difficulty;`
-- `L260: if (sceneCheckTimer <= 0) {`
-- `L261: sceneCheckTimer = 4.5 + Math.random() * 4.0; // Checagem espaçada`
-- `L266: const candidates = windows.filter(w => w.lit && !w.fire && !w.scene && w.f > 0);`
-- `L280: function addBurst(x, y, color, count = 10, speed = 80) {`
-- `L283: const s = Math.random() * speed + 20;`
-- `L288: life: 0.35 + Math.random() * 0.4,`
+- `L61: maxLives: 3,`
+- `L62: maxCombo: 15,`
+- `L63: difficultySeconds: 120,`
+- `L66: maxParticles: 460,`
+- `L67: maxSmoke: 90`
+- `L95: bestScore: 0,`
+- `L97: bestCombo: 1,`
+- `L101: meta = { bestScore: 0, bestRescues: 0, bestCombo: 1, bestPerfect: 0, plays: 0, ...meta };`
+- `L104: let score = 0;`
+- `L106: let combo = 1;`
+- `L107: let maxCombo = 1;`
+- `L111: let spawnTimer = 1.5;`
+- `L112: let sceneCheckTimer = 2.8;`
+- `L117: let currentPhase = 0;`
+- `L120: let toastTimer = 0;`
+- `L123: const player = { x: 427, y: 444, w: 106, h: 26, vx: 0, maxSpeed: 560, acc: 3000, drag: 11.8 };`
+- `L133: { name: 'orange', color: '#f69d3b', inner: '#ffd383', points: 100 },`
+- `L155: speed: .45 + Math.random() * .8`
+- `L173: spawnGlow: 0,`
+- `L216: masterGain.gain.setTargetAtTime(muted ? 0.0001 : 0.34, now, 0.015);`
+- `L225: osc.frequency.setValueAtTime(Math.max(20, freq), t);`
+- `L226: if (slide !== 0) osc.frequency.exponentialRampToValueAtTime(Math.max(20, freq + slide), t + dur);`
+- `L227: gain.gain.setValueAtTime(Math.max(.0001, vol), t);`
+- `L243: const base = 320 + Math.min(param, 12) * 37;`
+- `L285: const intensity = Math.min(1, elapsed / CFG.difficultySeconds);`
+- `L292: if (combo >= 8 && step % 4 === 2) playTone(784, .05, 'triangle', .018, 80, .02, 'music');`
+- `L309: return Math.min(1, Math.max(0, seconds / CFG.difficultySeconds));`
+- `L314: for (let i = 1; i < PHASES.length; i++) if (seconds >= PHASES[i].at) idx = i;`
 
 ### `skate_or_die.html`
 **Control flow signals**

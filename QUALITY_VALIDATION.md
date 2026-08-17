@@ -8,7 +8,7 @@ Validation executed with Node.js syntax checking for every inline JavaScript blo
 | `alien_threat.html` | 10 | 0 | ✅ | ✅ |
 | `bow_and_arrow.html` | 4 | 0 | ✅ | ✅ |
 | `brain_matrix.html` | 1 | 0 | ✅ | ✅ |
-| `campo_minado.html` | 5 | 0 | ✅ | ✅ |
+| `campo_minado.html` | 4 | 0 | ✅ | ✅ |
 | `click_speed.html` | 4 | 0 | ✅ | ✅ |
 | `corrida_de_cavalos.html` | 1 | 0 | — | ✅ |
 | `domination_wars.html` | 1 | 0 | ✅ | ✅ |
