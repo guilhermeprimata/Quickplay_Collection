@@ -1,0 +1,1 @@
+Using patch transport fallback against canonical files; final per-file SHA checks remain authoritative.
