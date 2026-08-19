@@ -8,27 +8,39 @@ on:
 
 permissions:
   contents: write
-
-jobs:
+\ njobs:
   export:
     if: ${{ github.actor != 'github-actions[bot]' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Export ZIP as temporary text chunks
+
+      - name: Verify current collection package
         shell: bash
         run: |
           set -euo pipefail
           test -f Quickplay_Collection_COMPLETE.zip
           test -f Quickplay_Collection_COMPLETE.zip.sha256
           echo '5a4d30c38c2322ed6afb3a56825e6752290298ac05aac5141115084590a681de  Quickplay_Collection_COMPLETE.zip' | sha256sum -c -
+
+      - name: Upload collection artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Quickplay_Collection_COMPLETE_2026-08-19
+          path: |
+            Quickplay_Collection_COMPLETE.zip
+            Quickplay_Collection_COMPLETE.zip.sha256
+          retention-days: 7
+
+      - name: Publish run id and clean temporary chunks
+        shell: bash
+        run: |
+          set -euo pipefail
           rm -rf .download-export
           mkdir .download-export
-          base64 -w0 Quickplay_Collection_COMPLETE.zip | split -b 250000 -d -a 2 - .download-export/chunk_
-          cp Quickplay_Collection_COMPLETE.zip.sha256 .download-export/SHA256
-          wc -c .download-export/chunk_* > .download-export/SIZES
+          printf '%s\n' "$GITHUB_RUN_ID" > .download-export/RUN_ID
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add .download-export
-          git commit -m 'Temporary export of Quickplay ZIP'
+          git add -A .download-export
+          git commit -m 'Expose Quickplay ZIP artifact run id'
           git push origin HEAD:main
