@@ -14,6 +14,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 | `corrida_de_cavalos.html` | none | — | ✅ | ✅ | — | ✅ | ✅ | ✅ | 47510 |
 | `domination_wars.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 47167 |
 | `dropworks.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 144991 |
+| `fighting_fire.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 1725830 |
 | `foguetinho.html` | v2 | — | — | ✅ | — | ✅ | ✅ | ✅ | 71237 |
 | `idle_trader.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 63644 |
 | `iron_delta.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 167632 |
@@ -36,7 +37,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 
 ## Automated findings
 
-- Platform layer not v2: `alien_threat.html`, `atomic_raid.html`, `brain_matrix.html`, `campo_minado.html`, `corrida_de_cavalos.html`, `dropworks.html`, `idle_trader.html`, `kombo_blocks.html`, `pixel_joust.html`, `pong.html`, `rift_run.html`, `snowball_avalanche.html`
+- Platform layer not v2: `alien_threat.html`, `atomic_raid.html`, `brain_matrix.html`, `campo_minado.html`, `corrida_de_cavalos.html`, `dropworks.html`, `fighting_fire.html`, `idle_trader.html`, `kombo_blocks.html`, `pixel_joust.html`, `pong.html`, `rift_run.html`, `snowball_avalanche.html`
 - No native pause signal: `advinhe_o_numero.html`, `corrida_de_cavalos.html`, `foguetinho.html`, `jogo_da_velha.html`, `reef_runner.html`, `salve_os_gatinhos.html`, `sudoku.html`, `torre_de_hanoi.html`
 - No native restart/new-game signal: `foguetinho.html`, `salve_os_gatinhos.html`, `sudoku.html`
 - Canvas + keyboard but no native touch signal: `advinhe_o_numero.html`
@@ -363,6 +364,50 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 - `L193: cs.currentY=(Number(m.trackY??c.y??80))+Math.sin(this.sceneTime*3+(Number(m.phase)||0)*6.283)*(Number(m.bobAmp)||.6);`
 - `L195: cs.angle+=(Number(m.speed)||.65)*((m.direction||1)>=0?1:-1)*dt;`
 - `L196: cs.currentX=(Number(m.centerX)||50)+Math.cos(cs.angle)*(Number(m.radiusX)||28);`
+
+### `fighting_fire.html`
+**Control flow signals**
+- `L357: function clinicalLabel(r){if(!r)return '—';if(r.incidentType==='cat')return r.stability>=72?'ASSUSTADO, MAS SEGURO':'ESTRESSADO';if(r.state==='carrying'&&(r.stability<56||cable.risk>.62))return 'INSTÁVEL NO TRANSPORTE';if(r.stability>=76)return 'ESTÁVEL';if(r.stability>=54)return 'GRAVE';return 'CRÍTICO'}`
+- `L483: function resetContextualTutorial(){tutorialSeen={};Store.set(TUTORIAL_KEY,tutorialSeen);message('Dicas contextuais reativadas.')}`
+- `L622: pad.addEventListener('pointerdown',e=>{pad.setPointerCapture(e.pointerId);move(e)});pad.addEventListener('pointermove',e=>{if(e.buttons)move(e)});pad.addEventListener('pointerup',end);pad.addEventListener('pointercancel',end);`
+- `L627: cv.addEventListener('mousemove',e=>{if(state!=='play'||isMobileWorldBudget()||desktopControlMode()!=='MOUSE')return;let r=cv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*W,y=(e.clientY-r.top)/r.height*H;pointer.x=clamp((x-W/2)/180,-1,1);pointer.y=clamp((y-H/2)/150,-1,1);pointer.active=Math.hypot(pointer.x,pointer.y)>.10});`
+- `L628: cv.addEventListener('mouseleave',()=>pointer.active=false);`
+- `L629: cv.addEventListener('mousedown',e=>{if(e.button===0)pointer.drop=true});`
+- `L630: addEventListener('mouseup',()=>pointer.drop=false);`
+- `L658: function installAudioUnlock(){const unlock=()=>unlockAudioFromGesture();addEventListener('pointerdown',unlock,{capture:true,passive:true});addEventListener('keydown',unlock,{capture:true});addEventListener('touchstart',unlock,{capture:true,passive:true})}`
+- `L691: function resetAudioRuntime(){musicState={timer:0,step:0,fireLayer:0,rescueLayer:0,criticalLayer:0};audioState={wasWater:false,wasCapturing:false,wasDropping:false,captureTimer:0,lastBucketWater:null,impactCooldown:0,creakCooldown:0,radioCooldown:0,ambienceTimer:0};muteContinuousAudio()}`
+- `L699: let state='menu',time=0,last=0,acc=0,score=0;`
+- `L1404: function hasSuspendedVictim(){return !!(rescue&&(rescue.state==='carrying'||rescue.state==='delivering'))}`
+- `L1501: $('#minimap').addEventListener('pointerdown',e=>{e.preventDefault();handleMinimapGroundClick(e)});$('#groundDeselect').onclick=e=>{e.preventDefault();deselectGroundTeam()};`
+**Gameplay tuning signals**
+- `L291: const CAMERA_ZOOM=Object.freeze({min:.60,default:1.00,max:1.25,step:.05});`
+- `L297: const DIFF=Object.freeze({easy:{spread:.82,damage:.72,ground:1.18},normal:{spread:1.18,damage:1.05,ground:1},hard:{spread:1.58,damage:1.34,ground:.80}});`
+- `L300: emptyThrust:288,fullThrust:218,emptyMaxSpeed:150,fullMaxSpeed:122,`
+- `L301: emptyCoastBrake:3.55,fullCoastBrake:2.30,emptyActiveDrag:1.18,fullActiveDrag:.88,`
+- `L302: precisionMaxSpeed:61,precisionThrust:.60,precisionBrakeBoost:2.55,`
+- `L303: carryMaxSpeed:88,carryThrust:.72,carryControlResponse:2.45,`
+- `L309: rotor:{label:'ROTOR',effect:'velocidade máxima reduzida',repair:5.8},`
+- `L317: explosion:{engine:.62,rotor:.78,cable:.48,hydraulic:.66,tank:1.0,radio:.72},`
+- `L322: attack:{label:'Caminhão de combate',short:'COMBATE',icon:'🚒',color:'#e84f3f',speed:35,waterCap:130,hose:110,heatLimit:.78,vehicle:true,attack:true,protect:true},`
+- `L323: tanker:{label:'Caminhão-pipa',short:'PIPA',icon:'🚛',color:'#3fa8d8',speed:29,waterCap:280,hose:72,heatLimit:.64,vehicle:true,attack:true,protect:true,supply:true},`
+- `L324: ambulance:{label:'Ambulância',short:'AMB',icon:'✚',color:'#f4f4f4',speed:39,waterCap:0,hose:0,heatLimit:.48,vehicle:true,medical:true,victims:true},`
+- `L325: rescue:{label:'Equipe de salvamento',short:'SALV',icon:'⛑',color:'#f0c43f',speed:25,waterCap:0,hose:0,heatLimit:.60,vehicle:false,victims:true},`
+- `L326: evacuation:{label:'Equipe de evacuação',short:'EVAC',icon:'⇢',color:'#d08be8',speed:24,waterCap:0,hose:0,heatLimit:.52,vehicle:false,victims:true,evac:true},`
+- `L327: utility:{label:'Manutenção elétrica',short:'ELÉTRICA',icon:'⚡',color:'#f3de65',speed:30,waterCap:0,hose:0,heatLimit:.46,vehicle:true,protect:true,utility:true}`
+- `L340: firefighter:{label:'BOMBEIRO FERIDO',short:'BOMBEIRO',decay:.68,stability:62,patients:1},`
+- `L352: truck_accident:{label:'ACIDENTE COM CAMINHÃO',short:'CAMINHÃO',decay:.72,stability:55,patients:1},`
+- `L356: function operationDef(){if(typeof runMode!=='undefined'&&runMode==='infinite')return INFINITE_OPERATION;return OPERATIONS[Math.max(0,Math.min(OPERATIONS.length-1,level-1))]||OPERATIONS[0]}`
+- `L437: function getCameraScreenBounds(zoom=cameraZoom(),pad=0){const z=cameraZoom(zoom),p=Math.max(0,Number(pad)||0),halfWidth=W/(2*z)+p,halfHeight=H/(2*z)+p;return {left:W/2-halfWidth,right:W/2+halfWidth,top:H/2-halfHeight,bottom:H/2+halfHeight,halfWidth,halfHeight,zoom:z,pad:p}}`
+- `L467: let tutorialSeen=safeObject(Store.get(TUTORIAL_KEY,{}),{}),tutorialCooldown=0;`
+- `L482: function tutorialOnce(key){if(tutorialSeen[key]||tutorialCooldown>0)return false;tutorialSeen[key]=true;Store.set(TUTORIAL_KEY,tutorialSeen);tutorialCooldown=4;message('💡 '+tutorialText(key));return true}`
+- `L491: function addParticle(type,x,y,vx,vy,life,size,color){const mobile=isMobileWorldBudget(),cap=cfg.reducedParticles?(mobile?160:220):(mobile?360:550);if(cfg.reducedParticles&&Math.random()<.58)return;if(particles.length<cap)particles.push({type,x,y,vx,vy,life,max:life,size,color})}`
+- `L492: let screenShake=0;function addScreenShake(amount){screenShake=Math.max(screenShake,Math.max(0,amount)*clamp(Number(cfg.shakeIntensity??.55),0,1))}function updateScreenShake(dt){screenShake*=Math.exp(-8.5*dt);if(screenShake<.04)screenShake=0}`
+- `L494: function rescueDifficultyProfile(){return cfg.rescueDifficulty==='easy'?{decay:.72,transport:.68,smooth:1.35,initial:7,load:.86}:cfg.rescueDifficulty==='hard'?{decay:1.25,transport:1.32,smooth:.70,initial:-6,load:1.12}:{decay:1,transport:1,smooth:1,initial:0,load:1}}`
+- `L495: function rescueLoadSeconds(){return 4.2*rescueDifficultyProfile().load}function rescueDeliverySeconds(){return 2.5*rescueDifficultyProfile().load}`
+- `L496: function textDisplayMs(){return cfg.textSpeed==='slow'?3600:cfg.textSpeed==='fast'?1450:2200}`
+- `L507: finish(run){if(!this.data)this.load();if(this.playAcc>0){this.data.totalPlaySeconds=(this.data.totalPlaySeconds||0)+this.playAcc;this.playAcc=0}this.data.bestScore=Math.max(this.data.bestScore||0,Math.round(run.score||0));this.data.bestLevel=Math.max(this.data.bestLevel||0,run.level||0);this.data.rescued=(this.data.rescued||0)+(run.rescued||0);this.save()},`
+- `L514: enabled:false,fps:0,fpsFrames:0,fpsWindowStart:0,updateMs:0,renderMs:0,`
+- `L517: const hudFx={lastWater:0,lastHp:100,lastHeat:0,lastScore:0,lastRescueState:'',lastCritical:'',lastRescued:0,lastFiresExtinguished:0,wasNearWater:false,wasDropping:false,wasRepairing:false};`
 
 ### `foguetinho.html`
 **Control flow signals**
