@@ -1,0 +1,160 @@
+name: Integrate Fighting Fire into Quickplay
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.fighting-fire-upload/**'
+      - '.github/workflows/integrate-fighting-fire.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: integrate-fighting-fire
+  cancel-in-progress: true
+
+jobs:
+  integrate:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Gate staged payload
+        id: gate
+        shell: bash
+        run: |
+          if [ -f .fighting-fire-upload/READY ]; then
+            echo 'ready=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'ready=false' >> "$GITHUB_OUTPUT"
+            echo 'Payload still staging; no integration yet.'
+          fi
+
+      - name: Assemble and verify Fighting Fire
+        if: steps.gate.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .fighting-fire-upload/part_*.b64 | base64 -d | xz -dc > /tmp/fighting_fire.html
+          expected="$(awk '{print $1}' .fighting-fire-upload/SHA256)"
+          actual="$(sha256sum /tmp/fighting_fire.html | awk '{print $1}')"
+          echo "expected=$expected"
+          echo "actual=$actual"
+          test "$actual" = "$expected"
+          node - <<'NODE'
+          const fs=require('fs');
+          const s=fs.readFileSync('/tmp/fighting_fire.html','utf8');
+          for(const b of (s.match(/<script[^>]*>([\s\S]*?)<\/script>/g)||[])){
+            const open=b.match(/^<script[^>]*>/)?.[0]||'';
+            if(/type=["'](?:application\/json|importmap)["']/i.test(open)) continue;
+            new Function(b.replace(/^<script[^>]*>/,'').replace(/<\/script>$/,''));
+          }
+          for(const marker of ["const GAME_ID='fighting_fire'",'ppg_minigames_stats_v1','quickplay_collection_stats_v1','Projeto Primata Games em 2026']){
+            if(!s.includes(marker)) throw new Error('Fighting Fire collection marker missing: '+marker);
+          }
+          console.log('Fighting Fire syntax and collection markers OK');
+          NODE
+          cp /tmp/fighting_fire.html fighting_fire.html
+
+      - name: Add Fighting Fire to Tier A hub
+        if: steps.gate.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          card="{file:'fighting_fire.html',id:'fighting_fire',name:'FIGHTING FIRE',emoji:'🚁',desc:'Pilote um helicóptero de emergência em uma cidade procedural: combata incêndios, resgate vítimas e coordene equipes terrestres.',new:true},"
+          if "id:'fighting_fire'" not in s:
+              anchor="{file:'alien_threat.html',id:'alien_threat',name:'ALIEN THREAT',emoji:'🛸',desc:'Pilote um disco voador sobre uma cidade procedural, abduza alvos com o raio teleport e sobreviva ao contra-ataque.',new:true},"
+              if anchor not in s:
+                  raise SystemExit('ALIEN THREAT hub anchor not found')
+              s=s.replace(anchor,anchor+'\n'+card,1)
+          m=re.search(r"\{id:'A',title:'Tier A',games:\[([^\]]*)\]\},",s)
+          if not m:
+              raise SystemExit('Tier A definition not found')
+          games=[x.strip().strip("'") for x in m.group(1).split(',') if x.strip()]
+          if 'fighting_fire' not in games:
+              try: pos=games.index('alien_threat')+1
+              except ValueError: pos=len(games)
+              games.insert(pos,'fighting_fire')
+              repl="{id:'A',title:'Tier A',games:["+','.join(repr(x) for x in games)+']},'
+              s=s[:m.start()]+repl+s[m.end():]
+          if s.count("id:'fighting_fire'") != 1:
+              raise SystemExit('Fighting Fire hub card must appear exactly once')
+          p.write_text(s,encoding='utf-8')
+          print('Fighting Fire added to Tier A')
+          PY
+
+      - name: Validate hall and rebuild complete ZIP
+        if: steps.gate.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const menu=fs.readFileSync('index.html','utf8');
+          for(const b of (menu.match(/<script[^>]*>([\s\S]*?)<\/script>/g)||[])){
+            const open=b.match(/^<script[^>]*>/)?.[0]||'';
+            if(/type=["'](?:application\/json|importmap)["']/i.test(open)) continue;
+            new Function(b.replace(/^<script[^>]*>/,'').replace(/<\/script>$/,''));
+          }
+          const cards=[...menu.matchAll(/file:'([^']+)'/g)].map(m=>m[1]);
+          if(new Set(cards).size!==cards.length) throw new Error('Duplicate game files in hall');
+          for(const f of cards) if(!fs.existsSync(f)) throw new Error('Hall points to missing game: '+f);
+          if(!menu.includes("id:'fighting_fire'")) throw new Error('Fighting Fire card missing');
+          const tierA=menu.match(/\{id:'A',title:'Tier A',games:\[([^\]]*)\]\},/)?.[1]||'';
+          if(!tierA.includes("'fighting_fire'")) throw new Error('Fighting Fire not in Tier A');
+          console.log('Hall OK:',cards.length,'games');
+          NODE
+          python - <<'PY'
+          from pathlib import Path
+          import zipfile,hashlib,re
+          root=Path('.')
+          out=root/'Quickplay_Collection_COMPLETE.zip'
+          include=[]
+          for p in root.iterdir():
+              if not p.is_file() or p.name in {out.name,'Quickplay_Collection_COMPLETE.zip.sha256'}:
+                  continue
+              if p.suffix.lower() in {'.html','.md','.txt'} or p.name=='.nojekyll':
+                  include.append(p)
+          include.sort(key=lambda p:p.name.lower())
+          with zipfile.ZipFile(out,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+              for p in include:
+                  info=zipfile.ZipInfo(p.name,date_time=(2026,8,19,12,0,0))
+                  info.compress_type=zipfile.ZIP_DEFLATED
+                  info.external_attr=0o644<<16
+                  z.writestr(info,p.read_bytes(),compress_type=zipfile.ZIP_DEFLATED,compresslevel=9)
+          with zipfile.ZipFile(out) as z:
+              names=set(z.namelist())
+              required={'index.html','menu_minigames.html','fighting_fire.html'}
+              missing=required-names
+              if missing: raise SystemExit('Missing from ZIP: '+','.join(sorted(missing)))
+              menu=z.read('index.html').decode('utf-8')
+              cards=re.findall(r"file:'([^']+)'",menu)
+              missing_cards=[f for f in cards if f not in names]
+              if missing_cards: raise SystemExit('Hall games missing from ZIP: '+','.join(missing_cards))
+              print('Complete ZIP OK:',len(names),'files,',len(cards),'hall games')
+          digest=hashlib.sha256(out.read_bytes()).hexdigest()
+          Path('Quickplay_Collection_COMPLETE.zip.sha256').write_text(digest+'  Quickplay_Collection_COMPLETE.zip\n',encoding='ascii')
+          print('ZIP SHA256',digest)
+          PY
+
+      - name: Commit canonical integration
+        if: steps.gate.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .fighting-fire-upload
+          rm -f .github/workflows/integrate-fighting-fire.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Add Fighting Fire to Quickplay Collection'
+          git push origin HEAD:main
