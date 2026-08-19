@@ -1,0 +1,34 @@
+name: Export Quickplay ZIP for ChatGPT
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/export-quickplay-zip.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  export:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Export ZIP as temporary text chunks
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f Quickplay_Collection_COMPLETE.zip
+          test -f Quickplay_Collection_COMPLETE.zip.sha256
+          echo '5a4d30c38c2322ed6afb3a56825e6752290298ac05aac5141115084590a681de  Quickplay_Collection_COMPLETE.zip' | sha256sum -c -
+          rm -rf .download-export
+          mkdir .download-export
+          base64 -w0 Quickplay_Collection_COMPLETE.zip | split -b 250000 -d -a 2 - .download-export/chunk_
+          cp Quickplay_Collection_COMPLETE.zip.sha256 .download-export/SHA256
+          wc -c .download-export/chunk_* > .download-export/SIZES
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .download-export
+          git commit -m 'Temporary export of Quickplay ZIP'
+          git push origin HEAD:main
