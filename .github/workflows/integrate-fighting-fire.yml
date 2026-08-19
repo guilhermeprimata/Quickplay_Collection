@@ -81,10 +81,12 @@ jobs:
               raise SystemExit('Tier A definition not found')
           games=[x.strip().strip("'") for x in m.group(1).split(',') if x.strip()]
           if 'fighting_fire' not in games:
-              try: pos=games.index('alien_threat')+1
-              except ValueError: pos=len(games)
+              try:
+                  pos=games.index('alien_threat')+1
+              except ValueError:
+                  pos=len(games)
               games.insert(pos,'fighting_fire')
-              repl="{id:'A',title:'Tier A',games:["+','.join(repr(x) for x in games)+']},'
+              repl="{id:'A',title:'Tier A',games:["+','.join(repr(x) for x in games)+"]},"
               s=s[:m.start()]+repl+s[m.end():]
           if s.count("id:'fighting_fire'") != 1:
               raise SystemExit('Fighting Fire hub card must appear exactly once')
@@ -135,16 +137,28 @@ jobs:
               names=set(z.namelist())
               required={'index.html','menu_minigames.html','fighting_fire.html'}
               missing=required-names
-              if missing: raise SystemExit('Missing from ZIP: '+','.join(sorted(missing)))
+              if missing:
+                  raise SystemExit('Missing from ZIP: '+','.join(sorted(missing)))
               menu=z.read('index.html').decode('utf-8')
               cards=re.findall(r"file:'([^']+)'",menu)
               missing_cards=[f for f in cards if f not in names]
-              if missing_cards: raise SystemExit('Hall games missing from ZIP: '+','.join(missing_cards))
+              if missing_cards:
+                  raise SystemExit('Hall games missing from ZIP: '+','.join(missing_cards))
               print('Complete ZIP OK:',len(names),'files,',len(cards),'hall games')
           digest=hashlib.sha256(out.read_bytes()).hexdigest()
           Path('Quickplay_Collection_COMPLETE.zip.sha256').write_text(digest+'  Quickplay_Collection_COMPLETE.zip\n',encoding='ascii')
           print('ZIP SHA256',digest)
           PY
+
+      - name: Upload refreshed package artifact
+        if: steps.gate.outputs.ready == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Quickplay_Collection_COMPLETE_Fighting_Fire
+          path: |
+            Quickplay_Collection_COMPLETE.zip
+            Quickplay_Collection_COMPLETE.zip.sha256
+          retention-days: 7
 
       - name: Commit canonical integration
         if: steps.gate.outputs.ready == 'true'
