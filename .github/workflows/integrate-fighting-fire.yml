@@ -4,11 +4,12 @@ on:
   push:
     branches: [main]
     paths:
-      - '.fighting-fire-upload/**'
       - '.github/workflows/integrate-fighting-fire.yml'
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 concurrency:
   group: integrate-fighting-fire
@@ -17,134 +18,129 @@ concurrency:
 jobs:
   integrate:
     if: ${{ github.actor != 'github-actions[bot]' }}
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Gate staged payload
-        id: gate
-        shell: bash
-        run: |
-          if [ -f .fighting-fire-upload/READY ]; then
-            echo 'ready=true' >> "$GITHUB_OUTPUT"
-          else
-            echo 'ready=false' >> "$GITHUB_OUTPUT"
-            echo 'Payload still staging; no integration yet.'
-          fi
-
-      - name: Assemble and verify Fighting Fire
-        if: steps.gate.outputs.ready == 'true'
+      - name: Verify uploaded Fighting Fire
         shell: bash
         run: |
           set -euo pipefail
-          python - <<'PY'
-          from pathlib import Path
-          root=Path('.fighting-fire-upload')
-          text=''.join(p.read_text(encoding='utf-8') for p in sorted(root.glob('part_*.u15')))
-          if not text:
-              raise SystemExit('No Unicode transport chunks found')
-          n=int((root/'LENGTH').read_text().strip())
-          value=0
-          for ch in text:
-              digit=ord(ch)-0x3400
-              if not 0 <= digit < 0x8000:
-                  raise SystemExit('Invalid Unicode transport digit')
-              value=(value<<15)|digit
-          pad=len(text)*15-n*8
-          if not 0 <= pad < 15:
-              raise SystemExit(f'Invalid transport padding: {pad}')
-          value >>= pad
-          (Path('/tmp/fighting_fire.html.xz')).write_bytes(value.to_bytes(n,'big'))
-          print('Decoded',len(text),'Unicode digits to',n,'compressed bytes')
-          PY
-          xz -dc /tmp/fighting_fire.html.xz > /tmp/fighting_fire.html
-          expected="$(awk '{print $1}' .fighting-fire-upload/SHA256)"
-          actual="$(sha256sum /tmp/fighting_fire.html | awk '{print $1}')"
-          echo "expected=$expected"
-          echo "actual=$actual"
-          test "$actual" = "$expected"
+          test -s fighting_fire.html
           node - <<'NODE'
           const fs=require('fs');
-          const s=fs.readFileSync('/tmp/fighting_fire.html','utf8');
-          for(const b of (s.match(/<script[^>]*>([\s\S]*?)<\/script>/g)||[])){
+          const s=fs.readFileSync('fighting_fire.html','utf8');
+          const scripts=s.match(/<script[^>]*>([\s\S]*?)<\/script>/g)||[];
+          if(!scripts.length) throw new Error('Fighting Fire has no inline scripts');
+          for(const b of scripts){
             const open=b.match(/^<script[^>]*>/)?.[0]||'';
             if(/type=["'](?:application\/json|importmap)["']/i.test(open)) continue;
             new Function(b.replace(/^<script[^>]*>/,'').replace(/<\/script>$/,''));
           }
-          for(const marker of ["const GAME_ID='fighting_fire'",'ppg_minigames_stats_v1','quickplay_collection_stats_v1','Projeto Primata Games em 2026']){
-            if(!s.includes(marker)) throw new Error('Fighting Fire collection marker missing: '+marker);
+          for(const marker of ["const GAME_ID='fighting_fire'",'quickplay_collection_stats_v1','Projeto Primata Games em 2026']){
+            if(!s.includes(marker)) throw new Error('Fighting Fire marker missing: '+marker);
           }
-          console.log('Fighting Fire syntax and collection markers OK');
+          console.log('Fighting Fire OK:',Buffer.byteLength(s),'bytes,',scripts.length,'script blocks');
           NODE
-          cp /tmp/fighting_fire.html fighting_fire.html
 
-      - name: Add Fighting Fire to Tier A hub
-        if: steps.gate.outputs.ready == 'true'
+      - name: Add Fighting Fire to Tier A and bridge collection stats
         shell: bash
         run: |
           set -euo pipefail
           python - <<'PY'
           from pathlib import Path
           import re
-          p=Path('index.html'); s=p.read_text(encoding='utf-8')
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
           card="{file:'fighting_fire.html',id:'fighting_fire',name:'FIGHTING FIRE',emoji:'🚁',desc:'Pilote um helicóptero de emergência em uma cidade procedural: combata incêndios, resgate vítimas e coordene equipes terrestres.',new:true},"
           if "id:'fighting_fire'" not in s:
               anchor="{file:'alien_threat.html',id:'alien_threat',name:'ALIEN THREAT',emoji:'🛸',desc:'Pilote um disco voador sobre uma cidade procedural, abduza alvos com o raio teleport e sobreviva ao contra-ataque.',new:true},"
-              if anchor not in s: raise SystemExit('ALIEN THREAT hub anchor not found')
+              if anchor not in s:
+                  raise SystemExit('ALIEN THREAT hub anchor not found')
               s=s.replace(anchor,anchor+'\n'+card,1)
           m=re.search(r"\{id:'A',title:'Tier A',games:\[([^\]]*)\]\},",s)
-          if not m: raise SystemExit('Tier A definition not found')
+          if not m:
+              raise SystemExit('Tier A definition not found')
           games=[x.strip().strip("'") for x in m.group(1).split(',') if x.strip()]
           if 'fighting_fire' not in games:
               pos=games.index('alien_threat')+1 if 'alien_threat' in games else len(games)
               games.insert(pos,'fighting_fire')
               repl="{id:'A',title:'Tier A',games:["+','.join(repr(x) for x in games)+"]},"
               s=s[:m.start()]+repl+s[m.end():]
-          if s.count("id:'fighting_fire'") != 1: raise SystemExit('Fighting Fire hub card must appear exactly once')
+
+          bridge_marker='// Fighting Fire legacy-stat bridge'
+          if bridge_marker not in s:
+              needle="const read=(k,f)=>{try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}},write=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}};\n"
+              if needle not in s:
+                  raise SystemExit('Hub storage helper anchor not found')
+              bridge="""// Fighting Fire legacy-stat bridge\ntry{const legacy=read('quickplay_collection_stats_v1',{}),src=legacy.fighting_fire;if(src){const db=read(STATS,{}),old=db.fighting_fire||{};db.fighting_fire={...old,starts:Math.max(Number(old.starts)||0,Number(src.starts)||0),totalSeconds:Math.max(Number(old.totalSeconds)||0,Number(src.totalPlaySeconds)||0),currentStreak:Math.max(Number(old.currentStreak)||0,Number(src.currentStreak)||0),longestStreak:Math.max(Number(old.longestStreak)||0,Number(src.longestStreak)||0),lastDay:src.lastPlayedDate||old.lastDay||null,bestScore:Math.max(Number(old.bestScore)||0,Number(src.bestScore)||0),bestLevel:Math.max(Number(old.bestLevel)||0,Number(src.bestLevel)||0),rescued:Math.max(Number(old.rescued)||0,Number(src.rescued)||0)};write(STATS,db)}}catch{}\n"""
+              s=s.replace(needle,needle+bridge,1)
+
+          if s.count("id:'fighting_fire'") != 1:
+              raise SystemExit('Fighting Fire hub card must appear exactly once')
           p.write_text(s,encoding='utf-8')
-          print('Fighting Fire added to Tier A')
+          print('Fighting Fire integrated into Tier A with stats bridge')
           PY
 
-      - name: Validate hall and rebuild complete ZIP
-        if: steps.gate.outputs.ready == 'true'
+      - name: Validate hall and release scripts
         shell: bash
         run: |
           set -euo pipefail
           node - <<'NODE'
           const fs=require('fs');
-          const menu=fs.readFileSync('index.html','utf8');
-          for(const b of (menu.match(/<script[^>]*>([\s\S]*?)<\/script>/g)||[])){
-            const open=b.match(/^<script[^>]*>/)?.[0]||'';
-            if(/type=["'](?:application\/json|importmap)["']/i.test(open)) continue;
-            new Function(b.replace(/^<script[^>]*>/,'').replace(/<\/script>$/,''));
+          function parseInline(f){
+            const s=fs.readFileSync(f,'utf8');
+            for(const b of (s.match(/<script[^>]*>([\s\S]*?)<\/script>/g)||[])){
+              const open=b.match(/^<script[^>]*>/)?.[0]||'';
+              if(/type=["'](?:application\/json|importmap)["']/i.test(open)) continue;
+              new Function(b.replace(/^<script[^>]*>/,'').replace(/<\/script>$/,''));
+            }
           }
+          parseInline('index.html');
+          parseInline('fighting_fire.html');
+          const menu=fs.readFileSync('index.html','utf8');
           const cards=[...menu.matchAll(/file:'([^']+)'/g)].map(m=>m[1]);
           if(new Set(cards).size!==cards.length) throw new Error('Duplicate game files in hall');
           for(const f of cards) if(!fs.existsSync(f)) throw new Error('Hall points to missing game: '+f);
           if(!menu.includes("id:'fighting_fire'")) throw new Error('Fighting Fire card missing');
           const tierA=menu.match(/\{id:'A',title:'Tier A',games:\[([^\]]*)\]\},/)?.[1]||'';
           if(!tierA.includes("'fighting_fire'")) throw new Error('Fighting Fire not in Tier A');
-          console.log('Hall OK:',cards.length,'games');
+          if(!menu.includes('// Fighting Fire legacy-stat bridge')) throw new Error('Fighting Fire stats bridge missing');
+          console.log('Hall OK:',cards.length,'games; Fighting Fire in Tier A');
           NODE
+
+      - name: Build deterministic complete ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
           python - <<'PY'
           from pathlib import Path
           import zipfile,hashlib,re
-          root=Path('.'); out=root/'Quickplay_Collection_COMPLETE.zip'; include=[]
+          root=Path('.')
+          out=root/'Quickplay_Collection_COMPLETE.zip'
+          include=[]
           for p in root.iterdir():
               if p.is_file() and p.name not in {out.name,'Quickplay_Collection_COMPLETE.zip.sha256'} and (p.suffix.lower() in {'.html','.md','.txt'} or p.name=='.nojekyll'):
                   include.append(p)
           include.sort(key=lambda p:p.name.lower())
           with zipfile.ZipFile(out,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as z:
               for p in include:
-                  info=zipfile.ZipInfo(p.name,date_time=(2026,8,19,12,0,0)); info.compress_type=zipfile.ZIP_DEFLATED; info.external_attr=0o644<<16
+                  info=zipfile.ZipInfo(p.name,date_time=(2026,8,19,12,0,0))
+                  info.compress_type=zipfile.ZIP_DEFLATED
+                  info.external_attr=0o644<<16
                   z.writestr(info,p.read_bytes(),compress_type=zipfile.ZIP_DEFLATED,compresslevel=9)
           with zipfile.ZipFile(out) as z:
-              names=set(z.namelist()); required={'index.html','menu_minigames.html','fighting_fire.html'}
+              names=set(z.namelist())
+              required={'index.html','menu_minigames.html','fighting_fire.html'}
               missing=required-names
               if missing: raise SystemExit('Missing from ZIP: '+','.join(sorted(missing)))
-              menu=z.read('index.html').decode('utf-8'); cards=re.findall(r"file:'([^']+)'",menu)
+              menu=z.read('index.html').decode('utf-8')
+              cards=re.findall(r"file:'([^']+)'",menu)
               missing_cards=[f for f in cards if f not in names]
               if missing_cards: raise SystemExit('Hall games missing from ZIP: '+','.join(missing_cards))
               print('Complete ZIP OK:',len(names),'files,',len(cards),'hall games')
@@ -153,8 +149,7 @@ jobs:
           print('ZIP SHA256',digest)
           PY
 
-      - name: Upload refreshed package artifact
-        if: steps.gate.outputs.ready == 'true'
+      - name: Upload refreshed collection artifact
         uses: actions/upload-artifact@v4
         with:
           name: Quickplay_Collection_COMPLETE_Fighting_Fire
@@ -163,8 +158,7 @@ jobs:
             Quickplay_Collection_COMPLETE.zip.sha256
           retention-days: 7
 
-      - name: Commit canonical integration
-        if: steps.gate.outputs.ready == 'true'
+      - name: Commit canonical integration and clean transport
         shell: bash
         run: |
           set -euo pipefail
@@ -173,5 +167,17 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
-          git commit -m 'Add Fighting Fire to Quickplay Collection'
+          git commit -m 'Add Fighting Fire to Tier A and refresh Quickplay package'
           git push origin HEAD:main
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
