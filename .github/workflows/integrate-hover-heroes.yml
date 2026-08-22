@@ -1,0 +1,128 @@
+name: Integrate Hover Heroes 2D and 3D
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.quickplay-hover/READY'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: integrate-hover-heroes
+  cancel-in-progress: false
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Assemble payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f .quickplay-hover/READY
+          cat .quickplay-hover/chunk_*.b64 | tr -d '\n\r' | base64 -d > /tmp/hover_heroes_bundle.tar.xz
+          echo '9acc72fca2e0f585a410782b75b8f28b5828c6a52f06b3c9b760044488a034bf  /tmp/hover_heroes_bundle.tar.xz' | sha256sum -c -
+          rm -rf /tmp/hover_heroes
+          mkdir -p /tmp/hover_heroes
+          tar -xJf /tmp/hover_heroes_bundle.tar.xz -C /tmp/hover_heroes
+          test -s /tmp/hover_heroes/hover_heroes_2d.html
+          test -s /tmp/hover_heroes/hover_heroes_3d.html
+
+      - name: Replace Fighting Fire with Hover Heroes
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp /tmp/hover_heroes/hover_heroes_2d.html hover_heroes_2d.html
+          cp /tmp/hover_heroes/hover_heroes_3d.html hover_heroes_3d.html
+          rm -f fighting_fire.html
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          old="{file:'fighting_fire.html',id:'fighting_fire',name:'FIGHTING FIRE',emoji:'🚁',desc:'Pilote um helicóptero de emergência em uma cidade procedural: combata incêndios, resgate vítimas e coordene equipes terrestres.',new:true},"
+          new="{file:'hover_heroes_2d.html',id:'hover_heroes_2d',name:'HOVER HEROES 2D',emoji:'🚁',desc:'Resgate aéreo em 2D com helicóptero, incêndios, vítimas, equipes terrestres e cidade procedural.',new:true},\n{file:'hover_heroes_3d.html',id:'hover_heroes_3d',name:'HOVER HEROES 3D',emoji:'🚁',desc:'A versão 3D de Hover Heroes: operações de emergência, combate a incêndios, resgates e cidade procedural.',new:true},"
+          if old not in s:
+              raise SystemExit('Fighting Fire catalog card not found')
+          s=s.replace(old,new,1)
+          oldtier="'alien_threat','fighting_fire','gatinhos'"
+          newtier="'alien_threat','hover_heroes_2d','hover_heroes_3d','gatinhos'"
+          if oldtier not in s:
+              raise SystemExit('Tier A Fighting Fire entry not found')
+          s=s.replace(oldtier,newtier,1)
+          s=s.replace('Quatro divisões, vinte e oito jogos.','Quatro divisões, trinta e um jogos.')
+          s=re.sub(r"// Fighting Fire legacy-stat bridge\ntry\{const legacy=read\('quickplay_collection_stats_v1',\{\}\),src=legacy\.fighting_fire;.*?\}\}\}\)catch\{\}\n",'',s,count=1)
+          p.write_text(s,encoding='utf-8')
+          PY
+
+      - name: Validate games and hub
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          hub=Path('index.html').read_text(encoding='utf-8')
+          for f in ['hover_heroes_2d.html','hover_heroes_3d.html']:
+              if not Path(f).is_file(): raise SystemExit('Missing '+f)
+              if f not in hub: raise SystemExit('Hub missing '+f)
+              text=Path(f).read_text(encoding='utf-8')
+              if '#quickbar{display:none!important}' not in text: raise SystemExit('Round quickbar not suppressed in '+f)
+          if "file:'fighting_fire.html'" in hub or "id:'fighting_fire'" in hub:
+              raise SystemExit('Fighting Fire remains in hub')
+          if Path('fighting_fire.html').exists(): raise SystemExit('fighting_fire.html still exists')
+          cards=re.findall(r"file:'([^']+)'",hub)
+          if len(cards)!=31: raise SystemExit(f'Expected 31 catalog games, got {len(cards)}')
+          missing=[f for f in cards if not Path(f).is_file()]
+          if missing: raise SystemExit('Broken catalog links: '+','.join(missing))
+          print('Hub validation OK:',len(cards),'games')
+          PY
+
+      - name: Rebuild complete ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import zipfile,hashlib,re
+          root=Path('.'); out=root/'Quickplay_Collection_COMPLETE.zip'
+          include=[]
+          for f in root.iterdir():
+              if f.is_file() and f.name not in {out.name,'Quickplay_Collection_COMPLETE.zip.sha256'} and (f.suffix.lower() in {'.html','.md','.txt'} or f.name=='.nojekyll'):
+                  include.append(f)
+          include.sort(key=lambda f:f.name.lower())
+          with zipfile.ZipFile(out,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+              for f in include:
+                  info=zipfile.ZipInfo(f.name,date_time=(2026,8,22,7,0,0)); info.compress_type=zipfile.ZIP_DEFLATED; info.external_attr=0o644<<16
+                  z.writestr(info,f.read_bytes(),compress_type=zipfile.ZIP_DEFLATED,compresslevel=9)
+          with zipfile.ZipFile(out) as z:
+              names=set(z.namelist())
+              if 'fighting_fire.html' in names: raise SystemExit('Fighting Fire still in ZIP')
+              for f in ['index.html','hover_heroes_2d.html','hover_heroes_3d.html']:
+                  if f not in names: raise SystemExit('ZIP missing '+f)
+              menu=z.read('index.html').decode('utf-8')
+              cards=re.findall(r"file:'([^']+)'",menu)
+              missing=[f for f in cards if f not in names]
+              if missing: raise SystemExit('ZIP missing catalog files: '+','.join(missing))
+          digest=hashlib.sha256(out.read_bytes()).hexdigest()
+          Path('Quickplay_Collection_COMPLETE.zip.sha256').write_text(digest+'  Quickplay_Collection_COMPLETE.zip\n',encoding='ascii')
+          print('ZIP SHA256',digest)
+          PY
+
+      - name: Publish final collection
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .quickplay-hover
+          rm -f .github/workflows/integrate-hover-heroes.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Replace Fighting Fire with Hover Heroes 2D and 3D'
+          git push origin HEAD:main
