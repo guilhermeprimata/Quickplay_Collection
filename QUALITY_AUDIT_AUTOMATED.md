@@ -4,6 +4,8 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 
 | Game | Platform | Native pause | Native restart | Native touch | Touch gap? | Audio | Storage | i18n signal | Bytes |
 |---|---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|---:|
+| `HOVER_HEROES_2D.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 2107646 |
+| `HOVER_HEROES_3D.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 2176903 |
 | `advinhe_o_numero.html` | v2 | — | ✅ | — | ⚠️ | ✅ | ✅ | ✅ | 22428 |
 | `alien_threat.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 485488 |
 | `atomic_raid.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 363869 |
@@ -37,12 +39,100 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 
 ## Automated findings
 
-- Platform layer not v2: `alien_threat.html`, `atomic_raid.html`, `brain_matrix.html`, `campo_minado.html`, `corrida_de_cavalos.html`, `dropworks.html`, `fighting_fire.html`, `idle_trader.html`, `kombo_blocks.html`, `pixel_joust.html`, `pong.html`, `rift_run.html`, `snowball_avalanche.html`
+- Platform layer not v2: `HOVER_HEROES_2D.html`, `HOVER_HEROES_3D.html`, `alien_threat.html`, `atomic_raid.html`, `brain_matrix.html`, `campo_minado.html`, `corrida_de_cavalos.html`, `dropworks.html`, `fighting_fire.html`, `idle_trader.html`, `kombo_blocks.html`, `pixel_joust.html`, `pong.html`, `rift_run.html`, `snowball_avalanche.html`
 - No native pause signal: `advinhe_o_numero.html`, `corrida_de_cavalos.html`, `foguetinho.html`, `jogo_da_velha.html`, `reef_runner.html`, `salve_os_gatinhos.html`, `sudoku.html`, `torre_de_hanoi.html`
 - No native restart/new-game signal: `foguetinho.html`, `salve_os_gatinhos.html`, `sudoku.html`
 - Canvas + keyboard but no native touch signal: `advinhe_o_numero.html`
 
 ## Per-game controls and balance candidates
+
+### `HOVER_HEROES_2D.html`
+**Control flow signals**
+- `L614: function clinicalLabel(r){if(!r)return '—';if(r.incidentType==='cat')return r.stability>=72?'ASSUSTADO, MAS SEGURO':'ESTRESSADO';if(r.state==='carrying'&&(r.stability<56||cable.risk>.62))return 'INSTÁVEL NO TRANSPORTE';if(r.stability>=76)return 'ESTÁVEL';if(r.stability>=54)return 'GRAVE';return 'CRÍTICO'}`
+- `L741: function resetContextualTutorial(){tutorialSeen={};Store.set(TUTORIAL_KEY,tutorialSeen);message('Dicas contextuais reativadas.')}`
+- `L864: begin(){this.active=true;this.frames=0;this.tipPending=true;state='boot';renderOperationalBriefing();const tip=$('#firstRunTip');if(tip)tip.classList.add('hidden')},`
+- `L865: afterRender(){if(!this.active||state!=='boot')return;this.frames++;if(this.frames<2)return;this.active=false;if(this.tipPending){renderOperationalBriefing();const tip=$('#firstRunTip');if(tip)tip.classList.remove('hidden')}else{state='play';QuickControls.show()}},`
+- `L866: accept(){Store.set(FIRST_RUN_BOOT_KEY,true);const tip=$('#firstRunTip');if(tip)tip.classList.add('hidden');this.active=false;state='play';QuickControls.show()},`
+- `L902: pad.addEventListener('pointerdown',e=>{pad.setPointerCapture(e.pointerId);move(e)});pad.addEventListener('pointermove',e=>{if(e.buttons)move(e)});pad.addEventListener('pointerup',end);pad.addEventListener('pointercancel',end);`
+- `L907: cv.addEventListener('mousemove',e=>{if(state!=='play'||isMobileWorldBudget()||desktopControlMode()!=='MOUSE')return;let r=cv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*W,y=(e.clientY-r.top)/r.height*H;pointer.x=clamp((x-W/2)/180,-1,1);pointer.y=clamp((y-H/2)/150,-1,1);pointer.active=Math.hypot(pointer.x,pointer.y)>.10});`
+- `L908: cv.addEventListener('mouseleave',()=>pointer.active=false);`
+- `L909: cv.addEventListener('mousedown',e=>{if(e.button===0)pointer.drop=true});`
+- `L910: addEventListener('mouseup',()=>pointer.drop=false);`
+- `L921: addEventListener('keydown',e=>{if(state!=='play'||!e.ctrlKey)return;const plus=e.code==='NumpadAdd'||e.code==='Equal'||e.key==='+';const minus=e.code==='NumpadSubtract'||e.code==='Minus'||e.key==='-';if(!plus&&!minus)return;e.preventDefault();adjustGameplayZoom(plus?1:-1)},{capture:true});`
+- `L923: addEventListener('keydown',e=>{if(state!=='play'||e.repeat)return;const code=cfg.bindings?.land||DEFAULT_BINDINGS.land;if(e.code===code){e.preventDefault();Aeromedical.toggleLanding()}},{capture:true});`
+**Gameplay tuning signals**
+- `L483: 4. Pipelines coordinate extension points whose order matters (rescue, HUD, minimap, i18n and`
+- `L485: 5. cleanupTransientRuntimeState() is the lifecycle boundary for timers/input residue when a`
+- `L515: Stage 1 removes only duplicates proven equivalent and leaves active wrapper chains intact.`
+- `L548: const CAMERA_ZOOM=Object.freeze({min:.60,default:1.00,max:1.25,step:.05});`
+- `L554: const DIFF=Object.freeze({easy:{spread:.78,damage:.70,ground:1.20},normal:{spread:1.10,damage:1.03,ground:1.04},hard:{spread:1.48,damage:1.31,ground:.84}});`
+- `L557: emptyThrust:288,fullThrust:218,emptyMaxSpeed:150,fullMaxSpeed:122,`
+- `L558: emptyCoastBrake:3.55,fullCoastBrake:2.30,emptyActiveDrag:1.18,fullActiveDrag:.88,`
+- `L559: precisionMaxSpeed:61,precisionThrust:.60,precisionBrakeBoost:2.55,`
+- `L560: carryMaxSpeed:88,carryThrust:.72,carryControlResponse:2.45,`
+- `L566: rotor:{label:'ROTOR',effect:'velocidade máxima reduzida',repair:5.8},`
+- `L574: explosion:{engine:.62,rotor:.78,cable:.48,hydraulic:.66,tank:1.0,radio:.72},`
+- `L579: attack:{label:'Caminhão de combate',short:'COMBATE',icon:'🚒',color:'#e84f3f',speed:35,waterCap:130,hose:110,heatLimit:.78,vehicle:true,attack:true,protect:true},`
+- `L580: tanker:{label:'Caminhão-pipa',short:'PIPA',icon:'🚛',color:'#3fa8d8',speed:29,waterCap:280,hose:72,heatLimit:.64,vehicle:true,attack:true,protect:true,supply:true},`
+- `L581: ambulance:{label:'Ambulância',short:'AMB',icon:'✚',color:'#f4f4f4',speed:39,waterCap:0,hose:0,heatLimit:.48,vehicle:true,medical:true,victims:true},`
+- `L582: rescue:{label:'Equipe de salvamento',short:'SALV',icon:'⛑',color:'#f0c43f',speed:25,waterCap:0,hose:0,heatLimit:.60,vehicle:false,victims:true},`
+- `L583: evacuation:{label:'Equipe de evacuação',short:'EVAC',icon:'⇢',color:'#d08be8',speed:24,waterCap:0,hose:0,heatLimit:.52,vehicle:false,victims:true,evac:true},`
+- `L584: utility:{label:'Manutenção elétrica',short:'ELÉTRICA',icon:'⚡',color:'#f3de65',speed:30,waterCap:0,hose:0,heatLimit:.46,vehicle:true,protect:true,utility:true}`
+- `L597: firefighter:{label:'BOMBEIRO FERIDO',short:'BOMBEIRO',decay:.68,stability:62,patients:1},`
+- `L609: truck_accident:{label:'ACIDENTE COM CAMINHÃO',short:'CAMINHÃO',decay:.72,stability:55,patients:1},`
+- `L613: function operationDef(){if(typeof runMode!=='undefined'&&runMode==='infinite')return INFINITE_OPERATION;return OPERATIONS[Math.max(0,Math.min(OPERATIONS.length-1,level-1))]||OPERATIONS[0]}`
+- `L694: function getCameraScreenBounds(zoom=cameraZoom(),pad=0){const z=cameraZoom(zoom),p=Math.max(0,Number(pad)||0),halfWidth=W/(2*z)+p,halfHeight=H/(2*z)+p;return {left:W/2-halfWidth,right:W/2+halfWidth,top:H/2-halfHeight,bottom:H/2+halfHeight,halfWidth,halfHeight,zoom:z,pad:p}}`
+- `L723: if(!Store.get(READABILITY_MIGRATION_KEY,false)){cfg.hudScale=Math.max(Number(cfg.hudScale)||1,1.18);cfg.dispatchPanelScale=Math.max(Number(cfg.dispatchPanelScale)||1,1.08);Store.set('fightingFireCfg',cfg);Store.set(READABILITY_MIGRATION_KEY,true)}`
+- `L726: let tutorialSeen=safeObject(Store.get(TUTORIAL_KEY,{}),{}),tutorialCooldown=0;`
+- `L740: function tutorialOnce(key){if(tutorialSeen[key]||tutorialCooldown>0)return false;tutorialSeen[key]=true;Store.set(TUTORIAL_KEY,tutorialSeen);tutorialCooldown=4;message('💡 '+tutorialText(key));return true}`
+- `L749: function addParticle(type,x,y,vx,vy,life,size,color){const mobile=isMobileWorldBudget(),cap=cfg.reducedParticles?(mobile?160:220):(mobile?360:550);if(cfg.reducedParticles&&Math.random()<.58)return;if(particles.length<cap)particles.push({type,x,y,vx,vy,life,max:life,size,color})}`
+- `L750: let screenShake=0;function addScreenShake(amount){screenShake=Math.max(screenShake,Math.max(0,amount)*clamp(Number(cfg.shakeIntensity??.55),0,1))}function updateScreenShake(dt){screenShake*=Math.exp(-8.5*dt);if(screenShake<.04)screenShake=0}`
+- `L752: function rescueDifficultyProfile(){return cfg.rescueDifficulty==='easy'?{decay:.72,transport:.68,smooth:1.35,initial:7,load:.86}:cfg.rescueDifficulty==='hard'?{decay:1.25,transport:1.32,smooth:.70,initial:-6,load:1.12}:{decay:1,transport:1,smooth:1,initial:0,load:1}}`
+- `L753: function rescueLoadSeconds(){return 4.2*rescueDifficultyProfile().load}function rescueDeliverySeconds(){return 2.5*rescueDifficultyProfile().load}`
+
+### `HOVER_HEROES_3D.html`
+**Control flow signals**
+- `L614: function clinicalLabel(r){if(!r)return '—';if(r.incidentType==='cat')return r.stability>=72?'ASSUSTADO, MAS SEGURO':'ESTRESSADO';if(r.state==='carrying'&&(r.stability<56||cable.risk>.62))return 'INSTÁVEL NO TRANSPORTE';if(r.stability>=76)return 'ESTÁVEL';if(r.stability>=54)return 'GRAVE';return 'CRÍTICO'}`
+- `L741: function resetContextualTutorial(){tutorialSeen={};Store.set(TUTORIAL_KEY,tutorialSeen);message('Dicas contextuais reativadas.')}`
+- `L864: begin(){this.active=true;this.frames=0;this.tipPending=true;state='boot';renderOperationalBriefing();const tip=$('#firstRunTip');if(tip)tip.classList.add('hidden')},`
+- `L865: afterRender(){if(!this.active||state!=='boot')return;this.frames++;if(this.frames<2)return;this.active=false;if(this.tipPending){renderOperationalBriefing();const tip=$('#firstRunTip');if(tip)tip.classList.remove('hidden')}else{state='play';QuickControls.show()}},`
+- `L866: accept(){Store.set(FIRST_RUN_BOOT_KEY,true);const tip=$('#firstRunTip');if(tip)tip.classList.add('hidden');this.active=false;state='play';QuickControls.show()},`
+- `L902: pad.addEventListener('pointerdown',e=>{pad.setPointerCapture(e.pointerId);move(e)});pad.addEventListener('pointermove',e=>{if(e.buttons)move(e)});pad.addEventListener('pointerup',end);pad.addEventListener('pointercancel',end);`
+- `L907: cv.addEventListener('mousemove',e=>{if(state!=='play'||isMobileWorldBudget()||desktopControlMode()!=='MOUSE')return;let r=cv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*W,y=(e.clientY-r.top)/r.height*H;pointer.x=clamp((x-W/2)/180,-1,1);pointer.y=clamp((y-H/2)/150,-1,1);pointer.active=Math.hypot(pointer.x,pointer.y)>.10});`
+- `L908: cv.addEventListener('mouseleave',()=>pointer.active=false);`
+- `L909: cv.addEventListener('mousedown',e=>{if(e.button===0)pointer.drop=true});`
+- `L910: addEventListener('mouseup',()=>pointer.drop=false);`
+- `L921: addEventListener('keydown',e=>{if(state!=='play'||!e.ctrlKey)return;const plus=e.code==='NumpadAdd'||e.code==='Equal'||e.key==='+';const minus=e.code==='NumpadSubtract'||e.code==='Minus'||e.key==='-';if(!plus&&!minus)return;e.preventDefault();adjustGameplayZoom(plus?1:-1)},{capture:true});`
+- `L923: addEventListener('keydown',e=>{if(state!=='play'||e.repeat)return;const code=cfg.bindings?.land||DEFAULT_BINDINGS.land;if(e.code===code){e.preventDefault();Aeromedical.toggleLanding()}},{capture:true});`
+**Gameplay tuning signals**
+- `L483: 4. Pipelines coordinate extension points whose order matters (rescue, HUD, minimap, i18n and`
+- `L485: 5. cleanupTransientRuntimeState() is the lifecycle boundary for timers/input residue when a`
+- `L515: Stage 1 removes only duplicates proven equivalent and leaves active wrapper chains intact.`
+- `L548: const CAMERA_ZOOM=Object.freeze({min:.60,default:1.00,max:1.25,step:.05});`
+- `L554: const DIFF=Object.freeze({easy:{spread:.78,damage:.70,ground:1.20},normal:{spread:1.10,damage:1.03,ground:1.04},hard:{spread:1.48,damage:1.31,ground:.84}});`
+- `L557: emptyThrust:288,fullThrust:218,emptyMaxSpeed:150,fullMaxSpeed:122,`
+- `L558: emptyCoastBrake:3.55,fullCoastBrake:2.30,emptyActiveDrag:1.18,fullActiveDrag:.88,`
+- `L559: precisionMaxSpeed:61,precisionThrust:.60,precisionBrakeBoost:2.55,`
+- `L560: carryMaxSpeed:88,carryThrust:.72,carryControlResponse:2.45,`
+- `L566: rotor:{label:'ROTOR',effect:'velocidade máxima reduzida',repair:5.8},`
+- `L574: explosion:{engine:.62,rotor:.78,cable:.48,hydraulic:.66,tank:1.0,radio:.72},`
+- `L579: attack:{label:'Caminhão de combate',short:'COMBATE',icon:'🚒',color:'#e84f3f',speed:35,waterCap:130,hose:110,heatLimit:.78,vehicle:true,attack:true,protect:true},`
+- `L580: tanker:{label:'Caminhão-pipa',short:'PIPA',icon:'🚛',color:'#3fa8d8',speed:29,waterCap:280,hose:72,heatLimit:.64,vehicle:true,attack:true,protect:true,supply:true},`
+- `L581: ambulance:{label:'Ambulância',short:'AMB',icon:'✚',color:'#f4f4f4',speed:39,waterCap:0,hose:0,heatLimit:.48,vehicle:true,medical:true,victims:true},`
+- `L582: rescue:{label:'Equipe de salvamento',short:'SALV',icon:'⛑',color:'#f0c43f',speed:25,waterCap:0,hose:0,heatLimit:.60,vehicle:false,victims:true},`
+- `L583: evacuation:{label:'Equipe de evacuação',short:'EVAC',icon:'⇢',color:'#d08be8',speed:24,waterCap:0,hose:0,heatLimit:.52,vehicle:false,victims:true,evac:true},`
+- `L584: utility:{label:'Manutenção elétrica',short:'ELÉTRICA',icon:'⚡',color:'#f3de65',speed:30,waterCap:0,hose:0,heatLimit:.46,vehicle:true,protect:true,utility:true}`
+- `L597: firefighter:{label:'BOMBEIRO FERIDO',short:'BOMBEIRO',decay:.68,stability:62,patients:1},`
+- `L609: truck_accident:{label:'ACIDENTE COM CAMINHÃO',short:'CAMINHÃO',decay:.72,stability:55,patients:1},`
+- `L613: function operationDef(){if(typeof runMode!=='undefined'&&runMode==='infinite')return INFINITE_OPERATION;return OPERATIONS[Math.max(0,Math.min(OPERATIONS.length-1,level-1))]||OPERATIONS[0]}`
+- `L694: function getCameraScreenBounds(zoom=cameraZoom(),pad=0){const z=cameraZoom(zoom),p=Math.max(0,Number(pad)||0),halfWidth=W/(2*z)+p,halfHeight=H/(2*z)+p;return {left:W/2-halfWidth,right:W/2+halfWidth,top:H/2-halfHeight,bottom:H/2+halfHeight,halfWidth,halfHeight,zoom:z,pad:p}}`
+- `L723: if(!Store.get(READABILITY_MIGRATION_KEY,false)){cfg.hudScale=Math.max(Number(cfg.hudScale)||1,1.18);cfg.dispatchPanelScale=Math.max(Number(cfg.dispatchPanelScale)||1,1.08);Store.set('fightingFireCfg',cfg);Store.set(READABILITY_MIGRATION_KEY,true)}`
+- `L726: let tutorialSeen=safeObject(Store.get(TUTORIAL_KEY,{}),{}),tutorialCooldown=0;`
+- `L740: function tutorialOnce(key){if(tutorialSeen[key]||tutorialCooldown>0)return false;tutorialSeen[key]=true;Store.set(TUTORIAL_KEY,tutorialSeen);tutorialCooldown=4;message('💡 '+tutorialText(key));return true}`
+- `L749: function addParticle(type,x,y,vx,vy,life,size,color){const mobile=isMobileWorldBudget(),cap=cfg.reducedParticles?(mobile?160:220):(mobile?360:550);if(cfg.reducedParticles&&Math.random()<.58)return;if(particles.length<cap)particles.push({type,x,y,vx,vy,life,max:life,size,color})}`
+- `L750: let screenShake=0;function addScreenShake(amount){screenShake=Math.max(screenShake,Math.max(0,amount)*clamp(Number(cfg.shakeIntensity??.55),0,1))}function updateScreenShake(dt){screenShake*=Math.exp(-8.5*dt);if(screenShake<.04)screenShake=0}`
+- `L752: function rescueDifficultyProfile(){return cfg.rescueDifficulty==='easy'?{decay:.72,transport:.68,smooth:1.35,initial:7,load:.86}:cfg.rescueDifficulty==='hard'?{decay:1.25,transport:1.32,smooth:.70,initial:-6,load:1.12}:{decay:1,transport:1,smooth:1,initial:0,load:1}}`
+- `L753: function rescueLoadSeconds(){return 4.2*rescueDifficultyProfile().load}function rescueDeliverySeconds(){return 2.5*rescueDifficultyProfile().load}`
 
 ### `advinhe_o_numero.html`
 **Control flow signals**
