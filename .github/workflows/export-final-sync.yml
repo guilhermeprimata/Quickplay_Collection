@@ -43,13 +43,32 @@ jobs:
           path: final-sync/
           if-no-files-found: error
           retention-days: 1
-      - name: Publish artifact id for connector handoff
+      - name: Verify live GitHub Pages
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://guilhermeprimata.github.io/Quickplay_Collection'
+          ok=0
+          for i in $(seq 1 60); do
+            root=$(curl -fsSL --max-time 15 "$base/" 2>/dev/null || true)
+            code2=$(curl -L -sS -o /dev/null -w '%{http_code}' --max-time 15 "$base/HOVER_HEROES_2D.html" || true)
+            code3=$(curl -L -sS -o /dev/null -w '%{http_code}' --max-time 15 "$base/HOVER_HEROES_3D.html" || true)
+            codeold=$(curl -L -sS -o /dev/null -w '%{http_code}' --max-time 15 "$base/fighting_fire.html" || true)
+            if printf '%s' "$root" | grep -q 'HOVER_HEROES_2D.html' && printf '%s' "$root" | grep -q 'HOVER_HEROES_3D.html' && [ "$code2" = 200 ] && [ "$code3" = 200 ] && [ "$codeold" = 404 ]; then
+              ok=1
+              break
+            fi
+            sleep 3
+          done
+          [ "$ok" = 1 ] || { echo "Pages verification failed: 2D=$code2 3D=$code3 old=$codeold"; exit 1; }
+          printf 'OK\nmenu=200\nhover_2d=%s\nhover_3d=%s\nfighting_fire=%s\n' "$code2" "$code3" "$codeold" > .quickplay-export/PAGES_OK
+      - name: Publish verification handoff
         shell: bash
         run: |
           set -euo pipefail
           printf '%s\n' '${{ steps.artifact.outputs.artifact-id }}' > .quickplay-export/ARTIFACT_ID
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add .quickplay-export/ARTIFACT_ID
-          git commit -m 'Publish final sync artifact id'
+          git add .quickplay-export/ARTIFACT_ID .quickplay-export/PAGES_OK
+          git commit -m 'Publish final sync verification'
           git push origin HEAD:main
