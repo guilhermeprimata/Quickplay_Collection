@@ -72,7 +72,7 @@ footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin
 <section class="tierHome" id="tierHome">
   <div class="tierIntro">
     <h2>Escolha seu território</h2>
-    <p>Quatro divisões, vinte e oito jogos. Nenhum carrossel infinito para ficar procurando o que você já sabe que quer jogar.</p>
+    <p>Quatro divisões, trinta e um jogos. Nenhum carrossel infinito para ficar procurando o que você já sabe que quer jogar.</p>
   </div>
   <div class="tierGrid" id="tierGrid"></div>
 </section>
@@ -101,7 +101,8 @@ const GAMES=[
 {file:'snowball_avalanche.html',id:'snowball_avalanche',name:'Snowball Avalanche',emoji:'❄️',desc:'Avalanche procedural em mundo contínuo: cresça e destrua o cenário.'},
 {file:'brain_matrix.html',id:'brain_matrix',name:'BRAIN MATRIX',emoji:'🧠',desc:'Busca visual em alta velocidade: números, letras, Mastermind, maratona e telemetria local.',new:true},
 {file:'alien_threat.html',id:'alien_threat',name:'ALIEN THREAT',emoji:'🛸',desc:'Pilote um disco voador sobre uma cidade procedural, abduza alvos com o raio teleport e sobreviva ao contra-ataque.',new:true},
-{file:'fighting_fire.html',id:'fighting_fire',name:'FIGHTING FIRE',emoji:'🚁',desc:'Pilote um helicóptero de emergência em uma cidade procedural: combata incêndios, resgate vítimas e coordene equipes terrestres.',new:true},
+{file:'HOVER_HEROES_2D.html',id:'hover_heroes_2d',name:'HOVER HEROES 2D',emoji:'🚁',desc:'Resgate aéreo em 2D com helicóptero, incêndios, vítimas, equipes terrestres e cidade procedural.',new:true},
+{file:'HOVER_HEROES_3D.html',id:'hover_heroes_3d',name:'HOVER HEROES 3D',emoji:'🚁',desc:'A versão 3D de Hover Heroes: operações de emergência, combate a incêndios, resgates e cidade procedural.',new:true},
 {file:'salve_os_gatinhos.html',id:'gatinhos',name:'Salve os Gatinhos',emoji:'🐱',desc:'Resgate pixelado de gatinhos com combos e dificuldade crescente.'},
 {file:'bow_and_arrow.html',id:'arqueiro',name:'Arqueiro do Vale',emoji:'🏹',desc:'Dez fases de tiro ao alvo com combos e inimigos variados.'},
 {file:'reef_runner.html',id:'reef_runner',name:'REEF RUNNER',emoji:'🐠',desc:'Atravesse um recife vivo com impulsos precisos entre corais, anêmonas e correntezas.',new:true},
@@ -130,7 +131,7 @@ const GAMES=[
   {id:'atomic_raid',name:'ATOMIC RAID',emoji:'☢️',file:'atomic_raid.html',desc:'Arcade shooter procedural autocontido: pilote, combata, gerencie combustível e evolua sua nave.',new:true}
 ];
 const TIERS=[
-{id:'A',title:'Tier A',games:['snowball_avalanche','brain_matrix','alien_threat','fighting_fire','gatinhos','arqueiro','reef_runner','space_raid_2093','iron_delta','skate_or_die','atomic_raid']},
+{id:'A',title:'Tier A',games:['snowball_avalanche','brain_matrix','alien_threat','hover_heroes_2d','hover_heroes_3d','gatinhos','arqueiro','reef_runner','space_raid_2093','iron_delta','skate_or_die','atomic_raid']},
 {id:'B',title:'Tier B',games:['toxic_stench','kombo_blocks','neon_pong','domination_wars','dropworks','pixel_bomber','rift_run','pixel_joust']},
 {id:'C',title:'Tier C',games:['corrida','crystal_xplorer','idle_trader','velha_quantica','pulso_genius','the_worm']},
 {id:'D',title:'Tier D',games:['zen_sudoku','hanoi','adivinhe','click_speed','forca_neon']}
@@ -138,8 +139,6 @@ const TIERS=[
 const TIER_BY_ID=Object.fromEntries(TIERS.flatMap(t=>t.games.map(id=>[id,t.id]))),GAME_BY_ID=Object.fromEntries(GAMES.map(g=>[g.id,g]));
 const STATS='ppg_minigames_stats_v1',PREF='ppg_platform_prefs_v2',VIEW='ppg_menu_view_v2';
 const read=(k,f)=>{try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}},write=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}};
-// Fighting Fire legacy-stat bridge
-try{const legacy=read('quickplay_collection_stats_v1',{}),src=legacy.fighting_fire;if(src){const db=read(STATS,{}),old=db.fighting_fire||{};db.fighting_fire={...old,starts:Math.max(Number(old.starts)||0,Number(src.starts)||0),totalSeconds:Math.max(Number(old.totalSeconds)||0,Number(src.totalPlaySeconds)||0),currentStreak:Math.max(Number(old.currentStreak)||0,Number(src.currentStreak)||0),longestStreak:Math.max(Number(old.longestStreak)||0,Number(src.longestStreak)||0),lastDay:src.lastPlayedDate||old.lastDay||null,bestScore:Math.max(Number(old.bestScore)||0,Number(src.bestScore)||0),bestLevel:Math.max(Number(old.bestLevel)||0,Number(src.bestLevel)||0),rescued:Math.max(Number(old.rescued)||0,Number(src.rescued)||0)};write(STATS,db)}}catch{}
 try{const db=read(STATS,{});if(db.cosmo_crash){const o=db.cosmo_crash||{},n=db.crystal_xplorer||{};db.crystal_xplorer={...o,...n,starts:(o.starts||0)+(n.starts||0),totalSeconds:(o.totalSeconds||0)+(n.totalSeconds||0),longestStreak:Math.max(o.longestStreak||0,n.longestStreak||0),currentStreak:Math.max(o.currentStreak||0,n.currentStreak||0),lastDay:n.lastDay||o.lastDay||null,lastStarted:Math.max(o.lastStarted||0,n.lastStarted||0)||null,lastPlayed:Math.max(o.lastPlayed||0,n.lastPlayed||0)||null};delete db.cosmo_crash;write(STATS,db)}}catch{}
 let prefs=read(PREF,read('ppg_platform_prefs_v1',{theme:'dark',sound:true}));
 let view=read(VIEW,{favorites:[],hidden:[],edit:false});
