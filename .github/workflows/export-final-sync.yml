@@ -1,0 +1,42 @@
+name: Export final Quickplay sync bundle
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.quickplay-export/READY'
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate final files
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s HOVER_HEROES_2D.html
+          test -s HOVER_HEROES_3D.html
+          test -s Quickplay_Collection_COMPLETE.zip
+          grep -q 'quickplay-round-buttons-suppression' HOVER_HEROES_2D.html
+          grep -q 'quickplay-round-buttons-suppression' HOVER_HEROES_3D.html
+          test ! -e fighting_fire.html
+      - name: Stage exact sync bundle
+        shell: bash
+        run: |
+          mkdir -p final-sync
+          cp HOVER_HEROES_2D.html final-sync/
+          cp HOVER_HEROES_3D.html final-sync/
+          cp Quickplay_Collection_COMPLETE.zip final-sync/
+          cp Quickplay_Collection_COMPLETE.zip.sha256 final-sync/
+          cp index.html final-sync/
+      - name: Upload exact sync bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: quickplay-final-sync
+          path: final-sync/
+          if-no-files-found: error
+          retention-days: 1
