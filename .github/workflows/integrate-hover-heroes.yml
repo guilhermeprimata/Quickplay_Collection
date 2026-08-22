@@ -1,4 +1,4 @@
-name: Integrate Hover Heroes 2D and 3D
+name: Finalize Hover Heroes 2D and 3D
 
 on:
   push:
@@ -10,86 +10,64 @@ permissions:
   contents: write
 
 concurrency:
-  group: integrate-hover-heroes
+  group: finalize-hover-heroes
   cancel-in-progress: false
 
 jobs:
-  integrate:
+  finalize:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Assemble compact delta payload
+      - name: Patch uploaded games and suppress standardized round buttons
         shell: bash
         run: |
           set -euo pipefail
           test -f .quickplay-hover/READY
-          cat .quickplay-hover/chunk_*.b64 | tr -d '\n\r' | base64 -d > /tmp/hover_delta_bundle.tar.xz
-          echo '9e577987ccafff2b4e3200690ac278c4e7182512a382aed4ad3a1796d5e5c220  /tmp/hover_delta_bundle.tar.xz' | sha256sum -c -
-          rm -rf /tmp/hover_delta
-          mkdir -p /tmp/hover_delta
-          tar -xJf /tmp/hover_delta_bundle.tar.xz -C /tmp/hover_delta
-          test -s /tmp/hover_delta/2d.hdl
-          test -s /tmp/hover_delta/3d.hdl
-
-      - name: Materialize Hover Heroes from canonical Fighting Fire base
-        shell: bash
-        run: |
-          set -euo pipefail
-          test "$(git hash-object fighting_fire.html)" = '1ba60c3a6ad14d0dcaeded676d2daa2925bd4532'
+          test -s HOVER_HEROES_2D.html
+          test -s HOVER_HEROES_3D.html
           python - <<'PY'
           from pathlib import Path
-          import struct, hashlib
-          old=Path('fighting_fire.html').read_bytes()
-          def apply_delta(src,out):
-              d=Path(src).read_bytes()
-              if d[:4]!=b'HDL1': raise SystemExit('Bad delta header: '+src)
-              p=4; res=bytearray()
-              while True:
-                  op=d[p:p+1]; p+=1
-                  if op==b'E': break
-                  if op==b'C':
-                      off,n=struct.unpack('>II',d[p:p+8]); p+=8; res.extend(old[off:off+n])
-                  elif op==b'A':
-                      n=struct.unpack('>I',d[p:p+4])[0]; p+=4; res.extend(d[p:p+n]); p+=n
-                  else: raise SystemExit('Bad delta opcode')
-              Path(out).write_bytes(res)
-          apply_delta('/tmp/hover_delta/2d.hdl','hover_heroes_2d.html')
-          apply_delta('/tmp/hover_delta/3d.hdl','hover_heroes_3d.html')
-          checks={'hover_heroes_2d.html':'e007d4767459888c19d6de5cecb27b4e7d5c19f7436ff858986e6d0eca172f38','hover_heroes_3d.html':'6cf87d3ae2571274c5b7a13f0834cdef9c76da533f2bbb4d3a3dfe6de763212c'}
-          for f,want in checks.items():
-              got=hashlib.sha256(Path(f).read_bytes()).hexdigest()
-              if got!=want: raise SystemExit(f'{f} hash mismatch: {got}')
-              print(f,got)
+          marker='quickplay-round-buttons-suppression'
+          css='''\n<style id="quickplay-round-buttons-suppression">\n#quickbar,.quickbar{display:none!important}\n</style>\n'''
+          for name in ('HOVER_HEROES_2D.html','HOVER_HEROES_3D.html'):
+              p=Path(name)
+              s=p.read_text(encoding='utf-8')
+              if marker not in s:
+                  if '</head>' not in s.lower():
+                      raise SystemExit(f'No </head> found in {name}')
+                  idx=s.lower().find('</head>')
+                  s=s[:idx]+css+s[idx:]
+                  p.write_text(s,encoding='utf-8')
+              print(name,'round controls suppressed')
           PY
-          rm -f fighting_fire.html
 
-      - name: Update Mini Games catalog
+      - name: Replace Fighting Fire in Mini Games catalog
         shell: bash
         run: |
           set -euo pipefail
           python - <<'PY'
           from pathlib import Path
           import re
-          p=Path('index.html'); s=p.read_text(encoding='utf-8')
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
           old="{file:'fighting_fire.html',id:'fighting_fire',name:'FIGHTING FIRE',emoji:'🚁',desc:'Pilote um helicóptero de emergência em uma cidade procedural: combata incêndios, resgate vítimas e coordene equipes terrestres.',new:true},"
-          new="{file:'hover_heroes_2d.html',id:'hover_heroes_2d',name:'HOVER HEROES 2D',emoji:'🚁',desc:'Resgate aéreo em 2D com helicóptero, incêndios, vítimas, equipes terrestres e cidade procedural.',new:true},\n{file:'hover_heroes_3d.html',id:'hover_heroes_3d',name:'HOVER HEROES 3D',emoji:'🚁',desc:'A versão 3D de Hover Heroes: operações de emergência, combate a incêndios, resgates e cidade procedural.',new:true},"
-          if old not in s: raise SystemExit('Fighting Fire catalog card not found')
-          s=s.replace(old,new,1)
-          oldtier="'alien_threat','fighting_fire','gatinhos'"; newtier="'alien_threat','hover_heroes_2d','hover_heroes_3d','gatinhos'"
-          if oldtier not in s: raise SystemExit('Tier A Fighting Fire entry not found')
-          s=s.replace(oldtier,newtier,1)
-          s=s.replace('Quatro divisões, vinte e oito jogos.','Quatro divisões, trinta e um jogos.')
-          start=s.find('// Fighting Fire legacy-stat bridge')
-          if start>=0:
-              end=s.find("try{const db=read(STATS,{})",start)
-              if end>start: s=s[:start]+s[end:]
+          new="{file:'HOVER_HEROES_2D.html',id:'hover_heroes_2d',name:'HOVER HEROES 2D',emoji:'🚁',desc:'Resgate aéreo em 2D com helicóptero, incêndios, vítimas, equipes terrestres e cidade procedural.',new:true},\n{file:'HOVER_HEROES_3D.html',id:'hover_heroes_3d',name:'HOVER HEROES 3D',emoji:'🚁',desc:'A versão 3D de Hover Heroes: operações de emergência, combate a incêndios, resgates e cidade procedural.',new:true},"
+          if old in s:
+              s=s.replace(old,new,1)
+          elif "file:'HOVER_HEROES_2D.html'" not in s or "file:'HOVER_HEROES_3D.html'" not in s:
+              raise SystemExit('Could not locate Fighting Fire catalog card')
+          s=s.replace("'alien_threat','fighting_fire','gatinhos'","'alien_threat','hover_heroes_2d','hover_heroes_3d','gatinhos'",1)
+          s=s.replace('Quatro divisões, vinte e oito jogos.','Quatro divisões, trinta e um jogos.',1)
+          # Remove the obsolete Fighting Fire legacy-stat bridge without touching the normal stats bootstrap.
+          s=re.sub(r'\n?// Fighting Fire legacy-stat bridge\ntry\{const legacy=.*?\}\s*catch\{\}\n?', '\n', s, count=1, flags=re.S)
           p.write_text(s,encoding='utf-8')
           PY
+          rm -f fighting_fire.html
 
-      - name: Validate games and hub
+      - name: Validate final catalog
         shell: bash
         run: |
           set -euo pipefail
@@ -97,45 +75,55 @@ jobs:
           from pathlib import Path
           import re
           hub=Path('index.html').read_text(encoding='utf-8')
-          for f in ['hover_heroes_2d.html','hover_heroes_3d.html']:
-              if not Path(f).is_file() or f not in hub: raise SystemExit('Missing catalog game '+f)
-              if '#quickbar{display:none!important}' not in Path(f).read_text(encoding='utf-8'): raise SystemExit('Round quickbar not suppressed in '+f)
-          if "file:'fighting_fire.html'" in hub or "id:'fighting_fire'" in hub or Path('fighting_fire.html').exists(): raise SystemExit('Fighting Fire remains')
+          for f in ('HOVER_HEROES_2D.html','HOVER_HEROES_3D.html'):
+              if not Path(f).is_file(): raise SystemExit('Missing '+f)
+              txt=Path(f).read_text(encoding='utf-8')
+              if 'quickplay-round-buttons-suppression' not in txt: raise SystemExit('Round-button suppression missing in '+f)
+              if f not in hub: raise SystemExit('Catalog does not link '+f)
+          if Path('fighting_fire.html').exists() or "file:'fighting_fire.html'" in hub or "id:'fighting_fire'" in hub:
+              raise SystemExit('Fighting Fire still present')
           cards=re.findall(r"file:'([^']+)'",hub)
-          if len(cards)!=31: raise SystemExit(f'Expected 31 catalog games, got {len(cards)}')
+          if len(cards)!=31: raise SystemExit(f'Expected 31 games, got {len(cards)}')
           missing=[f for f in cards if not Path(f).is_file()]
           if missing: raise SystemExit('Broken catalog links: '+','.join(missing))
-          print('Hub validation OK:',len(cards),'games')
+          print('Catalog OK:',len(cards),'games')
           PY
 
-      - name: Rebuild complete ZIP
+      - name: Rebuild official complete ZIP
         shell: bash
         run: |
           set -euo pipefail
           python - <<'PY'
           from pathlib import Path
           import zipfile,hashlib,re
-          root=Path('.'); out=root/'Quickplay_Collection_COMPLETE.zip'; include=[]
+          root=Path('.')
+          out=root/'Quickplay_Collection_COMPLETE.zip'
+          hashfile=root/'Quickplay_Collection_COMPLETE.zip.sha256'
+          include=[]
           for f in root.iterdir():
-              if f.is_file() and f.name not in {out.name,'Quickplay_Collection_COMPLETE.zip.sha256'} and (f.suffix.lower() in {'.html','.md','.txt'} or f.name=='.nojekyll'): include.append(f)
+              if f.is_file() and f.name not in {out.name,hashfile.name} and (f.suffix.lower() in {'.html','.md','.txt'} or f.name=='.nojekyll'):
+                  include.append(f)
           include.sort(key=lambda f:f.name.lower())
           with zipfile.ZipFile(out,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as z:
               for f in include:
-                  info=zipfile.ZipInfo(f.name,date_time=(2026,8,22,7,0,0)); info.compress_type=zipfile.ZIP_DEFLATED; info.external_attr=0o644<<16
+                  info=zipfile.ZipInfo(f.name,date_time=(2026,8,22,7,45,0))
+                  info.compress_type=zipfile.ZIP_DEFLATED
+                  info.external_attr=0o644<<16
                   z.writestr(info,f.read_bytes(),compress_type=zipfile.ZIP_DEFLATED,compresslevel=9)
           with zipfile.ZipFile(out) as z:
               names=set(z.namelist())
-              if 'fighting_fire.html' in names: raise SystemExit('Fighting Fire still in ZIP')
-              for f in ['index.html','hover_heroes_2d.html','hover_heroes_3d.html']:
+              if 'fighting_fire.html' in names: raise SystemExit('Fighting Fire remains in ZIP')
+              for f in ('index.html','HOVER_HEROES_2D.html','HOVER_HEROES_3D.html'):
                   if f not in names: raise SystemExit('ZIP missing '+f)
               cards=re.findall(r"file:'([^']+)'",z.read('index.html').decode('utf-8'))
               missing=[f for f in cards if f not in names]
               if missing: raise SystemExit('ZIP missing catalog files: '+','.join(missing))
-          digest=hashlib.sha256(out.read_bytes()).hexdigest(); Path('Quickplay_Collection_COMPLETE.zip.sha256').write_text(digest+'  Quickplay_Collection_COMPLETE.zip\n',encoding='ascii')
+          digest=hashlib.sha256(out.read_bytes()).hexdigest()
+          hashfile.write_text(digest+'  Quickplay_Collection_COMPLETE.zip\n',encoding='ascii')
           print('ZIP SHA256',digest)
           PY
 
-      - name: Publish final collection
+      - name: Publish and clean temporary integration files
         shell: bash
         run: |
           set -euo pipefail
