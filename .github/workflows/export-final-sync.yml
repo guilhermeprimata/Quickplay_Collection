@@ -7,13 +7,15 @@ on:
       - '.quickplay-export/READY'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   export:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Validate final files
         shell: bash
         run: |
@@ -34,9 +36,20 @@ jobs:
           cp Quickplay_Collection_COMPLETE.zip.sha256 final-sync/
           cp index.html final-sync/
       - name: Upload exact sync bundle
+        id: artifact
         uses: actions/upload-artifact@v4
         with:
           name: quickplay-final-sync
           path: final-sync/
           if-no-files-found: error
           retention-days: 1
+      - name: Publish artifact id for connector handoff
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s\n' '${{ steps.artifact.outputs.artifact-id }}' > .quickplay-export/ARTIFACT_ID
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .quickplay-export/ARTIFACT_ID
+          git commit -m 'Publish final sync artifact id'
+          git push origin HEAD:main
