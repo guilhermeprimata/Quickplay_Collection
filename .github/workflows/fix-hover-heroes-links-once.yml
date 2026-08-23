@@ -1,0 +1,66 @@
+name: Fix Hover Heroes collection links once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fix-hover-heroes-links-once.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Normalize Hover Heroes filenames in collection hub
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          before = s
+          s = s.replace("file:'HOVER_HEROES_2D.html'", "file:'hover_heroes_2d.html'")
+          s = s.replace("file:'HOVER_HEROES_3D.html'", "file:'hover_heroes_3d.html'")
+          if s == before:
+              print('Hover Heroes hub links already normalized.')
+          else:
+              p.write_text(s, encoding='utf-8')
+              print('Hover Heroes hub links normalized to lowercase canonical filenames.')
+          PY
+
+      - name: Validate canonical files and hub references
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s hover_heroes_2d.html
+          test -s hover_heroes_3d.html
+          ! test -e HOVER_HEROES_2D.html
+          ! test -e HOVER_HEROES_3D.html
+          grep -q "file:'hover_heroes_2d.html'" index.html
+          grep -q "file:'hover_heroes_3d.html'" index.html
+          ! grep -q "file:'HOVER_HEROES_2D.html'" index.html
+          ! grep -q "file:'HOVER_HEROES_3D.html'" index.html
+
+      - name: Commit fix and remove one-time workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/fix-hover-heroes-links-once.yml
+          git add index.html
+          if git diff --cached --quiet; then
+            echo 'Nothing to commit.'
+            exit 0
+          fi
+          git commit -m 'Fix Hover Heroes collection links'
+          git push origin HEAD:main
