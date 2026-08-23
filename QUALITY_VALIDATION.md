@@ -4,7 +4,6 @@ Validation executed with Node.js syntax checking for every inline JavaScript blo
 
 | Game | Inline JS blocks | External JS | Pause signal | Restart/New Game signal |
 |---|---:|---:|:---:|:---:|
-| `HOVER_HEROES_2D.html` | 1 | 0 | ✅ | ✅ |
 | `HOVER_HEROES_3D.html` | 1 | 0 | ✅ | ✅ |
 | `advinhe_o_numero.html` | 2 | 0 | — | ✅ |
 | `alien_threat.html` | 10 | 0 | ✅ | ✅ |
@@ -17,6 +16,8 @@ Validation executed with Node.js syntax checking for every inline JavaScript blo
 | `domination_wars.html` | 1 | 0 | ✅ | ✅ |
 | `dropworks.html` | 3 | 0 | ✅ | ✅ |
 | `foguetinho.html` | 1 | 0 | — | — |
+| `hover_heroes_2d.html` | 1 | 0 | ✅ | ✅ |
+| `hover_heroes_3d.html` | 55 | 0 | ✅ | ✅ |
 | `idle_trader.html` | 4 | 0 | ✅ | ✅ |
 | `iron_delta.html` | 1 | 0 | ✅ | ✅ |
 | `jogo_da_forca.html` | 2 | 0 | ✅ | ✅ |
@@ -38,7 +39,7 @@ Validation executed with Node.js syntax checking for every inline JavaScript blo
 
 ## Result
 
-- Games checked: **31**
+- Games checked: **32**
 - JavaScript syntax failures: **0**
 - External JavaScript dependencies: **0**
 - Direct Banco do Brasil branding signals: **0**
