@@ -4,7 +4,6 @@ Validation executed with Node.js syntax checking for every inline JavaScript blo
 
 | Game | Inline JS blocks | External JS | Pause signal | Restart/New Game signal |
 |---|---:|---:|:---:|:---:|
-| `HOVER_HEROES_3D.html` | 1 | 0 | ✅ | ✅ |
 | `advinhe_o_numero.html` | 2 | 0 | — | ✅ |
 | `alien_threat.html` | 10 | 0 | ✅ | ✅ |
 | `atomic_raid.html` | 3 | 0 | ✅ | ✅ |
@@ -39,7 +38,7 @@ Validation executed with Node.js syntax checking for every inline JavaScript blo
 
 ## Result
 
-- Games checked: **32**
+- Games checked: **31**
 - JavaScript syntax failures: **0**
 - External JavaScript dependencies: **0**
 - Direct Banco do Brasil branding signals: **0**
