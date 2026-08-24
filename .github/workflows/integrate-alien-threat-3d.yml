@@ -42,7 +42,7 @@ jobs:
 
           tier_anchor = "'snowball_avalanche','brain_matrix','alien_threat','hover_heroes_2d'"
           tier_new = "'snowball_avalanche','brain_matrix','alien_threat','alien_threat_3d','hover_heroes_2d'"
-          if "'alien_threat_3d'" not in s:
+          if tier_new not in s:
               if tier_anchor not in s:
                   raise SystemExit('Alien Threat Tier A anchor not found')
               s = s.replace(tier_anchor, tier_new, 1)
