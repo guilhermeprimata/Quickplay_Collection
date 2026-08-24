@@ -20,6 +20,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 | `hover_heroes_3d.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 3156819 |
 | `idle_trader.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 63644 |
 | `iron_delta.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 167632 |
+| `iron_delta_25d.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 215342 |
 | `jogo_da_forca.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 61874 |
 | `jogo_da_velha.html` | v2 | — | ✅ | ✅ | — | ✅ | ✅ | ✅ | 22196 |
 | `kombo_blocks.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 118942 |
@@ -27,7 +28,6 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 | `pixel_bomberman.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 35170 |
 | `pixel_joust.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 39531 |
 | `pong.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 51921 |
-| `reef_runner.html` | v2 | — | ✅ | ✅ | — | ✅ | ✅ | ✅ | 40013 |
 | `rift_run.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | — | 158626 |
 | `salve_os_gatinhos.html` | v2 | — | — | ✅ | — | ✅ | ✅ | ✅ | 51273 |
 | `skate_or_die.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 271934 |
@@ -40,7 +40,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 ## Automated findings
 
 - Platform layer not v2: `alien_threat.html`, `alien_threat_3d.html`, `atomic_raid.html`, `brain_matrix.html`, `campo_minado.html`, `corrida_de_cavalos.html`, `dropworks.html`, `hover_heroes_2d.html`, `hover_heroes_3d.html`, `idle_trader.html`, `kombo_blocks.html`, `pixel_joust.html`, `pong.html`, `rift_run.html`, `snowball_avalanche.html`
-- No native pause signal: `advinhe_o_numero.html`, `corrida_de_cavalos.html`, `foguetinho.html`, `jogo_da_velha.html`, `reef_runner.html`, `salve_os_gatinhos.html`, `sudoku.html`, `torre_de_hanoi.html`
+- No native pause signal: `advinhe_o_numero.html`, `corrida_de_cavalos.html`, `foguetinho.html`, `jogo_da_velha.html`, `salve_os_gatinhos.html`, `sudoku.html`, `torre_de_hanoi.html`
 - No native restart/new-game signal: `foguetinho.html`, `salve_os_gatinhos.html`, `sudoku.html`
 - Canvas + keyboard but no native touch signal: `advinhe_o_numero.html`
 
@@ -628,6 +628,50 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 - `L471: getSfxVolume() { return (this.engine.settings.sfxVolume / 100) * (1 + Math.min(10, this.engine.combo) * 0.04); }`
 - `L475: const length = Math.max(1, Math.floor(this.ctx.sampleRate * seconds));`
 
+### `iron_delta_25d.html`
+**Control flow signals**
+- `L184: let gameState = 'menu';`
+- `L217: if (this.ctx.state === 'suspended') this.ctx.resume();`
+- `L245: splash?.addEventListener('pointerdown', skipSplash, {passive:true});`
+- `L246: window.addEventListener('keydown', skipSplash);`
+- `L251: document.addEventListener('pointerdown', (e) => {`
+- `L256: document.addEventListener('pointerover', (e) => {`
+- `L296: $('#modal').addEventListener('click', (e) => { const target = e.target; if (target === $('#modal') || target.closest('.close'))`
+- `L335: gameState = state;`
+- `L340: if (state === 'playing') {`
+- `L345: else if (state === 'menu') {`
+- `L351: else if (state === 'paused') {`
+- `L356: else if (state === 'photo') {`
+**Gameplay tuning signals**
+- `L173: desc: 'Arcade aéreo 2.5D sobre rios procedurais, com perspectiva pseudo-3D, relevo, sombras dinâmicas, combustível, pontes, biomas, chefes e combate de alta velocidade.',`
+- `L186: let lastScore = 0;`
+- `L191: const STATS = 'ppg_minigames_stats_v1', PREF = 'ppg_platform_prefs_v2', REC = 'ppg_records_v2_' + CFG.id;`
+- `L214: this.comp.threshold.value = -16; this.comp.knee.value = 12; this.comp.ratio.value = 4; this.comp.attack.value = 0.004; this.comp.release.value = 0.11;`
+- `L220: tone(f0, f1, dur = .055, level = .12, type = 'triangle') {`
+- `L223: o.type = type; o.frequency.setValueAtTime(Math.max(30,f0), now); o.frequency.exponentialRampToValueAtTime(Math.max(30,f1), now + dur);`
+- `L224: g.gain.setValueAtTime(level, now); g.gain.exponentialRampToValueAtTime(.0001, now + dur);`
+- `L276: const gap = s.lastDay ? Math.round((new Date(day + 'T12:00:00').getTime() - new Date(s.lastDay + 'T12:00:00').getTime()) / 86400000) : 99;`
+- `L277: s.currentStreak = gap === 1 ? (s.currentStreak || 0) + 1 : 1;`
+- `L278: s.longestStreak = Math.max(s.longestStreak || 0, s.currentStreak);`
+- `L285: setInterval(() => { const now = performance.now(), db = read(STATS, {}), x = db[CFG.id] || s; x.totalSeconds = (x.totalSeconds || 0) + (now - last) / 1000; x.lastPlayed = Date.now(); last = now; db[CFG.id] = x; write(STATS, db); }, 5000);`
+- `L301: openModal('<button class="close">✕</button><h2>🏆 Placares locais</h2><div class="records">${r.length ? r.map((x, i) => '<div class="rec"><b>${i + 1}</b><span>${x.mode}<small>${new Date(x.when).toLocaleDateString()}</small></span><strong>${String(x.score).padStart(6, '0')}</strong></div>').join('') : '<p>Nenhuma missão registrada ainda.</p>'}</div>');`
+- `L322: const TOUCH_UI = matchMedia('(pointer:coarse)').matches || navigator.maxTouchPoints > 0;`
+- `L385: rec.push({ score: score || 0, mode: '${engine.isDaily ? 'daily/' : ''}${difficulty}/${damageMode}', when: Date.now() });`
+- `L423: $('#finalScore').textContent = String(lastScore).padStart(6, '0');`
+- `L426: const delta = Math.max(0, (target || 0) - lastScore);`
+- `L427: $('#runHint').innerHTML = newRecord ? '<b>Rota dominada.</b> Agora tente consolidar o recorde.' : (delta > 0 ? 'Faltaram <b>${delta.toLocaleString()}</b> pontos para o recorde. Repetir a mesma rota ajuda a aprender os gargalos.' : 'Repita a rota para dominar o padrão ou gere uma nova missão.');`
+- `L543: difficulty: Object.freeze({ easy: 0.82, normal: 1.0, hard: 1.40 }),`
+- `L545: maxDifficultyMultiplier: 3.35,`
+- `L546: spawnDistanceBase: 420,`
+- `L548: fuelBoostDrain: 5.4,`
+- `L550: comboWindow: 2.35,`
+- `L551: maxComboMultiplier: 5,`
+- `L555: classic: Object.freeze({ max: 90, damageScale: 1.08, regenDelay: 5.8, regenRate: 5.4 }),`
+- `L556: modern: Object.freeze({ max: 110, damageScale: 0.94, regenDelay: 4.8, regenRate: 6.8 })`
+- `L558: damage: Object.freeze({ light: 12, normalImpact: 20, heavyImpact: 34, critical: 54 }),`
+- `L563: minForwardSpeed: 72, maxForwardSpeed: 292,`
+- `L564: lateralAccel: 1700, lateralAccelFrozen: 1080,`
+
 ### `jogo_da_forca.html`
 **Control flow signals**
 - `L169: function audio(){if(!ac)ac=new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();return ac}`
@@ -826,48 +870,6 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 - `L68: let runtimeFaults=0;function safeFx(fn,label='fx'){try{return fn()}catch(err){runtimeFaults++;console.warn('Neon Pong non-critical '+label+' error:',err);return null}}`
 - `L69: function mult(side){return Math.min(5,1+Math.floor(Math.max(0,combo[side]-1)/2)*.5)}function score(side,pts,why=''){const m=fx[side].glass>0?2:1;tech[side]+=Math.round(pts*m);if(why&&pts>=150)announce('${side==='p1'?'P1':'P2'} +${Math.round(pts*m)}',why,side==='p1'?'#63edff':'#ffd34d',.7)}`
 - `L81: function reflectBounds(b){const top=arenaTop()+b.r,bot=arenaBottom()-b.r;if(b.y<top&&b.vy<0){b.y=top;b.vy*=-1;osc(150+clamp((b.base-BASE)/(MAX-BASE),0,1)*280,.035,'triangle',.07)}if(b.y>bot&&b.vy>0){b.y=bot;b.vy*=-1;osc(150+clamp((b.base-BASE)/(MAX-BASE),0,1)*280,.035,'triangle',.07)}}`
-
-### `reef_runner.html`
-**Control flow signals**
-- `L107: modal.addEventListener('click',e=>{if(e.target===modal||e.target.closest('.close'))closeModal()});`
-- `L137: function unlockAudio(){if(PREVIEW)return;initAudio();if(AC.state==='suspended')AC.resume()}`
-- `L169: function startMusic(){`
-- `L192: addEventListener('pointerdown',unlockAudio,{once:true});`
-- `L193: addEventListener('keydown',unlockAudio,{once:true});`
-- `L253: function reset(){`
-- `L265: function start(){`
-- `L306: function restartNoImpulse(){`
-- `L317: addEventListener('keydown',e=>{`
-- `L325: canvas.addEventListener('pointerdown',e=>{e.preventDefault();impulse()});`
-**Gameplay tuning signals**
-- `L58: const STATS='ppg_minigames_stats_v1';`
-- `L80: const gap=s.lastDay?Math.round((new Date(day+'T12:00:00')-new Date(s.lastDay+'T12:00:00'))/86400000):99;`
-- `L81: s.currentStreak=gap===1?(s.currentStreak||0)+1:1;`
-- `L82: s.longestStreak=Math.max(s.longestStreak||0,s.currentStreak);`
-- `L90: const delta=Math.min(6,(now-statsClock)/1000);`
-- `L122: let AC=null,master=null,sfxBus=null,musicBus=null,musicTimer=null,beat=0;`
-- `L143: o.frequency.setValueAtTime(Math.max(20,f),t);`
-- `L144: o.frequency.exponentialRampToValueAtTime(Math.max(20,end),t+d);`
-- `L145: g.gain.setValueAtTime(Math.max(.0001,v),t);`
-- `L161: else if(k==='score'){tone(590,.08,'triangle',.075);tone(830,.10,'sine',.055,.055)}`
-- `L177: const tension=Math.min(1,score/32);`
-- `L188: master.gain.setTargetAtTime(prefs.sound?0.88:0,AC.currentTime,.025);`
-- `L197: s=Math.max(0,Math.floor(s||0));`
-- `L233: pond:{gravity:885,jump:-326,speed:102,gap:224,space:274,drift:86},`
-- `L234: marsh:{gravity:945,jump:-338,speed:115,gap:208,space:254,drift:96},`
-- `L235: storm:{gravity:1015,jump:-350,speed:128,gap:194,space:238,drift:106}`
-- `L240: let score=0,running=false,startAt=0,last=performance.now(),spawnDist=0,shake=0,flash=0,waterT=0;`
-- `L241: let demo=PREVIEW,runMode='marsh',runTime=0,gameOverTimer=0,lastGapCenter=330;`
-- `L254: clearTimeout(gameOverTimer); gameOverTimer=0;`
-- `L260: score=0; runTime=0; perfectStreak=0; bestPerfect=0; perfects=0;`
-- `L261: scoreEl.textContent='0'; bestEl.textContent=modeBest(); timeEl.textContent='00:00';`
-- `L262: spawnDist=118; lastGapCenter=330; shake=0; flash=0;`
-- `L266: clearTimeout(gameOverTimer); gameOverTimer=0;`
-- `L286: overTitle.textContent=isRecord&&score>0?'🏆 Novo recorde!':(kind==='water'?'Ops, fundo do mar demais':'Ai, coral na testa');`
-- `L290: gameOverTimer=setTimeout(()=>{if(!running)overlay.classList.remove('hidden')},260);`
-- `L292: gameOverTimer=setTimeout(()=>{if(!running)start()},520);`
-- `L312: clearTimeout(gameOverTimer); gameOverTimer=0;`
-- `L330: feedback.push({text,x,y,life:1,color,size});`
 
 ### `rift_run.html`
 **Control flow signals**

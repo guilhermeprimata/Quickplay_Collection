@@ -20,6 +20,7 @@ Validation executed with Node.js syntax checking for every inline JavaScript blo
 | `hover_heroes_3d.html` | 57 | 0 | ✅ | ✅ |
 | `idle_trader.html` | 4 | 0 | ✅ | ✅ |
 | `iron_delta.html` | 1 | 0 | ✅ | ✅ |
+| `iron_delta_25d.html` | 1 | 0 | ✅ | ✅ |
 | `jogo_da_forca.html` | 2 | 0 | ✅ | ✅ |
 | `jogo_da_velha.html` | 2 | 0 | — | ✅ |
 | `kombo_blocks.html` | 3 | 0 | ✅ | ✅ |
@@ -27,7 +28,6 @@ Validation executed with Node.js syntax checking for every inline JavaScript blo
 | `pixel_bomberman.html` | 4 | 0 | ✅ | ✅ |
 | `pixel_joust.html` | 1 | 0 | ✅ | ✅ |
 | `pong.html` | 2 | 0 | ✅ | ✅ |
-| `reef_runner.html` | 1 | 0 | — | ✅ |
 | `rift_run.html` | 1 | 0 | ✅ | ✅ |
 | `salve_os_gatinhos.html` | 2 | 0 | — | — |
 | `skate_or_die.html` | 1 | 0 | ✅ | ✅ |
@@ -43,8 +43,9 @@ Validation executed with Node.js syntax checking for every inline JavaScript blo
 - JavaScript syntax failures: **0**
 - External JavaScript dependencies: **0**
 - Direct Banco do Brasil branding signals: **0**
-- Remote non-JS asset warnings: **1**
+- Remote non-JS asset warnings: **2**
 
 ## Warnings
 
 - domination_wars.html: remote non-JS assets: https://guilhermeprimata.github.io/Quickplay_Collection/menu_minigames.html, https://guilhermeprimata.github.io/Quickplay_Collection/menu_minigames.html, https://guilhermeprimata.github.io/Quickplay_Collection/menu_minigames.html
+- iron_delta_25d.html: remote non-JS assets: https://guilhermeprimata.github.io/Quickplay_Collection/index.html
