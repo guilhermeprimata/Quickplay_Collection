@@ -13,11 +13,14 @@ jobs:
   integrate:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout main
+      - name: Checkout latest main
         uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 0
+
+      - name: Rebase on current main
+        run: git pull --rebase origin main
 
       - name: Register Iron Delta 2.5D in hall and panel
         shell: bash
@@ -80,4 +83,5 @@ jobs:
           git rm -f .github/workflows/add-iron-delta-25d.yml
           git diff --cached --check
           git commit -m "Add Iron Delta 2.5D to Quickplay hall"
+          git pull --rebase origin main
           git push origin HEAD:main
