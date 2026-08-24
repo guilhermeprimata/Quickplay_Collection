@@ -1,0 +1,80 @@
+name: Add Iron Delta 2.5D to Quickplay hall
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/add-iron-delta-25d.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Register Iron Delta 2.5D in hall and panel
+        shell: python
+        run: |
+          from pathlib import Path
+
+          index = Path('index.html')
+          game = Path('iron_delta_25d.html')
+          assert game.exists() and game.stat().st_size > 100_000, 'iron_delta_25d.html missing or unexpectedly small'
+
+          text = index.read_text(encoding='utf-8')
+          game_line = "{file:'iron_delta_25d.html',id:'iron_delta_25d',name:'Iron Delta 2.5D',emoji:'✈️',desc:'Combate aéreo 2.5D em rios procedurais com profundidade pseudo-3D, casco regenerativo, clima, combustível, upgrades, bosses e trilha adaptativa.',new:true},"
+
+          if "id:'iron_delta_25d'" not in text:
+              anchor = "{file:'iron_delta.html',id:'iron_delta',name:'IRON DELTA',emoji:'✈️',desc:'Combate aéreo procedural sobre rios hostis: combustível, upgrades, bosses, checkpoints, desafio diário e rotas para dominar.',new:true},"
+              if anchor not in text:
+                  raise SystemExit('IRON DELTA anchor not found in GAMES')
+              text = text.replace(anchor, anchor + '\n' + game_line, 1)
+
+          if "'iron_delta_25d'" not in text.split('const TIERS=',1)[1]:
+              tier_anchor = "'reef_runner','space_raid_2093','iron_delta','skate_or_die','atomic_raid'"
+              tier_repl = "'reef_runner','space_raid_2093','iron_delta','iron_delta_25d','skate_or_die','atomic_raid'"
+              if tier_anchor not in text:
+                  raise SystemExit('Tier A anchor not found')
+              text = text.replace(tier_anchor, tier_repl, 1)
+
+          marker = '/* IRON DELTA 2.5D — hall identity */'
+          if marker not in text:
+              css = """
+
+/* IRON DELTA 2.5D — hall identity */
+.game-card[data-game="iron_delta_25d"]{border-color:#62e7ff55;box-shadow:0 18px 58px #020914aa,0 0 0 1px #ff9d4b18}
+.game-card[data-game="iron_delta_25d"]:hover{border-color:#9af2ffbb;box-shadow:0 24px 76px #0008,0 0 36px #50dcff30}
+.game-card[data-game="iron_delta_25d"] .thumb-art{background:radial-gradient(circle at 50% 56%,#72ecff30 0 7%,transparent 25%),radial-gradient(circle at 23% 25%,#2a8cbf45,transparent 31%),radial-gradient(circle at 78% 28%,#ff9b4b42,transparent 31%),repeating-linear-gradient(150deg,transparent 0 18px,#65e8ff09 19px 20px),linear-gradient(145deg,#030913,#08283b 56%,#2d1720)}
+.game-card[data-game="iron_delta_25d"] .glyph{filter:drop-shadow(0 14px 22px #0008) drop-shadow(0 0 18px #62e7ff66)}
+"""
+              if '</style>' not in text:
+                  raise SystemExit('</style> not found')
+              text = text.replace('</style>', css + '\n</style>', 1)
+
+          index.write_text(text, encoding='utf-8')
+
+      - name: Validate registration
+        run: |
+          grep -F "id:'iron_delta_25d'" index.html
+          grep -F "file:'iron_delta_25d.html'" index.html
+          grep -F "'iron_delta_25d'" index.html
+          grep -F 'IRON DELTA 2.5D — hall identity' index.html
+          test -s iron_delta_25d.html
+          git diff --check
+
+      - name: Commit integration and remove one-off workflow
+        run: |
+          git config user.name "Projeto Primata Games"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git rm -f .github/workflows/add-iron-delta-25d.yml
+          git diff --cached --check
+          git commit -m "Add Iron Delta 2.5D to Quickplay hall"
+          git push origin HEAD:main
