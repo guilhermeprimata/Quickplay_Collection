@@ -31,7 +31,6 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 | `rift_run.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | — | 158626 |
 | `salve_os_gatinhos.html` | v2 | — | — | ✅ | — | ✅ | ✅ | ✅ | 51273 |
 | `skate_or_die.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 271934 |
-| `snowball_avalanche.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 207925 |
 | `space_raid_2093.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 378452 |
 | `sudoku.html` | v2 | — | — | — | — | ✅ | ✅ | ✅ | 39066 |
 | `the_worm.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 34279 |
@@ -39,7 +38,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 
 ## Automated findings
 
-- Platform layer not v2: `alien_threat.html`, `alien_threat_3d.html`, `atomic_raid.html`, `brain_matrix.html`, `campo_minado.html`, `corrida_de_cavalos.html`, `dropworks.html`, `hover_heroes_2d.html`, `hover_heroes_3d.html`, `idle_trader.html`, `kombo_blocks.html`, `pixel_joust.html`, `pong.html`, `rift_run.html`, `snowball_avalanche.html`
+- Platform layer not v2: `alien_threat.html`, `alien_threat_3d.html`, `atomic_raid.html`, `brain_matrix.html`, `campo_minado.html`, `corrida_de_cavalos.html`, `dropworks.html`, `hover_heroes_2d.html`, `hover_heroes_3d.html`, `idle_trader.html`, `kombo_blocks.html`, `pixel_joust.html`, `pong.html`, `rift_run.html`
 - No native pause signal: `advinhe_o_numero.html`, `corrida_de_cavalos.html`, `foguetinho.html`, `jogo_da_velha.html`, `salve_os_gatinhos.html`, `sudoku.html`, `torre_de_hanoi.html`
 - No native restart/new-game signal: `foguetinho.html`, `salve_os_gatinhos.html`, `sudoku.html`
 - Canvas + keyboard but no native touch signal: `advinhe_o_numero.html`
@@ -1002,48 +1001,6 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 - `L1856: this.speedMultiplier = 1;`
 - `L1857: this.playerSpeedModifier = 1.0;`
 - `L1860: this.invincibleTimer = 0;`
-
-### `snowball_avalanche.html`
-**Control flow signals**
-- `L217: function resumeAudio(){let ctx=ensureAudio();if(!ctx)return Promise.resolve(null);if(ctx.state==='running')return Promise.resolve(ctx);if(audioResumePromise)return audioResumePromise;audioResumePromise=ctx.resume().catch(()=>null).then(()=>{audioResumePromise=null;return ctx.state==='running'?ctx:null});return audioResumePromise}`
-- `L219: function startCue(){if(!cfg.sound)return;duckMusic(.42,.52);tone(392,.055,'square',.055,'sfx',0);tone(523.25,.08,'square',.075,'sfx',.08);tone(659.25,.09,'square',.083,'sfx',.17);tone(783.99,.16,'square',.09,'sfx',.28);tone(130.81,.28,'triangle',.05,'sfx',.28)}`
-- `L222: function beginRunAudio(withCue=true){if(!cfg.sound)return;let token=++runAudioToken,ctx=ensureAudio();if(!ctx)return;resumeAudio().then(ok=>{if(!ok||token!==runAudioToken||state!=='play'||!cfg.sound)return;if(withCue)startCue();setTimeout(()=>{if(token===runAudioToken&&state==='play'&&cfg.sound)music()},withCue?430:0)})}`
-- `L223: function unlockAudioFromGesture(){if(!cfg.sound)return;resumeAudio().then(ok=>{if(ok&&state==='play'&&!seqTimer)music(musicKind||'normal')})}`
-- `L236: function music(kind='normal'){if(seqTimer){clearTimeout(seqTimer);seqTimer=null}let token=++musicToken;if(kind==='off'||!cfg.sound)return;musicKind=kind;musicStep=0;let ctx=ensureAudio();if(!ctx)return;if(ctx.state==='running')scheduleMusic(token);else resumeAudio().then(ok=>{if(ok&&token===musicToken&&cfg.sound&&state==='play')scheduleMusic(token)})}`
-- `L239: let input={x:0,y:1,keys:{},jump:false,trick:false,gpj:false,gpp:false},state='menu',world=[],snow=[],fx=[],trail=[],marks=[],santa=null,ufo=null,beast=null,deathCrash=null,nextSanta=210,nextUfo=95,mode='survival',time=0,dist=0,score=0,style=0,gates=0,miss=0,cam=0,shake=0,buried=0,life=100,timeLimit=60,terrainNotice=0;`
-- `L298: addEventListener('keydown',e=>{input.keys[e.code]=true;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();if(e.code==='Escape')pause();if(e.code==='F2'&&state==='play')reset(mode);if(e.code==='KeyH')$('#hud').classList.toggle('hidden')});addEventListener('keyup',e=>input.keys[e.code]=false);`
-- `L299: cv.addEventListener('mousemove',e=>{if(state!=='play')return;let r=cv.getBoundingClientRect(),sx=(e.clientX-r.left)/r.width*W,sy=(e.clientY-r.top)/r.height*H,m=screenToWorld(sx,sy);input.x=clamp((m.x-p.x)/92,-1,1);input.y=clamp((m.y-p.y)/115,-1,1);pointerSteerUntil=performance.now()+320});cv.oncontextmenu=e=>e.preventDefault();`
-- `L393: function pause(){if(state==='play'){state='pause';show('#pauseScreen');updateModeHud();music('off')}else if(state==='pause'){state='play';$$('.screen').forEach(x=>x.classList.add('hidden'));updateModeHud();music()}}`
-- `L394: function finish(reason='life'){if(state==='over'||state==='ending')return;fadeToGameOver(reason)}`
-**Gameplay tuning signals**
-- `L105: const IS_MOBILE=matchMedia('(pointer: coarse)').matches,MIN_ZOOM=IS_MOBILE?.32:.34,MAX_ZOOM=1,MAX_RADIUS=600,DEBUG_CAMERA=false,MAX_SPAWN_PER_UPDATE=IS_MOBILE?4:7,MAX_ENTITIES=IS_MOBILE?125:170,MAX_PARTICLES=IS_MOBILE?280:450,MAX_MARKS=IS_MOBILE?220:350,MAX_TRAIL=500;`
-- `L106: const camera={x:W/2,y:H/2,zoom:1,targetZoom:1,impactZoom:1,growthZoom:1,lookAheadX:0,offsetY:30,finalZoom:1,bounds:null};`
-- `L107: const CHUNK_WIDTH=720,CHUNK_HEIGHT=620,MAX_CHUNKS_GENERATED_PER_UPDATE=IS_MOBILE?1:2,REBASE_DISTANCE=50000,WORLD_SEED=0x5a17c9d3;`
-- `L110: const deluxe={weather:'clear',weatherStrength:0,targetWeatherStrength:0,lastBiome:'alpine',combo:0,comboTimer:0,bestCombo:0,variety:new Set(),districtScore:0,eventBonus:0,wind:0,oneShotBiome:true};`
-- `L115: function updateCombo(type,value){deluxe.combo=Math.min(99,deluxe.combo+1);deluxe.comboTimer=2.8;deluxe.bestCombo=Math.max(deluxe.bestCombo,deluxe.combo);deluxe.variety.add(type);let varietyBonus=Math.min(2.5,1+deluxe.variety.size*.08),multi=1+Math.min(3,deluxe.combo*.035);return Math.round(value*varietyBonus*multi)}`
-- `L130: if(b==='frozen')return r<.24?'penguin':r<.37?'bear':r<.43?'yeti':r<.54?'rock':r<.65?'snowman':r<.74?'iceRink':r<.82?'eskimoVillage':r<.90?'dogSledHunter':r<.97?'snowPlow':'waterTower';`
-- `L131: if(b==='industrial')return r<.13?'warehouse':r<.24?'factory':r<.33?'garage':r<.42?'parking':r<.50?'train':r<.57?'maintenance':r<.64?'snowPlow':r<.71?'fireTruck':r<.77?'snowmobile':r<.84?'waterTower':r<.90?'billboard':r<.96?'powerPlant':r<.985?'villager':'monsterTruck';`
-- `L137: const STRUCTURE_COMBO_WINDOW=2.2;let structureCombo={count:0,lastAt:-99,expires:0,mult:1,best:0,lastTier:0};`
-- `L148: function featureEntity(chunk,type,x,y,extra={}){let st=OBJECT_STATS[type]||[10,10];return pushChunkEntity(chunk,{type,x,y,w:st[0]*1.2,h:st[0],size:st[0],value:st[1],variant:0,phase:0,hit:false,gone:false,chunkKey:chunk.key,biome:chunk.biome,material:materialFor(type),hp:1,maxHp:1,...extra})}`
-- `L151: function makeRiverPoints(random,height=CHUNK_HEIGHT*1.18,turns=7){let pts=[],phase=random()*TAU,amp=35+random()*90,drift=(random()-.5)*60;for(let i=0;i<turns;i++){let t=i/(turns-1),yy=-height/2+t*height,xx=Math.sin(phase+t*(2.2+random()*2.2)*Math.PI)*amp+(t-.5)*drift;pts.push([xx,yy])}return pts}`
-- `L163: function canOverrun(e){if(!e||e.terrainHazard||e.decorative)return false;let ballSpan=Math.max(p.r,p.targetR*.96)*2,objectSpan=Math.max(4,e.size||Math.max(e.w||0,e.h||0)*.5),need=overrunRequirement(e);return ballSpan>=objectSpan*need}`
-- `L164: function overrunImpact(e){let beforeSpeed=p.speed,beforeMass=p.mass;bury(e);p.speed=Math.max(beforeSpeed,p.speed,p.speedPeak||0);p.speedPeak=Math.max(p.speedPeak||0,p.speed);p.vx*=.985;camera.impactZoom=Math.max(camera.impactZoom,.985);shake=Math.min(shake,Math.max(1.2,(e.size||8)*.035));return p.mass>beforeMass}`
-- `L167: function clamp(v,a,b){return Math.max(a,Math.min(b,v))}function lerp(a,b,t){return a+(b-a)*clamp(t,0,1)}`
-- `L168: function radiusFromMass(mass){let raw=Math.sqrt(Math.max(0,mass));if(raw<=80)return raw;if(raw<=160)return 80+(raw-80)*.7;return Math.min(MAX_RADIUS,136+(raw-160)*.45)}`
-- `L169: function calculateTargetZoom(r){let z;if(r<=40)z=1;else if(r<=75)z=lerp(1,.9,(r-40)/35);else if(r<=130)z=lerp(.9,.79,(r-75)/55);else if(r<=180)z=lerp(.79,.70,(r-130)/50);else if(r<=300)z=lerp(.70,.58,(r-180)/120);else if(r<=450)z=lerp(.58,.46,(r-300)/150);else z=lerp(.46,IS_MOBILE?.35:.37,(r-450)/150);return clamp(z,MIN_ZOOM,MAX_ZOOM)}`
-- `L173: function getTargetEntityCount(){let factor=1/(camera.zoom*camera.zoom),raw=46*DIFF[cfg.dif].density*Math.min(2.8,factor);return clamp(Math.round(raw),40,MAX_ENTITIES)}`
-- `L204: const PREVIEW=new URLSearchParams(location.search).get('preview')==='1',GAME_ID='snowball_avalanche',SHARED_STATS='ppg_minigames_stats_v1';let statActive=false,statLast=performance.now();`
-- `L208: function flushShared(){if(PREVIEW||!statActive)return;let now=performance.now(),delta=Math.min(10,Math.max(0,(now-statLast)/1000));statLast=now;if(delta<.05)return;let all=sharedRead(),s=all[GAME_ID]||{};s.totalSeconds=(s.totalSeconds||0)+delta;all[GAME_ID]=s;sharedWrite(all)}`
-- `L213: let ac,seqTimer=null,musicToken=0,musicStep=0,musicKind='normal',noiseBuffer=null,windBuffer=null,crowdAudioTimer=0,windAudioTimer=0,bgmBus=null,bgmTone=null,sfxBus=null,masterBus=null,masterComp=null,audioResumePromise=null,runAudioToken=0,musicRecoveryCooldown=0,lastMusicBeat=0;const MUSIC_GAIN=2.52;`
-- `L216: function duckMusic(amount=.58,duration=.34){let ctx=ensureAudio();if(!ctx||!bgmBus)return;let now=ctx.currentTime,target=Math.max(.24,Math.min(1.06,amount));bgmBus.gain.cancelScheduledValues(now);bgmBus.gain.setTargetAtTime(target,now,.025);bgmBus.gain.setTargetAtTime(1.06,now+Math.max(.08,duration),.08)}`
-- `L236: function music(kind='normal'){if(seqTimer){clearTimeout(seqTimer);seqTimer=null}let token=++musicToken;if(kind==='off'||!cfg.sound)return;musicKind=kind;musicStep=0;let ctx=ensureAudio();if(!ctx)return;if(ctx.state==='running')scheduleMusic(token);else resumeAudio().then(ok=>{if(ok&&token===musicToken&&cfg.sound&&state==='play')scheduleMusic(token)})}`
-- `L237: const DIFF={easy:{base:126,density:.78,beast:66,accel:.62,lifeLoss:.82},normal:{base:148,density:1,beast:79,accel:.82,lifeLoss:1},hard:{base:170,density:1.22,beast:94,accel:1.05,lifeLoss:1.18}};`
-- `L239: let input={x:0,y:1,keys:{},jump:false,trick:false,gpj:false,gpp:false},state='menu',world=[],snow=[],fx=[],trail=[],marks=[],santa=null,ufo=null,beast=null,deathCrash=null,nextSanta=210,nextUfo=95,mode='survival',time=0,dist=0,score=0,style=0,gates=0,miss=0,cam=0,shake=0,buried=0,life=100,timeLimit=60,terrainNotice=0;`
-- `L241: let p={x:320,y:220,vx:0,speed:0,speedPeak:0,r:9,targetR:9,mass:81,roll:0,boost:100,growthPulse:0,trailTick:0,heading:0,rollDir:1,bloodiness:0};`
-- `L245: let sessionStats=freshSessionStats(),zenHudLast=-1,endFadeTimer=0;`
-- `L246: function formatDuration(sec){sec=Math.max(0,Math.floor(sec||0));let m=Math.floor(sec/60),s=sec%60;return m+':'+String(s).padStart(2,'0')}`
-- `L254: function msg(s){let e=$('#msg');e.textContent=s;e.style.opacity=1;e.classList.remove('signal');void e.offsetWidth;e.classList.add('signal');clearTimeout(e.t);e.t=setTimeout(()=>{e.style.opacity=0;e.classList.remove('signal')},1000)}`
-- `L262: function spawnX(size=10){let b=camera.bounds||getCameraBounds(),m=Math.max(30,size*.75);return rnd(b.left+m,b.right-m)}`
 
 ### `space_raid_2093.html`
 **Control flow signals**
