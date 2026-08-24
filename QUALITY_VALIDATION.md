@@ -13,6 +13,7 @@ Validation executed with Node.js syntax checking for every inline JavaScript blo
 | `campo_minado.html` | 4 | 0 | ✅ | ✅ |
 | `click_speed.html` | 4 | 0 | ✅ | ✅ |
 | `corrida_de_cavalos.html` | 1 | 0 | — | ✅ |
+| `domination_wars.html` | 1 | 0 | ✅ | ✅ |
 | `dropworks.html` | 3 | 0 | ✅ | ✅ |
 | `foguetinho.html` | 1 | 0 | — | — |
 | `hover_heroes_2d.html` | 1 | 0 | ✅ | ✅ |
@@ -38,8 +39,12 @@ Validation executed with Node.js syntax checking for every inline JavaScript blo
 
 ## Result
 
-- Games checked: **31**
+- Games checked: **32**
 - JavaScript syntax failures: **0**
 - External JavaScript dependencies: **0**
 - Direct Banco do Brasil branding signals: **0**
-- Remote non-JS asset warnings: **0**
+- Remote non-JS asset warnings: **1**
+
+## Warnings
+
+- domination_wars.html: remote non-JS assets: https://guilhermeprimata.github.io/Quickplay_Collection/menu_minigames.html, https://guilhermeprimata.github.io/Quickplay_Collection/menu_minigames.html, https://guilhermeprimata.github.io/Quickplay_Collection/menu_minigames.html
