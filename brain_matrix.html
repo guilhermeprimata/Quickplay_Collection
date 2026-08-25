@@ -1,0 +1,2728 @@
+<!DOCTYPE html>
+<!-- saved from url=(0073)https://guilhermeprimata.github.io/Quickplay_Collection/brain_matrix.html -->
+<html lang="pt-BR"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="color-scheme" content="dark light">
+<title>Brain Matrix - Projeto Primata Games</title>
+<style>
+  :root {
+    --bg-color: #0d0d12;
+    --panel-bg: #161622;
+    --primary: #00ffcc;
+    --primary-glow: rgba(0, 255, 204, 0.4);
+    --secondary: #ff007f;
+    --secondary-glow: rgba(255, 0, 127, 0.4);
+    --accent: #ffe600;
+    --text: #e0e6ed;
+    --text-dim: #7a889b;
+    --tile-bg: #1c1f30;
+    --tile-border: #2d324d;
+    --tile-flipped: #0b2e2b;
+    --tile-flipped-border: #00ffcc;
+    --font-main: 'Courier New', Courier, monospace, system-ui;
+  }
+
+  body[data-theme="matrix"] {
+    --bg-color: #030d03;
+    --panel-bg: #061a06;
+    --primary: #00ff41;
+    --primary-glow: rgba(0, 255, 65, 0.4);
+    --secondary: #008f11;
+    --secondary-glow: rgba(0, 143, 17, 0.4);
+    --accent: #66ff66;
+    --text: #c8ffc8;
+    --text-dim: #2b752b;
+    --tile-bg: #082108;
+    --tile-border: #004d00;
+    --tile-flipped: #023302;
+    --tile-flipped-border: #00ff41;
+  }
+
+  body[data-theme="amber"] {
+    --bg-color: #120b00;
+    --panel-bg: #211400;
+    --primary: #ffb000;
+    --primary-glow: rgba(255, 176, 0, 0.4);
+    --secondary: #d47500;
+    --secondary-glow: rgba(212, 117, 0, 0.4);
+    --accent: #ffd066;
+    --text: #ffe8b3;
+    --text-dim: #805500;
+    --tile-bg: #291a00;
+    --tile-border: #593800;
+    --tile-flipped: #422900;
+    --tile-flipped-border: #ffb000;
+  }
+
+  body[data-theme="gameboy"] {
+    --bg-color: #8b956d;
+    --panel-bg: #9bbc0f;
+    --primary: #0f380f;
+    --primary-glow: rgba(15, 56, 15, 0.3);
+    --secondary: #306230;
+    --secondary-glow: rgba(48, 98, 48, 0.3);
+    --accent: #0f380f;
+    --text: #0f380f;
+    --text-dim: #306230;
+    --tile-bg: #8bac0f;
+    --tile-border: #306230;
+    --tile-flipped: #9bbc0f;
+    --tile-flipped-border: #0f380f;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: var(--bg-color);
+    color: var(--text);
+    font-family: var(--font-main);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  #crt-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 999;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+                radial-gradient(circle, rgba(0,0,0,0) 65%, rgba(0,0,0,0.6) 100%);
+    background-size: 100% 3px, 100% 100%;
+    display: block;
+  }
+  body.no-crt #crt-overlay { display: none; }
+
+  #app {
+    width: 100vw;
+    height: 100vh;
+    max-width: 600px;
+    max-height: 900px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    background: var(--panel-bg);
+    border: 2px solid var(--primary);
+    box-shadow: 0 0 20px var(--primary-glow);
+  }
+
+  .screen {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    padding: 16px;
+    overflow-y: auto;
+  }
+  .screen.active { display: flex; }
+
+  h1 {
+    font-size: 1.8rem;
+    text-align: center;
+    color: var(--primary);
+    text-shadow: 0 0 10px var(--primary-glow);
+    margin-bottom: 8px;
+    letter-spacing: 2px;
+  }
+  h2 {
+    font-size: 1.2rem;
+    color: var(--secondary);
+    margin-bottom: 12px;
+    text-align: center;
+  }
+
+  .btn {
+    background: var(--tile-bg);
+    border: 2px solid var(--primary);
+    color: var(--text);
+    padding: 12px 16px;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.15s ease;
+    margin: 6px 0;
+    text-align: center;
+    border-radius: 4px;
+    outline: none;
+  }
+  .btn:hover, .btn:focus {
+    background: var(--primary);
+    color: var(--bg-color);
+    box-shadow: 0 0 12px var(--primary-glow);
+    transform: translateY(-1px);
+  }
+  .btn:active {
+    transform: translateY(1px);
+  }
+  .btn-sm { padding: 6px 12px; font-size: 0.85rem; }
+  .btn-danger { border-color: var(--secondary); }
+  .btn-danger:hover, .btn-danger:focus { background: var(--secondary); color: #fff; box-shadow: 0 0 12px var(--secondary-glow); }
+
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .icon-btn {
+    background: transparent;
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.1rem;
+    border-radius: 4px;
+  }
+  .icon-btn:hover, .icon-btn:focus {
+    background: var(--primary);
+    color: var(--bg-color);
+  }
+
+  #game-hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--tile-bg);
+    padding: 8px 12px;
+    border: 1px solid var(--tile-border);
+    margin-bottom: 10px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+  }
+  .hud-val { color: var(--accent); font-weight: bold; }
+  .hud-target {
+    font-size: 1.1rem;
+    color: var(--primary);
+    font-weight: bold;
+    border: 1px dashed var(--primary);
+    padding: 2px 8px;
+    border-radius: 3px;
+  }
+
+  #canvas-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    width: 100%;
+    min-height: 0;
+  }
+  #game-canvas {
+    background: var(--bg-color);
+    border: 2px solid var(--tile-border);
+    border-radius: 4px;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+    cursor: pointer;
+    touch-action: none;
+  }
+
+  .form-group {
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  label { font-size: 0.85rem; color: var(--text-dim); }
+  select, input[type="text"] {
+    background: var(--tile-bg);
+    border: 1px solid var(--primary);
+    color: var(--text);
+    padding: 10px;
+    font-family: inherit;
+    border-radius: 4px;
+    outline: none;
+  }
+  .checkbox-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--tile-border);
+  }
+
+  .modal {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.88);
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    z-index: 100;
+  }
+  .modal.active { display: flex; }
+  .modal-content {
+    background: var(--panel-bg);
+    border: 2px solid var(--primary);
+    padding: 20px;
+    width: 100%;
+    max-width: 440px;
+    max-height: 85vh;
+    overflow-y: auto;
+    border-radius: 6px;
+    box-shadow: 0 0 20px var(--primary-glow);
+  }
+
+  .profile-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--tile-bg);
+    border: 1px solid var(--tile-border);
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin-bottom: 6px;
+  }
+  .profile-list-item.active {
+    border-color: var(--primary);
+    box-shadow: 0 0 8px var(--primary-glow);
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin: 12px 0;
+    font-size: 0.85rem;
+  }
+  .stat-card {
+    background: var(--tile-bg);
+    padding: 8px;
+    border-left: 3px solid var(--primary);
+    border-radius: 2px;
+  }
+  #telemetry-canvas {
+    width: 100%;
+    height: 140px;
+    background: var(--tile-bg);
+    border: 1px solid var(--tile-border);
+    margin: 10px 0;
+    border-radius: 4px;
+  }
+
+  /* Quickplay Collection shell: independent light/dark UI without changing game rules. */
+  body.ui-light {
+    --bg-color: #eef2f6;
+    --panel-bg: #f8fafc;
+    --text: #18202a;
+    --text-dim: #5d6a79;
+    --tile-bg: #e7edf4;
+    --tile-border: #a9b5c5;
+    --tile-flipped: #d9eee8;
+    color-scheme: light;
+  }
+  body:not(.ui-light) { color-scheme: dark; }
+  body[data-theme="gameboy"].ui-light {
+    --bg-color: #c7d1a0;
+    --panel-bg: #9bbc0f;
+    --text: #0f380f;
+    --text-dim: #306230;
+    --tile-bg: #8bac0f;
+    --tile-border: #306230;
+    --tile-flipped: #9bbc0f;
+  }
+  .top-bar.quickplay-bar { gap: 6px; }
+  .top-bar.quickplay-bar #btn-profile-switch { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .quickplay-credit { margin-top: 9px; text-align:center; color:var(--text-dim); font-size:.68rem; }
+  .quickplay-tip { margin:10px 0; padding:9px 10px; border-left:3px solid var(--accent); background:var(--tile-bg); }
+  body.preview #btn-collection-menu, body.preview #btn-ui-theme { display:none; }
+  #game-canvas:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+
+  /* =========================================================================
+     9. ORBITAL COMMAND ART PASS — splash, main menu & micro-polish
+     ========================================================================= */
+  :root {
+    --glass: rgba(8, 12, 28, .82);
+    --glass-soft: rgba(14, 20, 42, .62);
+    --line-soft: color-mix(in srgb, var(--primary) 30%, transparent);
+    --danger-soft: color-mix(in srgb, var(--secondary) 24%, transparent);
+  }
+
+  @keyframes starDrift { from { transform: translate3d(0,0,0); } to { transform: translate3d(-34px,48px,0); } }
+  @keyframes scanSweep { 0% { transform: translateY(-120%); opacity:0; } 12% { opacity:.2; } 75% { opacity:.08; } 100% { transform: translateY(620%); opacity:0; } }
+  @keyframes orbitSpin { to { transform: rotate(360deg); } }
+  @keyframes orbitSpinReverse { to { transform: rotate(-360deg); } }
+  @keyframes pulseCore { 0%,100% { transform:scale(.92); filter:brightness(.9); } 50% { transform:scale(1.05); filter:brightness(1.35); } }
+  @keyframes menuRise { from { opacity:0; transform:translateY(10px) scale(.985); } to { opacity:1; transform:none; } }
+  @keyframes signalBlink { 0%,86%,100% { opacity:1; } 90% { opacity:.35; } 94% { opacity:.85; } }
+  @keyframes splashOut { to { opacity:0; visibility:hidden; transform:scale(1.02); } }
+  @keyframes shipFly { 0% { transform:translate(-180px, 44px) rotate(-8deg); opacity:0; } 18% { opacity:1; } 72% { opacity:1; } 100% { transform:translate(190px, -40px) rotate(-8deg); opacity:0; } }
+  @keyframes bootLine { from { transform:scaleX(0); } to { transform:scaleX(1); } }
+
+  #app::before,
+  #app::after {
+    content:"";
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    z-index:0;
+  }
+  #app::before {
+    opacity:.32;
+    background:
+      radial-gradient(circle at 12% 16%, var(--primary) 0 1px, transparent 1.7px),
+      radial-gradient(circle at 84% 22%, var(--accent) 0 1px, transparent 1.5px),
+      radial-gradient(circle at 68% 78%, var(--secondary) 0 1px, transparent 1.5px),
+      radial-gradient(circle at 34% 65%, var(--text-dim) 0 1px, transparent 1.4px);
+    background-size: 79px 83px, 113px 127px, 157px 139px, 97px 109px;
+    animation: starDrift 22s linear infinite;
+  }
+  #app::after {
+    opacity:.12;
+    background:
+      linear-gradient(90deg, transparent 49.6%, var(--primary) 50%, transparent 50.4%),
+      linear-gradient(0deg, transparent 49.6%, var(--primary) 50%, transparent 50.4%);
+    background-size:48px 48px;
+    mask-image: radial-gradient(circle at 50% 45%, black 0, transparent 72%);
+  }
+  .screen, .modal { z-index:1; }
+
+  /* short boot splash */
+  #boot-splash {
+    position:fixed;
+    inset:0;
+    z-index:5000;
+    display:grid;
+    place-items:center;
+    overflow:hidden;
+    background:
+      radial-gradient(circle at 50% 48%, rgba(0,255,204,.12), transparent 24%),
+      radial-gradient(circle at 50% 50%, #0a1025 0, #03050d 52%, #010207 100%);
+    color:#dffcff;
+    cursor:pointer;
+    transition:opacity .28s ease, visibility .28s ease, transform .28s ease;
+  }
+  #boot-splash.done { animation:splashOut .34s ease forwards; pointer-events:none; }
+  #boot-splash::before {
+    content:"";
+    position:absolute;
+    inset:-40px;
+    background:
+      radial-gradient(circle, rgba(255,255,255,.9) 0 1px, transparent 1.4px) 0 0/73px 89px,
+      radial-gradient(circle, rgba(0,255,204,.55) 0 1px, transparent 1.6px) 31px 18px/127px 113px;
+    opacity:.34;
+    animation:starDrift 8s linear infinite;
+  }
+  #boot-splash::after {
+    content:"";
+    position:absolute;
+    left:0; right:0; top:-30%;
+    height:18%;
+    background:linear-gradient(180deg, transparent, rgba(0,255,204,.18), transparent);
+    animation:scanSweep 1.35s ease-in-out 1;
+  }
+  .boot-panel {
+    position:relative;
+    width:min(86vw, 520px);
+    padding:26px 22px 20px;
+    text-align:center;
+    border:1px solid rgba(0,255,204,.38);
+    clip-path:polygon(14px 0, calc(100% - 14px) 0, 100% 14px, 100% calc(100% - 14px), calc(100% - 14px) 100%, 14px 100%, 0 calc(100% - 14px), 0 14px);
+    background:linear-gradient(180deg, rgba(12,24,50,.84), rgba(3,8,20,.91));
+    box-shadow:0 0 50px rgba(0,255,204,.10), inset 0 0 30px rgba(0,0,0,.45);
+  }
+  .boot-panel::before, .boot-panel::after {
+    content:"";
+    position:absolute;
+    top:12px;
+    width:52px;
+    height:2px;
+    background:#00ffcc;
+    box-shadow:0 0 9px rgba(0,255,204,.65);
+  }
+  .boot-panel::before { left:14px; }
+  .boot-panel::after { right:14px; }
+  .boot-orbit {
+    width:100px; height:100px;
+    margin:0 auto 12px;
+    position:relative;
+    display:grid; place-items:center;
+  }
+  .boot-orbit .ring {
+    position:absolute;
+    border:1px solid rgba(0,255,204,.55);
+    border-radius:50%;
+  }
+  .boot-orbit .ring:nth-child(1){ inset:7px; border-style:dashed; animation:orbitSpin 3.8s linear infinite; }
+  .boot-orbit .ring:nth-child(2){ inset:21px 5px; transform:rotate(58deg); border-color:rgba(255,0,127,.62); animation:orbitSpinReverse 2.8s linear infinite; }
+  .boot-orbit .ring:nth-child(3){ inset:33px; border-color:rgba(255,230,0,.65); animation:pulseCore 1s ease-in-out infinite; }
+  .boot-core {
+    width:23px; height:23px;
+    transform:rotate(45deg);
+    border:2px solid #dffcff;
+    background:rgba(0,255,204,.2);
+    box-shadow:0 0 18px rgba(0,255,204,.85);
+  }
+  .boot-ship {
+    position:absolute;
+    left:50%; top:50%;
+    font-size:20px;
+    color:#ffcf5a;
+    text-shadow:0 0 10px rgba(255,207,90,.7);
+    animation:shipFly 1.45s cubic-bezier(.22,.61,.36,1) .12s both;
+  }
+  .boot-title {
+    font-weight:900;
+    font-size:clamp(1.55rem, 5vw, 2.15rem);
+    letter-spacing:.18em;
+    color:#eaffff;
+    text-shadow:0 0 16px rgba(0,255,204,.65);
+  }
+  .boot-sub {
+    margin-top:7px;
+    font-size:.7rem;
+    color:#87a8b7;
+    letter-spacing:.18em;
+  }
+  .boot-progress {
+    width:78%;
+    height:3px;
+    margin:18px auto 7px;
+    background:rgba(255,255,255,.08);
+    overflow:hidden;
+  }
+  .boot-progress > span {
+    display:block; height:100%;
+    background:linear-gradient(90deg,#00ffcc,#ffe600,#ff007f);
+    transform-origin:left;
+    animation:bootLine 1.35s cubic-bezier(.2,.7,.2,1) .12s both;
+  }
+  .boot-caption {
+    font-size:.62rem;
+    color:#587684;
+    letter-spacing:.11em;
+    animation:signalBlink 1.2s linear infinite;
+  }
+
+  /* Main screen: orbital command deck */
+  #screen-main {
+    overflow:hidden;
+    padding:14px;
+    background:
+      radial-gradient(circle at 50% 26%, color-mix(in srgb, var(--primary) 10%, transparent), transparent 31%),
+      linear-gradient(180deg, color-mix(in srgb, var(--panel-bg) 93%, #000), var(--panel-bg));
+  }
+  #screen-main.active > * { animation:menuRise .42s cubic-bezier(.2,.8,.2,1) both; }
+  #screen-main.active > *:nth-child(2) { animation-delay:.04s; }
+  #screen-main.active > *:nth-child(3) { animation-delay:.08s; }
+  #screen-main.active > *:nth-child(4) { animation-delay:.12s; }
+
+  .quickplay-bar {
+    position:relative;
+    z-index:4;
+    padding-bottom:8px;
+    border-bottom:1px solid color-mix(in srgb, var(--primary) 20%, transparent);
+  }
+  .quickplay-bar .icon-btn {
+    border-radius:50%;
+    background:color-mix(in srgb, var(--tile-bg) 85%, transparent);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.035);
+  }
+  .quickplay-bar #btn-profile-switch {
+    border-radius:20px;
+    background:linear-gradient(180deg, color-mix(in srgb, var(--tile-bg) 94%, white 2%), var(--tile-bg));
+  }
+
+  .hero-console {
+    position:relative;
+    text-align:center;
+    margin:2px 0 8px;
+    min-height:188px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+  }
+  .hero-console::before {
+    content:"";
+    position:absolute;
+    width:230px; height:230px;
+    border-radius:50%;
+    border:1px solid color-mix(in srgb, var(--primary) 20%, transparent);
+    background:
+      repeating-radial-gradient(circle, transparent 0 22px, color-mix(in srgb, var(--primary) 8%, transparent) 23px 24px),
+      conic-gradient(from 0deg, transparent 0 18deg, color-mix(in srgb, var(--primary) 10%, transparent) 18deg 20deg, transparent 20deg 72deg, color-mix(in srgb, var(--secondary) 12%, transparent) 72deg 74deg, transparent 74deg);
+    animation:orbitSpin 24s linear infinite;
+    opacity:.9;
+  }
+  .hero-console::after {
+    content:"";
+    position:absolute;
+    width:78px; height:78px;
+    border:1px dashed var(--accent);
+    border-radius:50%;
+    opacity:.38;
+    animation:orbitSpinReverse 6s linear infinite;
+  }
+  .hero-mark {
+    position:absolute;
+    top:14px;
+    width:38px; height:38px;
+    display:grid; place-items:center;
+    border:1px solid var(--secondary);
+    transform:rotate(45deg);
+    background:color-mix(in srgb, var(--secondary) 13%, var(--panel-bg));
+    box-shadow:0 0 18px var(--secondary-glow);
+    z-index:1;
+  }
+  .hero-mark span { transform:rotate(-45deg); color:var(--accent); font-size:1rem; }
+  .hero-console h1 {
+    position:relative;
+    z-index:2;
+    margin:48px 0 2px;
+    font-size:clamp(1.9rem, 7vw, 2.65rem);
+    line-height:1;
+    letter-spacing:.12em;
+  }
+  .hero-kicker {
+    position:relative;
+    z-index:2;
+    color:var(--accent);
+    font-size:.57rem;
+    letter-spacing:.2em;
+    margin-top:7px;
+    text-transform:uppercase;
+  }
+  .hero-tagline {
+    position:relative;
+    z-index:2;
+    color:var(--text-dim);
+    font-size:.68rem;
+    letter-spacing:.15em;
+    margin-top:5px;
+  }
+  .status-rack {
+    position:relative;
+    z-index:2;
+    display:flex;
+    gap:5px;
+    margin-top:10px;
+    flex-wrap:wrap;
+    justify-content:center;
+  }
+  .status-chip {
+    padding:3px 7px;
+    border:1px solid color-mix(in srgb, var(--primary) 28%, transparent);
+    background:color-mix(in srgb, var(--tile-bg) 70%, transparent);
+    color:var(--text-dim);
+    font-size:.52rem;
+    letter-spacing:.08em;
+    border-radius:2px;
+  }
+  .status-chip strong { color:var(--primary); font-weight:700; }
+  .status-chip.threat strong { color:var(--secondary); }
+
+  .command-deck {
+    flex:1;
+    min-height:0;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:7px;
+    position:relative;
+    z-index:3;
+  }
+  .menu-card {
+    --card-edge: var(--primary);
+    position:relative;
+    width:100%;
+    min-height:54px;
+    display:grid;
+    grid-template-columns:54px 1fr 38px;
+    align-items:center;
+    border:1px solid color-mix(in srgb, var(--card-edge) 62%, transparent);
+    border-left:4px solid var(--card-edge);
+    padding:7px 9px 7px 6px;
+    color:var(--text);
+    background:
+      linear-gradient(100deg, color-mix(in srgb, var(--card-edge) 13%, transparent), transparent 34%),
+      linear-gradient(180deg, color-mix(in srgb, var(--tile-bg) 96%, white 1%), color-mix(in srgb, var(--tile-bg) 86%, black 8%));
+    font-family:inherit;
+    text-align:left;
+    cursor:pointer;
+    clip-path:polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+    transition:transform .14s ease, filter .14s ease, box-shadow .14s ease, border-color .14s ease;
+    overflow:hidden;
+  }
+  .menu-card::before {
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(105deg, transparent 0 45%, color-mix(in srgb, var(--card-edge) 9%, transparent) 50%, transparent 55%);
+    transform:translateX(-120%);
+    transition:transform .38s ease;
+    pointer-events:none;
+  }
+  .menu-card::after {
+    content:"";
+    position:absolute;
+    right:5px; top:5px;
+    width:13px; height:1px;
+    background:var(--card-edge);
+    box-shadow:-4px 4px 0 -0.2px var(--card-edge);
+    opacity:.8;
+  }
+  .menu-card:hover, .menu-card:focus-visible {
+    transform:translateX(3px);
+    filter:brightness(1.13);
+    box-shadow:-8px 0 20px color-mix(in srgb, var(--card-edge) 16%, transparent), inset 0 0 18px color-mix(in srgb, var(--card-edge) 8%, transparent);
+    outline:none;
+  }
+  .menu-card:hover::before, .menu-card:focus-visible::before { transform:translateX(120%); }
+  .menu-card:active { transform:translateX(1px) scale(.995); }
+  .menu-card.primary { --card-edge:var(--accent); min-height:63px; }
+  .menu-card.danger { --card-edge:var(--secondary); }
+  .menu-glyph {
+    width:40px; height:40px;
+    display:grid; place-items:center;
+    position:relative;
+    border:1px solid color-mix(in srgb, var(--card-edge) 55%, transparent);
+    color:var(--card-edge);
+    font-size:1.18rem;
+    background:color-mix(in srgb, var(--card-edge) 8%, transparent);
+    transform:rotate(45deg);
+  }
+  .menu-glyph > span { transform:rotate(-45deg); }
+  .menu-copy {
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    font-weight:900;
+    font-size:.92rem;
+  }
+  .menu-copy small {
+    color:var(--text-dim);
+    font-size:.51rem;
+    font-weight:400;
+    letter-spacing:.16em;
+  }
+  .menu-arrow {
+    justify-self:end;
+    color:var(--card-edge);
+    font-size:1.05rem;
+    transition:transform .14s ease;
+  }
+  .menu-card:hover .menu-arrow { transform:translateX(4px); }
+
+  .mode-array {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:6px;
+  }
+  .mode-array .btn {
+    position:relative;
+    margin:0;
+    min-height:39px;
+    padding:8px 8px;
+    border-radius:2px;
+    background:linear-gradient(180deg, color-mix(in srgb, var(--tile-bg) 92%, white 2%), var(--tile-bg));
+    clip-path:polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  }
+  .mode-array .btn::before {
+    content:"◉";
+    margin-right:7px;
+    color:var(--text-dim);
+  }
+  .mode-array .btn.mode-active {
+    border-color:var(--accent)!important;
+    box-shadow:inset 0 0 14px color-mix(in srgb, var(--accent) 9%, transparent);
+  }
+  .mode-array .btn.mode-active::before { color:var(--accent); text-shadow:0 0 7px var(--accent); }
+
+  .utility-grid {
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:6px;
+  }
+  .utility-grid .menu-card {
+    min-height:66px;
+    grid-template-columns:1fr;
+    justify-items:center;
+    text-align:center;
+    padding:8px 4px;
+    border-left-width:1px;
+    clip-path:polygon(7px 0, calc(100% - 7px) 0, 100% 7px, 100% calc(100% - 7px), calc(100% - 7px) 100%, 7px 100%, 0 calc(100% - 7px), 0 7px);
+  }
+  .utility-grid .menu-glyph {
+    width:28px; height:28px; font-size:.84rem;
+  }
+  .utility-grid .menu-copy { font-size:.64rem; letter-spacing:.05em; }
+  .utility-grid .menu-copy small, .utility-grid .menu-arrow { display:none; }
+
+  .menu-footer {
+    position:relative;
+    z-index:3;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:8px;
+    padding-top:7px;
+    color:var(--text-dim);
+    font-size:.52rem;
+    letter-spacing:.11em;
+    border-top:1px solid color-mix(in srgb, var(--primary) 18%, transparent);
+  }
+  .menu-footer .live-dot {
+    display:inline-block;
+    width:6px; height:6px;
+    margin-right:5px;
+    border-radius:50%;
+    background:var(--primary);
+    box-shadow:0 0 7px var(--primary);
+    animation:signalBlink 1.8s linear infinite;
+  }
+
+  /* General UI/material pass */
+  .screen:not(#screen-main) {
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--primary) 4%, transparent), transparent 130px),
+      color-mix(in srgb, var(--panel-bg) 97%, black 3%);
+  }
+  .top-bar:not(.quickplay-bar) {
+    position:sticky;
+    top:0;
+    z-index:8;
+    padding:3px 0 9px;
+    backdrop-filter:blur(5px);
+    border-bottom:1px solid color-mix(in srgb, var(--primary) 20%, transparent);
+  }
+  .modal {
+    backdrop-filter:blur(6px);
+    background:rgba(0,2,8,.82);
+  }
+  .modal-content {
+    position:relative;
+    border-radius:3px;
+    clip-path:polygon(12px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0 calc(100% - 12px), 0 12px);
+    background:
+      linear-gradient(135deg, color-mix(in srgb, var(--primary) 7%, transparent), transparent 42%),
+      var(--panel-bg);
+  }
+  .modal-content::before {
+    content:"";
+    position:absolute;
+    left:12px; right:12px; top:7px;
+    height:1px;
+    background:linear-gradient(90deg,var(--primary),transparent 38%,transparent 62%,var(--secondary));
+    opacity:.55;
+  }
+  .stat-card {
+    position:relative;
+    overflow:hidden;
+    background:linear-gradient(110deg, color-mix(in srgb, var(--primary) 5%, transparent), var(--tile-bg) 48%);
+  }
+  .stat-card::after {
+    content:"";
+    position:absolute;
+    width:20px; height:20px;
+    right:-10px; bottom:-10px;
+    border:1px solid color-mix(in srgb, var(--primary) 25%, transparent);
+    transform:rotate(45deg);
+  }
+  #game-hud {
+    border-radius:2px;
+    background:
+      linear-gradient(90deg, color-mix(in srgb, var(--primary) 7%, transparent), transparent 23%, transparent 77%, color-mix(in srgb, var(--secondary) 6%, transparent)),
+      var(--tile-bg);
+    box-shadow:inset 0 -1px 0 rgba(255,255,255,.025);
+  }
+  #game-canvas {
+    border-radius:2px;
+    box-shadow:
+      inset 0 0 18px rgba(0,0,0,.86),
+      0 0 0 1px color-mix(in srgb, var(--primary) 10%, transparent),
+      0 0 24px color-mix(in srgb, var(--primary) 8%, transparent);
+  }
+  .btn {
+    border-radius:2px;
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--tile-bg) 96%, white 2%), color-mix(in srgb, var(--tile-bg) 94%, black 5%));
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.025);
+  }
+  select, input[type="text"] {
+    border-radius:2px;
+    background:linear-gradient(180deg, color-mix(in srgb, var(--tile-bg) 96%, black 2%), var(--tile-bg));
+  }
+  .checkbox-group {
+    background:linear-gradient(90deg, color-mix(in srgb, var(--primary) 5%, transparent), transparent);
+    padding:10px 8px;
+  }
+
+  @media (max-height: 700px) {
+    .hero-console { min-height:132px; }
+    .hero-console::before { width:170px; height:170px; }
+    .hero-mark { top:4px; width:30px; height:30px; }
+    .hero-console h1 { margin-top:32px; font-size:1.75rem; }
+    .hero-kicker { font-size:.49rem; margin-top:4px; }
+    .hero-tagline { font-size:.58rem; margin-top:3px; }
+    .status-rack { margin-top:6px; }
+    .menu-card { min-height:46px; }
+    .menu-card.primary { min-height:51px; }
+    .menu-glyph { width:33px; height:33px; }
+    .menu-card { grid-template-columns:45px 1fr 30px; }
+    .utility-grid .menu-card { min-height:53px; }
+    .menu-footer { padding-top:4px; }
+  }
+  @media (max-width: 380px) {
+    #screen-main { padding:10px; }
+    .hero-kicker { letter-spacing:.11em; }
+    .status-chip:nth-child(2) { display:none; }
+    .menu-copy { font-size:.8rem; }
+    .utility-grid .menu-copy { font-size:.58rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #app::before, .hero-console::before, .hero-console::after, .boot-orbit .ring, .boot-ship,
+    .status-chip, .live-dot { animation:none!important; }
+    #screen-main.active > * { animation:none!important; }
+    .menu-card, .menu-card::before { transition:none!important; }
+  }
+
+</style>
+</head>
+<body data-theme="synthwave">
+
+
+<div id="boot-splash" role="dialog" aria-label="Brain Matrix startup" aria-live="polite">
+  <div class="boot-panel">
+    <div class="boot-orbit" aria-hidden="true">
+      <span class="ring"></span><span class="ring"></span><span class="ring"></span>
+      <span class="boot-core"></span>
+      <span class="boot-ship">➤</span>
+    </div>
+    <div class="boot-title">BRAIN MATRIX</div>
+    <div class="boot-sub">ORBITAL COGNITIVE DEFENSE // BOOT SEQUENCE</div>
+    <div class="boot-progress"><span></span></div>
+    <div class="boot-caption">CALIBRATING SYNAPSES · PLEASE DO NOT PANIC PROFESSIONALLY</div>
+  </div>
+</div>
+
+<div id="crt-overlay"></div>
+
+<div id="app">
+  <!-- MAIN SCREEN -->
+  <div id="screen-main" class="screen active">
+    <div class="top-bar quickplay-bar">
+      <button id="btn-collection-menu" class="icon-btn" title="Menu de Mini Games" aria-label="Menu de Mini Games">↩</button>
+      <button id="btn-mute" class="icon-btn" title="Toggle Audio" aria-label="Toggle Audio">🔊</button>
+      <button id="btn-ui-theme" class="icon-btn" title="Modo claro" aria-label="Light / Dark">☀</button>
+      <button id="btn-profile-switch" class="btn btn-sm" style="border-color: var(--accent);">👤 <span id="current-profile-name">Player 1</span></button>
+    </div>
+
+    <section class="hero-console" aria-label="Brain Matrix command header">
+      <div class="hero-mark" aria-hidden="true"><span>◇</span></div>
+      <h1>BRAIN MATRIX</h1>
+      <div class="hero-kicker">NEURAL // ORBITAL // RESPONSE GRID</div>
+      <p class="hero-tagline" data-i18n="tagline">LABORATÓRIO DE AGILIDADE COGNITIVA</p>
+      <div class="status-rack" aria-hidden="true">
+        <span class="status-chip">SYS:<strong>READY</strong></span>
+        <span class="status-chip">LINK:<strong>LOCAL</strong></span>
+        <span class="status-chip threat">THREAT:<strong>YOU</strong></span>
+      </div>
+    </section>
+
+    <div class="command-deck">
+      <button id="btn-play" class="menu-card primary" autofocus="">
+        <span class="menu-glyph" aria-hidden="true"><span>◎</span></span>
+        <span class="menu-copy"><span data-i18n="play">JOGAR</span><small>01 // DEPLOY COGNITIVE GRID</small></span>
+        <span class="menu-arrow" aria-hidden="true">›</span>
+      </button>
+
+      <div class="mode-array" aria-label="Game mode">
+        <button id="btn-mode-normal" class="btn btn-sm mode-active" data-i18n="normalMode">NORMAL</button>
+        <button id="btn-mode-mastermind" class="btn btn-sm" data-i18n="mastermindMode">MASTERMIND</button>
+      </div>
+
+      <button id="btn-marathon" class="menu-card danger">
+        <span class="menu-glyph" aria-hidden="true"><span>⚡</span></span>
+        <span class="menu-copy"><span data-i18n="marathon">MARATONA</span><small>02 // NO BRAKES · QUESTIONABLE WISDOM</small></span>
+        <span class="menu-arrow" aria-hidden="true">›</span>
+      </button>
+
+      <div class="utility-grid">
+        <button id="btn-stats" class="menu-card">
+          <span class="menu-glyph" aria-hidden="true"><span>⌁</span></span>
+          <span class="menu-copy"><span data-i18n="stats">ESTATÍSTICAS</span></span>
+        </button>
+        <button id="btn-options" class="menu-card">
+          <span class="menu-glyph" aria-hidden="true"><span>⚙</span></span>
+          <span class="menu-copy"><span data-i18n="options">OPÇÕES</span></span>
+        </button>
+        <button id="btn-info" class="menu-card">
+          <span class="menu-glyph" aria-hidden="true"><span>i</span></span>
+          <span class="menu-copy"><span data-i18n="info">INFORMAÇÕES</span></span>
+        </button>
+      </div>
+    </div>
+
+    <div class="menu-footer">
+      <span><span class="live-dot"></span>PRIMATA TACTICAL SYSTEMS</span>
+      <span>© 2026 // BUILD 1.1</span>
+    </div>
+  </div>
+
+  <!-- LEVEL SELECT SCREEN -->
+  <div id="screen-levels" class="screen">
+    <div class="top-bar">
+      <button class="btn btn-sm btn-back" data-target="screen-main">⬅ <span data-i18n="back">VOLTAR</span></button>
+      <h2 style="margin:0;" data-i18n="selectLevel">SELECIONAR FASE</h2>
+      <div style="width:50px;"></div>
+    </div>
+    <div id="levels-grid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 10px 0; overflow-y: auto;"></div>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div id="screen-game" class="screen">
+    <div id="game-hud">
+      <div><span data-i18n="score">PONTOS</span>: <span id="hud-score" class="hud-val">0</span></div>
+      <div class="hud-target"><span data-i18n="target">PRÓXIMO</span>: <span id="hud-target-val">00</span></div>
+      <div>⏱ <span id="hud-timer" class="hud-val">0.00</span>s</div>
+      <button id="btn-pause" class="icon-btn" style="width:30px; height:30px; font-weight:bold;">||</button>
+    </div>
+    <div id="canvas-container">
+      <canvas id="game-canvas" tabindex="0" aria-label="Brain Matrix game board"></canvas>
+    </div>
+  </div>
+
+  <!-- STATS SCREEN -->
+  <div id="screen-stats" class="screen">
+    <div class="top-bar">
+      <button class="btn btn-sm btn-back" data-target="screen-main">⬅ <span data-i18n="back">VOLTAR</span></button>
+      <h2 style="margin:0;" data-i18n="stats">ESTATÍSTICAS</h2>
+      <button id="btn-clear-stats" class="btn btn-sm btn-danger" data-i18n="clear">LIMPAR</button>
+    </div>
+    <div style="overflow-y:auto; flex:1; padding-right:4px;">
+      <h3 style="font-size:0.9rem; color:var(--primary); margin-top:6px;" data-i18n="reactionEvolution">EVOLUÇÃO DO TEMPO DE REAÇÃO (ms)</h3>
+      <canvas id="telemetry-canvas"></canvas>
+      <div class="stats-grid">
+        <div class="stat-card"><label data-i18n="totalGames">Partidas Jogadas</label><div id="st-games" class="hud-val">0</div></div>
+        <div class="stat-card"><label data-i18n="avgReaction">Tempo Médio / Jogada</label><div id="st-avg-time" class="hud-val">0 ms</div></div>
+        <div class="stat-card"><label data-i18n="fastMove">Jogada Mais Rápida</label><div id="st-fast-time" class="hud-val">0 ms</div></div>
+        <div class="stat-card"><label data-i18n="slowMove">Hesitação Mais Lenta</label><div id="st-slow-time" class="hud-val">0 ms</div></div>
+        <div class="stat-card"><label data-i18n="totalPoints">Pontos Ganhos</label><div id="st-points-won" class="hud-val">0</div></div>
+        <div class="stat-card"><label data-i18n="penalties">Pontos Perdidos</label><div id="st-points-lost" class="hud-val">0</div></div>
+      </div>
+      <h3 style="font-size:0.9rem; color:var(--secondary); margin-top:10px;" data-i18n="topRecords">MELHORES RECORDES</h3>
+      <div id="leaderboard-list" style="font-size:0.8rem; margin-top:6px;"></div>
+    </div>
+  </div>
+
+  <!-- OPTIONS SCREEN -->
+  <div id="screen-options" class="screen">
+    <div class="top-bar">
+      <button class="btn btn-sm btn-back" data-target="screen-main">⬅ <span data-i18n="back">VOLTAR</span></button>
+      <h2 style="margin:0;" data-i18n="options">OPÇÕES</h2>
+      <div style="width:50px;"></div>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; gap:12px;">
+      <div class="checkbox-group">
+        <span data-i18n="sfx">Efeitos Sonoros (SFX)</span>
+        <input type="checkbox" id="opt-sfx" checked="">
+      </div>
+      <div class="checkbox-group">
+        <span data-i18n="bgm">Música de Fundo (BGM)</span>
+        <input type="checkbox" id="opt-bgm" checked="">
+      </div>
+      <div class="checkbox-group">
+        <span data-i18n="crt">Efeito Tubo / Old TV</span>
+        <input type="checkbox" id="opt-crt" checked="">
+      </div>
+      <div class="form-group">
+        <label data-i18n="language">Idioma</label>
+        <select id="opt-lang">
+          <option value="en">English (US)</option>
+          <option value="pt-BR" selected="">Português (Brasil)</option>
+          <option value="es">Español</option>
+          <option value="fr">Français</option>
+          <option value="de">Deutsch</option>
+          <option value="it">Italiano</option>
+          <option value="tr">Türkçe</option>
+          <option value="ru">Русский</option>
+          <option value="ja">日本語</option>
+          <option value="ko">한국어</option>
+          <option value="zh-CN">简体中文</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label data-i18n="colorScheme">Esquema de Cores</label>
+        <select id="opt-theme">
+          <option value="synthwave">Synthwave 1984</option>
+          <option value="matrix">Matrix Green</option>
+          <option value="amber">Cyber Amber</option>
+          <option value="gameboy">Game Boy Classic</option>
+        </select>
+      </div>
+      <div style="margin-top:auto;">
+        <button id="btn-reset-data" class="btn btn-danger" style="width:100%;" data-i18n="resetData">ZERAR TODO PROGRESSO</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- INFO SCREEN -->
+  <div id="screen-info" class="screen">
+    <div class="top-bar">
+      <button class="btn btn-sm btn-back" data-target="screen-main">⬅ <span data-i18n="back">VOLTAR</span></button>
+      <h2 style="margin:0;" data-i18n="info">INFORMAÇÕES</h2>
+      <div style="width:50px;"></div>
+    </div>
+    <div style="overflow-y:auto; flex:1; font-size:0.85rem; line-height:1.4;">
+      <h3 style="color:var(--primary); margin-bottom:4px;" data-i18n="howToPlay">COMO JOGAR</h3>
+      <p style="margin-bottom:8px;" data-i18n="help1">1. Selecione os números em ordem crescente a partir do 00.</p>
+      <p style="margin-bottom:8px;" data-i18n="help2">2. Termine os números primeiro, depois as letras em ordem (A-Z).</p>
+      <p style="margin-bottom:8px; color:var(--secondary);" data-i18n="help3">3. Erros descontam o dobro de pontos, desviram a última peça e embaralham a tela!</p>
+      <p style="margin-bottom:16px;" data-i18n="help4">4. Letras valem mais: A=10, B=20 ... Z=260.</p>
+      <div class="quickplay-tip"><strong data-i18n="strategyTitle">DICA DE ESTRATÉGIA</strong><br><span data-i18n="strategyTip">Mantenha o olhar perto do centro e varra a matriz por linhas ou quadrantes, em vez de caçar cada peça ao acaso.</span></div>
+
+      <h3 style="color:var(--primary); margin-bottom:4px;" data-i18n="about">SOBRE</h3>
+      <p><strong>Brain Matrix v1.0</strong></p>
+      <p data-i18n="aboutEngineered">Criado como um desafio compacto de busca visual e reação.</p>
+      <p><strong>Produção: Projeto Primata Games em 2026.</strong></p>
+      <p>Contact: <a href="mailto:projetoprimatagames@gmail.com" style="color:var(--accent);">projetoprimatagames@gmail.com</a></p>
+      <p style="margin-top:8px; color:var(--text-dim);">Space-Chiptune-Acid-LoFi audio synthesis via Web Audio API.</p>
+    </div>
+  </div>
+
+  <!-- PROFILE MODAL -->
+  <div id="modal-profile" class="modal">
+    <div class="modal-content">
+      <h2 style="color:var(--primary);" data-i18n="manageProfiles">PERFIS DE JOGADOR</h2>
+      
+      <div class="form-group" style="margin-top:12px;">
+        <label data-i18n="newProfile">Criar Novo Perfil</label>
+        <div style="display:flex; gap:6px;">
+          <input type="text" id="input-new-profile" placeholder="Name..." maxlength="12" style="flex:1;">
+          <button id="btn-add-profile" class="btn btn-sm" data-i18n="create">CRIAR</button>
+        </div>
+      </div>
+
+      <div style="margin: 14px 0 6px 0;">
+        <label data-i18n="selectProfile">Selecione o Perfil Ativo:</label>
+      </div>
+      <div id="profile-list-container" style="max-height: 180px; overflow-y: auto; margin-bottom: 14px;"><div class="profile-list-item active"><span style="font-weight: bold; color: var(--primary);">Player 1</span><div style="display: flex; gap: 6px;"></div></div></div>
+
+      <button id="btn-close-profile" class="btn btn-sm" style="width:100%;" data-i18n="back">VOLTAR</button>
+    </div>
+  </div>
+
+  <!-- CONFIRMATION MODAL -->
+  <div id="modal-confirm" class="modal">
+    <div class="modal-content" style="text-align: center; border-color: var(--secondary);">
+      <h2 style="color: var(--secondary);" data-i18n="confirmTitle">⚠️ TEM CERTEZA?</h2>
+      <p id="confirm-modal-text" style="margin: 14px 0; font-size: 0.9rem; line-height: 1.4; color: var(--text);">
+        This action cannot be undone.
+      </p>
+      <div style="display: flex; gap: 8px; margin-top: 16px;">
+        <button id="btn-confirm-yes" class="btn btn-danger" style="flex: 1;" data-i18n="confirmYes">SIM, CONFIRMAR</button>
+        <button id="btn-confirm-no" class="btn" style="flex: 1;" data-i18n="confirmCancel">CANCELAR</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAUSE MODAL -->
+  <div id="modal-pause" class="modal">
+    <div class="modal-content" style="text-align:center;">
+      <h2 style="color:var(--primary);" data-i18n="gamePaused">JOGO PAUSADO</h2>
+      <div style="display:flex; flex-direction:column; gap:8px; margin-top:16px;">
+        <button id="btn-resume" class="btn" autofocus="" data-i18n="resume">CONTINUAR</button>
+        <button id="btn-restart" class="btn" data-i18n="restart">RECOMEÇAR</button>
+        <button id="btn-exit-menu" class="btn btn-danger" data-i18n="exitMenu">SAIR PRO MENU</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME OVER / RESULTS MODAL -->
+  <div id="modal-gameover" class="modal">
+    <div class="modal-content">
+      <h2 id="go-title" style="color:var(--primary);" data-i18n="levelComplete">FASE CONCLUÍDA!</h2>
+      <div class="stats-grid">
+        <div class="stat-card"><label data-i18n="time">Tempo</label><div id="go-time" class="hud-val">0.00s</div></div>
+        <div class="stat-card"><label data-i18n="score">PONTOS</label><div id="go-score" class="hud-val">0</div></div>
+        <div class="stat-card"><label data-i18n="avgReaction">Tempo Médio / Jogada</label><div id="go-avg-time" class="hud-val">0ms</div></div>
+        <div class="stat-card"><label data-i18n="penalties">Pontos Perdidos</label><div id="go-penalties" class="hud-val">0</div></div>
+      </div>
+      <div id="go-record-banner" style="display:none; color:var(--accent); text-align:center; font-weight:bold; margin-bottom:8px;" data-i18n="newRecord">🏆 NOVO RECORDE!</div>
+      <div style="display:flex; flex-direction:column; gap:8px; margin-top:12px;">
+        <button id="btn-go-next" class="btn" data-i18n="nextLevel">PRÓXIMA FASE</button>
+        <button id="btn-go-retry" class="btn" data-i18n="retry">TENTAR DE NOVO</button>
+        <button id="btn-go-menu" class="btn btn-danger" data-i18n="mainMenu">MENU PRINCIPAL</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================================
+   1. INTERNATIONALIZATION (11 Languages)
+   ========================================================================= */
+const I18N_DATA = {
+  "en": {
+    tagline: "COGNITIVE AGILITY LAB", normalMode: "NORMAL", mastermindMode: "MASTERMIND", reactionEvolution: "REACTION TIME EVOLUTION (ms)", topRecords: "TOP RECORDS", strategyTitle: "STRATEGY TIP", strategyTip: "Keep your gaze near the center and scan by rows or quadrants instead of chasing each tile randomly.", aboutEngineered: "Built as a compact visual search and reaction challenge.", levelComplete: "LEVEL COMPLETE!", useProfile: "USE", noRecords: "No records yet.", duplicateProfile: "A profile with this name already exists!", lightMode: "Light mode", darkMode: "Dark mode",
+    play: "PLAY", marathon: "MARATHON", stats: "STATISTICS", options: "OPTIONS", info: "INFO",
+    back: "BACK", selectLevel: "SELECT LEVEL", score: "SCORE", target: "NEXT",
+    howToPlay: "HOW TO PLAY", about: "ABOUT", gamePaused: "GAME PAUSED", resume: "RESUME",
+    restart: "RESTART", exitMenu: "EXIT TO MENU", nextLevel: "NEXT LEVEL", retry: "TRY AGAIN",
+    mainMenu: "MAIN MENU", newRecord: "🏆 NEW RECORD!", sfx: "Sound Effects (SFX)",
+    bgm: "Background Music (BGM)", crt: "Old TV / CRT Effect", language: "Language",
+    colorScheme: "Color Scheme", resetData: "RESET ALL PROGRESS", totalGames: "Games Played",
+    avgReaction: "Avg Reaction Time", fastMove: "Fastest Move", slowMove: "Slowest Hesitation",
+    totalPoints: "Points Won", penalties: "Points Lost", time: "Time", clear: "CLEAR",
+    manageProfiles: "PLAYER PROFILES", newProfile: "Add New Profile", create: "ADD",
+    selectProfile: "Select Active Profile:", delete: "DEL",
+    confirmTitle: "⚠️ ARE YOU SURE?", confirmYes: "YES, CONFIRM", confirmCancel: "CANCEL",
+    confirmResetAll: "Reset all player profiles, settings, and progress permanently?",
+    confirmClearStats: "Wipe all stats and history for the active profile?",
+    confirmDeleteProfile: "Delete this player profile and its complete record history?",
+    help1: "1. Select numbers in ascending order starting from 00.",
+    help2: "2. Clear numbers first, then letters in alphabetical order (A-Z).",
+    help3: "3. Wrong clicks subtract double points, unflip the last item, and shuffle the board!",
+    help4: "4. Letter values scale: A=10, B=20 ... Z=260."
+  },
+  "pt-BR": {
+    tagline: "LABORATÓRIO DE AGILIDADE COGNITIVA", normalMode: "NORMAL", mastermindMode: "MASTERMIND", reactionEvolution: "EVOLUÇÃO DO TEMPO DE REAÇÃO (ms)", topRecords: "MELHORES RECORDES", strategyTitle: "DICA DE ESTRATÉGIA", strategyTip: "Mantenha o olhar perto do centro e varra a matriz por linhas ou quadrantes, em vez de caçar cada peça ao acaso.", aboutEngineered: "Criado como um desafio compacto de busca visual e reação.", levelComplete: "FASE CONCLUÍDA!", useProfile: "USAR", noRecords: "Ainda não há recordes.", duplicateProfile: "Já existe um perfil com esse nome!", lightMode: "Modo claro", darkMode: "Modo escuro",
+    play: "JOGAR", marathon: "MARATONA", stats: "ESTATÍSTICAS", options: "OPÇÕES", info: "INFORMAÇÕES",
+    back: "VOLTAR", selectLevel: "SELECIONAR FASE", score: "PONTOS", target: "PRÓXIMO",
+    howToPlay: "COMO JOGAR", about: "SOBRE", gamePaused: "JOGO PAUSADO", resume: "CONTINUAR",
+    restart: "RECOMEÇAR", exitMenu: "SAIR PRO MENU", nextLevel: "PRÓXIMA FASE", retry: "TENTAR DE NOVO",
+    mainMenu: "MENU PRINCIPAL", newRecord: "🏆 NOVO RECORDE!", sfx: "Efeitos Sonoros (SFX)",
+    bgm: "Música de Fundo (BGM)", crt: "Efeito Tubo / Old TV", language: "Idioma",
+    colorScheme: "Esquema de Cores", resetData: "ZERAR TODO PROGRESSO", totalGames: "Partidas Jogadas",
+    avgReaction: "Tempo Médio / Jogada", fastMove: "Jogada Mais Rápida", slowMove: "Hesitação Mais Lenta",
+    totalPoints: "Pontos Ganhos", penalties: "Pontos Perdidos", time: "Tempo", clear: "LIMPAR",
+    manageProfiles: "PERFIS DE JOGADOR", newProfile: "Criar Novo Perfil", create: "CRIAR",
+    selectProfile: "Selecione o Perfil Ativo:", delete: "EXCLUIR",
+    confirmTitle: "⚠️ TEM CERTEZA?", confirmYes: "SIM, CONFIRMAR", confirmCancel: "CANCELAR",
+    confirmResetAll: "Deseja apagar definitivamente todos os perfis, recordes e progresso do jogo?",
+    confirmClearStats: "Deseja limpar todo o histórico e telemetria do perfil ativo?",
+    confirmDeleteProfile: "Deseja excluir este perfil e todos os seus dados?",
+    help1: "1. Selecione os números em ordem crescente a partir do 00.",
+    help2: "2. Termine os números primeiro, depois as letras em ordem (A-Z).",
+    help3: "3. Erros descontam o dobro de pontos, desviram a última peça e embaralham a tela!",
+    help4: "4. Letras valem mais: A=10, B=20 ... Z=260."
+  },
+  "es": {
+    tagline: "LABORATORIO DE AGILIDAD COGNITIVA", normalMode: "NORMAL", mastermindMode: "MASTERMIND", reactionEvolution: "EVOLUCIÓN DEL TIEMPO DE REACCIÓN (ms)", topRecords: "MEJORES RÉCORDS", strategyTitle: "CONSEJO DE ESTRATEGIA", strategyTip: "Mantén la mirada cerca del centro y recorre la matriz por filas o cuadrantes.", aboutEngineered: "Creado como un reto compacto de búsqueda visual y reacción.", levelComplete: "¡NIVEL COMPLETADO!", useProfile: "USAR", noRecords: "Aún no hay récords.", duplicateProfile: "¡Ya existe un perfil con ese nombre!", lightMode: "Modo claro", darkMode: "Modo oscuro",
+    play: "JUGAR", marathon: "MARATÓN", stats: "ESTADÍSTICAS", options: "OPCIONES", info: "INFO",
+    back: "VOLVER", selectLevel: "SELECCIONAR NIVEL", score: "PUNTOS", target: "SIGUIENTE",
+    howToPlay: "CÓMO JUGAR", about: "ACERCA DE", gamePaused: "JUEGO PAUSADO", resume: "REANUDAR",
+    restart: "REINICIAR", exitMenu: "SALIR AL MENÚ", nextLevel: "SIGUIENTE NIVEL", retry: "REINTENTAR",
+    mainMenu: "MENÚ PRINCIPAL", newRecord: "🏆 ¡NUEVO RÉCORD!", sfx: "Efectos de Sonido",
+    bgm: "Música de Fondo", crt: "Efecto TV Antigua", language: "Idioma",
+    colorScheme: "Colores", resetData: "BORRAR PROGRESO", totalGames: "Partidas",
+    avgReaction: "Tiempo Medio", fastMove: "Más Rápido", slowMove: "Más Lento",
+    totalPoints: "Puntos Ganados", penalties: "Puntos Perdidos", time: "Tiempo", clear: "BORRAR",
+    manageProfiles: "PERFILES DE JUGADOR", newProfile: "Nuevo Perfil", create: "CREAR",
+    selectProfile: "Seleccionar Perfil Activo:", delete: "BORRAR",
+    confirmTitle: "⚠️ ¿ESTÁS SEGURO?", confirmYes: "SÍ, CONFIRMAR", confirmCancel: "CANCELAR",
+    confirmResetAll: "¿Borrar todos los perfiles y progreso de forma permanente?",
+    confirmClearStats: "¿Limpiar estadísticas del perfil actual?",
+    confirmDeleteProfile: "¿Eliminar este perfil de jugador?",
+    help1: "1. Selecciona los números en orden ascendente desde el 00.",
+    help2: "2. Primero números, luego letras de la A a la Z.",
+    help3: "3. Los fallos restan el doble, desmarcan la última pieza y reordenan la matriz.",
+    help4: "4. Las letras multiplican: A=10 ... Z=260."
+  },
+  "fr": {
+    tagline: "LABORATOIRE D’AGILITÉ COGNITIVE", normalMode: "NORMAL", mastermindMode: "MASTERMIND", reactionEvolution: "ÉVOLUTION DU TEMPS DE RÉACTION (ms)", topRecords: "MEILLEURS RECORDS", strategyTitle: "CONSEIL", strategyTip: "Gardez le regard près du centre et parcourez la grille par lignes ou quadrants.", aboutEngineered: "Conçu comme un défi compact de recherche visuelle et de réaction.", levelComplete: "NIVEAU TERMINÉ !", useProfile: "UTILISER", noRecords: "Aucun record pour le moment.", duplicateProfile: "Un profil portant ce nom existe déjà !", lightMode: "Mode clair", darkMode: "Mode sombre",
+    play: "JOUER", marathon: "MARATHON", stats: "STATISTIQUES", options: "OPTIONS", info: "INFO",
+    back: "RETOUR", selectLevel: "NIVEAUX", score: "SCORE", target: "SUIVANT",
+    howToPlay: "COMMENT JOUER", about: "À PROPOS", gamePaused: "PAUSE", resume: "REPRENDRE",
+    restart: "RECOMMENCER", exitMenu: "MENU PRINCIPAL", nextLevel: "SUIVANT", retry: "RÉESSAYER",
+    mainMenu: "MENU", newRecord: "🏆 NOUVEAU RECORD!", sfx: "Effets Sonores",
+    bgm: "Musique", crt: "Effet CRT", language: "Langue",
+    colorScheme: "Thème", resetData: "RÉINITIALISER", totalGames: "Parties",
+    avgReaction: "Temps Moyen", fastMove: "Plus Rapide", slowMove: "Plus Lent",
+    totalPoints: "Points Gagnés", penalties: "Pénalités", time: "Temps", clear: "EFFACER",
+    manageProfiles: "PROFILS DU JOUEUR", newProfile: "Nouveau Profil", create: "AJOUTER",
+    selectProfile: "Choisir Profil Actif:", delete: "SUPPR",
+    confirmTitle: "⚠️ ÊTES-VOUS SÛR?", confirmYes: "OUI, CONFIRMER", confirmCancel: "ANNULER",
+    confirmResetAll: "Réinitialiser toutes les données définitivement?",
+    confirmClearStats: "Effacer les statistiques de ce profil?",
+    confirmDeleteProfile: "Supprimer ce profil?",
+    help1: "1. Choisissez les numéros dans l'ordre croissant.",
+    help2: "2. D'abord les chiffres, ensuite les lettres (A-Z).",
+    help3: "3. Une erreur déduit le double, annule le coup et mélange la grille!",
+    help4: "4. Valeur des lettres: A=10 ... Z=260."
+  },
+  "de": {
+    tagline: "LABOR FÜR KOGNITIVE AGILITÄT", normalMode: "NORMAL", mastermindMode: "MASTERMIND", reactionEvolution: "REAKTIONSZEIT-ENTWICKLUNG (ms)", topRecords: "BESTE REKORDE", strategyTitle: "STRATEGIETIPP", strategyTip: "Blick nahe der Mitte halten und die Matrix zeilen- oder quadrantenweise scannen.", aboutEngineered: "Als kompaktes Spiel für visuelle Suche und Reaktion entwickelt.", levelComplete: "LEVEL GESCHAFFT!", useProfile: "NUTZEN", noRecords: "Noch keine Rekorde.", duplicateProfile: "Ein Profil mit diesem Namen existiert bereits!", lightMode: "Hell", darkMode: "Dunkel",
+    play: "SPIELEN", marathon: "MARATHON", stats: "STATISTIK", options: "OPTIONEN", info: "INFO",
+    back: "ZURÜCK", selectLevel: "LEVEL WAHL", score: "PUNKTE", target: "ZIEL",
+    howToPlay: "ANLEITUNG", about: "ÜBER", gamePaused: "PAUSE", resume: "WEITER",
+    restart: "NEUSTART", exitMenu: "HAUPTMENÜ", nextLevel: "NÄCHSTES LEVEL", retry: "NOCHMAL",
+    mainMenu: "MENÜ", newRecord: "🏆 NEUER REKORD!", sfx: "Soundeffekte",
+    bgm: "Hintergrundmusik", crt: "Röhren-TV Effekt", language: "Sprache",
+    colorScheme: "Farbschema", resetData: "DATEN LÖSCHEN", totalGames: "Spiele",
+    avgReaction: "Durchschnittszeit", fastMove: "Schnellster Zug", slowMove: "Langsamster Zug",
+    totalPoints: "Gewonnene Punkte", penalties: "Strafen", time: "Zeit", clear: "LÖSCHEN",
+    manageProfiles: "SPIELERPROFILE", newProfile: "Neues Profil", create: "ERSTELLEN",
+    selectProfile: "Aktives Profil Wählen:", delete: "LÖSCHEN",
+    confirmTitle: "⚠️ BIST DU SICHER?", confirmYes: "JA, LÖSCHEN", confirmCancel: "ABBRECHEN",
+    confirmResetAll: "Alle Profile und Fortschritte unwiderruflich löschen?",
+    confirmClearStats: "Statistiken dieses Profils zurücksetzen?",
+    confirmDeleteProfile: "Dieses Profil löschen?",
+    help1: "1. Zahlen in aufsteigender Reihenfolge ab 00 wählen.",
+    help2: "2. Zuerst alle Zahlen, dann Buchstaben von A bis Z.",
+    help3: "3. Fehler kosten doppelt, machen den letzten Zug rückgängig und mischen neu!",
+    help4: "4. Buchstabenpunkte: A=10 ... Z=260."
+  },
+  "it": {
+    tagline: "LABORATORIO DI AGILITÀ COGNITIVA", normalMode: "NORMALE", mastermindMode: "MASTERMIND", reactionEvolution: "EVOLUZIONE TEMPO DI REAZIONE (ms)", topRecords: "RECORD MIGLIORI", strategyTitle: "CONSIGLIO", strategyTip: "Tieni lo sguardo vicino al centro e scansiona la matrice per righe o quadranti.", aboutEngineered: "Creato come sfida compatta di ricerca visiva e reazione.", levelComplete: "LIVELLO COMPLETATO!", useProfile: "USA", noRecords: "Nessun record ancora.", duplicateProfile: "Esiste già un profilo con questo nome!", lightMode: "Modalità chiara", darkMode: "Modalità scura",
+    play: "GIOCA", marathon: "MARATONA", stats: "STATISTICHE", options: "OPZIONI", info: "INFO",
+    back: "INDIETRO", selectLevel: "SELEZIONA LIVELLO", score: "PUNTI", target: "PROSSIMO",
+    howToPlay: "COME GIOCARE", about: "INFO", gamePaused: "IN PAUSA", resume: "RIPRENDI",
+    restart: "RICOMINCIA", exitMenu: "ESCI AL MENU", nextLevel: "PROSSIMO LIVELLO", retry: "RIPROVA",
+    mainMenu: "MENU PRINCIPALE", newRecord: "🏆 NUOVO RECORD!", sfx: "Effetti Sonori",
+    bgm: "Musica", crt: "Effetto CRT", language: "Lingua",
+    colorScheme: "Colori", resetData: "CANCELLA TUTTO", totalGames: "Partite",
+    avgReaction: "Tempo Medio", fastMove: "Più Veloce", slowMove: "Più Lento",
+    totalPoints: "Punti Vinti", penalties: "Penalità", time: "Tempo", clear: "PULISCI",
+    manageProfiles: "PROFILI GIOCATORE", newProfile: "Nuovo Profilo", create: "CREA",
+    selectProfile: "Seleziona Profilo Attivo:", delete: "ELIMINA",
+    confirmTitle: "⚠️ SEI SICURO?", confirmYes: "SÌ, CONFERMA", confirmCancel: "ANNULLA",
+    confirmResetAll: "Cancellare tutti i progressi e profili?",
+    confirmClearStats: "Cancellare le statistiche del profilo attivo?",
+    confirmDeleteProfile: "Eliminare questo profilo?",
+    help1: "1. Seleziona i numeri in ordine crescente.",
+    help2: "2. Prima i numeri, poi le lettere (A-Z).",
+    help3: "3. Gli errori tolgono il doppio, annullano l'ultima mossa e rimescolano la matrice!",
+    help4: "4. Valori lettere: A=10 ... Z=260."
+  },
+  "tr": {
+    tagline: "BİLİŞSEL ÇEVİKLİK LABORATUVARI", normalMode: "NORMAL", mastermindMode: "MASTERMIND", reactionEvolution: "TEPKİ SÜRESİ GELİŞİMİ (ms)", topRecords: "EN İYİ REKORLAR", strategyTitle: "STRATEJİ İPUCU", strategyTip: "Bakışınızı merkeze yakın tutun ve matrisi satırlar veya bölgeler halinde tarayın.", aboutEngineered: "Kompakt bir görsel arama ve tepki meydan okuması olarak tasarlandı.", levelComplete: "SEVİYE TAMAMLANDI!", useProfile: "KULLAN", noRecords: "Henüz rekor yok.", duplicateProfile: "Bu adla bir profil zaten var!", lightMode: "Açık mod", darkMode: "Koyu mod",
+    play: "OYNA", marathon: "MARATON", stats: "İSTATİSTİK", options: "AYARLAR", info: "BİLGİ",
+    back: "GERİ", selectLevel: "SEVİYE SEÇ", score: "PUAN", target: "SIRADAKİ",
+    howToPlay: "NASIL OYNANIR", about: "HAKKINDA", gamePaused: "DURAKLATILDI", resume: "DEVAM ET",
+    restart: "YENİDEN BAŞLAT", exitMenu: "MENÜYE DÖN", nextLevel: "SONRAKİ SEVİYE", retry: "TEKRAR DENE",
+    mainMenu: "ANA MENÜ", newRecord: "🏆 YENİ REKOR!", sfx: "Ses Efektleri",
+    bgm: "Müzik", crt: "Tüplü TV Efekti", language: "Dil",
+    colorScheme: "Renk Teması", resetData: "SIFIRLA", totalGames: "Oyunlar",
+    avgReaction: "Ortalama Süre", fastMove: "En Hızlı Hamle", slowMove: "En Yavaş Hamle",
+    totalPoints: "Kazanılan Puan", penalties: "Cezalar", time: "Süre", clear: "TEMİZLE",
+    manageProfiles: "OYUNCU PROFİLLERİ", newProfile: "Yeni Profil", create: "EKLE",
+    selectProfile: "Aktif Profil Seç:", delete: "SİL",
+    confirmTitle: "⚠️ EMİN MİSİNİZ?", confirmYes: "EVET, SİL", confirmCancel: "İPTAL",
+    confirmResetAll: "Tüm ilerleme ve profilleri sıfırlamak istiyor musunuz?",
+    confirmClearStats: "Aktif profil istatistikleri silinsin mi?",
+    confirmDeleteProfile: "Bu profil silinsin mi?",
+    help1: "1. 00'dan başlayarak sayıları sırayla seçin.",
+    help2: "2. Önce sayıları, ardından A'dan Z'ye harfleri tamamlayın.",
+    help3: "3. Yanlış tıklamalar 2 kat puan siler ve ızgarayı karıştırır!",
+    help4: "4. Harf puanları: A=10 ... Z=260."
+  },
+  "ru": {
+    tagline: "ЛАБОРАТОРИЯ КОГНИТИВНОЙ ЛОВКОСТИ", normalMode: "ОБЫЧНЫЙ", mastermindMode: "MASTERMIND", reactionEvolution: "ДИНАМИКА ВРЕМЕНИ РЕАКЦИИ (мс)", topRecords: "ЛУЧШИЕ РЕКОРДЫ", strategyTitle: "СОВЕТ", strategyTip: "Держите взгляд ближе к центру и сканируйте матрицу по строкам или секторам.", aboutEngineered: "Компактное испытание на визуальный поиск и реакцию.", levelComplete: "УРОВЕНЬ ПРОЙДЕН!", useProfile: "ВЫБРАТЬ", noRecords: "Рекордов пока нет.", duplicateProfile: "Профиль с таким именем уже существует!", lightMode: "Светлая тема", darkMode: "Тёмная тема",
+    play: "ИГРАТЬ", marathon: "МАРАФОН", stats: "СТАТИСТИКА", options: "ОПЦИИ", info: "ИНФО",
+    back: "НАЗАД", selectLevel: "ВЫБОР УРОВНЯ", score: "ОЧКИ", target: "СЛЕДУЮЩИЙ",
+    howToPlay: "КАК ИГРАТЬ", about: "ОБ ИГРЕ", gamePaused: "ПАУЗА", resume: "ПРОДОЛЖИТЬ",
+    restart: "ЗАНОВО", exitMenu: "В МЕНЮ", nextLevel: "СЛЕД. УРОВЕНЬ", retry: "ЕЩЕ РАЗ",
+    mainMenu: "ГЛАВНОЕ МЕНЮ", newRecord: "🏆 НОВЫЙ РЕКОРД!", sfx: "Звуки (SFX)",
+    bgm: "Музыка (BGM)", crt: "Эффект ЭЛТ", language: "Язык",
+    colorScheme: "Тема", resetData: "СБРОС ДАННЫХ", totalGames: "Игр сыграно",
+    avgReaction: "Среднее время", fastMove: "Лучший ход", slowMove: "Худший ход",
+    totalPoints: "Набрано очков", penalties: "Штрафы", time: "Время", clear: "ОЧИСТИТЬ",
+    manageProfiles: "ПРОФИЛИ ИГРОКОВ", newProfile: "Новый профиль", create: "СОЗДАТЬ",
+    selectProfile: "Выберите профиль:", delete: "УДАЛИТЬ",
+    confirmTitle: "⚠️ ВЫ УВЕРЕНЫ?", confirmYes: "ДА, СБРОСИТЬ", confirmCancel: "ОТМЕНА",
+    confirmResetAll: "Сбросить все профили и прогресс навсегда?",
+    confirmClearStats: "Очистить статистику активного профиля?",
+    confirmDeleteProfile: "Удалить этот профиль игрока?",
+    help1: "1. Нажимайте числа по возрастанию от 00.",
+    help2: "2. Сначала все числа, затем буквы от A до Z.",
+    help3: "3. Ошибка отнимает двойные очки, закрывает прошлую плитку и перемешивает поле!",
+    help4: "4. Стоимость букв: A=10 ... Z=260."
+  },
+  "ja": {
+    tagline: "認知アジリティ・ラボ", normalMode: "ノーマル", mastermindMode: "マスターマインド", reactionEvolution: "反応時間の推移 (ms)", topRecords: "ベスト記録", strategyTitle: "攻略ヒント", strategyTip: "視線を中央付近に置き、行や区画ごとに盤面を走査すると効率的です。", aboutEngineered: "視覚探索と反応を楽しむコンパクトなチャレンジです。", levelComplete: "レベルクリア！", useProfile: "使用", noRecords: "まだ記録がありません。", duplicateProfile: "同じ名前のプロファイルが既にあります。", lightMode: "ライトモード", darkMode: "ダークモード",
+    play: "プレイ", marathon: "マラソン", stats: "統計データ", options: "設定", info: "情報",
+    back: "戻る", selectLevel: "レベル選択", score: "スコア", target: "次",
+    howToPlay: "遊び方", about: "情報", gamePaused: "一時停止", resume: "再開",
+    restart: "リスタート", exitMenu: "メニューへ", nextLevel: "次のレベル", retry: "リトライ",
+    mainMenu: "メインメニュー", newRecord: "🏆 新記録達成！", sfx: "効果音",
+    bgm: "BGM", crt: "レトロCRT効果", language: "言語",
+    colorScheme: "カラーテーマ", resetData: "データ初期化", totalGames: "プレイ回数",
+    avgReaction: "平均反応速度", fastMove: "最速タップ", slowMove: "最長思考",
+    totalPoints: "獲得ポイント", penalties: "ペナルティ", time: "タイム", clear: "クリア",
+    manageProfiles: "プレイヤープロファイル", newProfile: "新規プロファイル", create: "追加",
+    selectProfile: "プロファイル選択:", delete: "削除",
+    confirmTitle: "⚠️ 本当によろしいですか？", confirmYes: "はい、実行", confirmCancel: "キャンセル",
+    confirmResetAll: "すべてのデータと進行状況を消去しますか？",
+    confirmClearStats: "このプロファイルの統計を消去しますか？",
+    confirmDeleteProfile: "このプロファイルを削除しますか？",
+    help1: "1. 00から昇順に数字を選択します。",
+    help2: "2. 数字を終えた後、アルファベット(A-Z)を順番に選択します。",
+    help3: "3. ミスすると点数が2倍減点され、盤面がシャッフルされます！",
+    help4: "4. 文字の点数: A=10 ... Z=260."
+  },
+  "ko": {
+    tagline: "인지 민첩성 연구소", normalMode: "일반", mastermindMode: "마스터마인드", reactionEvolution: "반응 시간 변화 (ms)", topRecords: "최고 기록", strategyTitle: "전략 팁", strategyTip: "시선을 중앙에 두고 행이나 구역 단위로 보드를 훑어보세요.", aboutEngineered: "시각 탐색과 반응을 위한 짧고 집중된 도전입니다.", levelComplete: "레벨 완료!", useProfile: "사용", noRecords: "아직 기록이 없습니다.", duplicateProfile: "같은 이름의 프로필이 이미 있습니다!", lightMode: "라이트 모드", darkMode: "다크 모드",
+    play: "플레이", marathon: "마라톤", stats: "통계", options: "설정", info: "정보",
+    back: "뒤로", selectLevel: "레벨 선택", score: "점수", target: "다음",
+    howToPlay: "게임 방법", about: "정보", gamePaused: "일시정지", resume: "계속하기",
+    restart: "다시 시작", exitMenu: "메뉴로", nextLevel: "다음 레벨", retry: "다시 시도",
+    mainMenu: "메인 메뉴", newRecord: "🏆 신기록!", sfx: "효과음",
+    bgm: "배경음악", crt: "레트로 CRT", language: "언어",
+    colorScheme: "색상 테마", resetData: "데이터 초기화", totalGames: "플레이 수",
+    avgReaction: "평균 반응속도", fastMove: "최고 속도", slowMove: "최저 속도",
+    totalPoints: "획득 점수", penalties: "감점", time: "시간", clear: "초기화",
+    manageProfiles: "플레이어 프로필", newProfile: "새 프로필", create: "생성",
+    selectProfile: "활성 프로필 선택:", delete: "삭제",
+    confirmTitle: "⚠️ 확실합니까?", confirmYes: "예, 삭제합니다", confirmCancel: "취소",
+    confirmResetAll: "모든 플레이어 데이터와 기록을 완전히 초기화합니까?",
+    confirmClearStats: "현재 프로필의 기록을 삭제합니까?",
+    confirmDeleteProfile: "이 프로필을 삭제합니까?",
+    help1: "1. 00부터 오름차순으로 숫자를 터치하세요.",
+    help2: "2. 숫자를 모두 누른 후 A부터 Z까지 순서대로 누릅니다.",
+    help3: "3. 틀리면 2배 감점되며 이전 타일이 취소되고 판이 섞입니다!",
+    help4: "4. 글자 점수: A=10 ... Z=260."
+  },
+  "zh-CN": {
+    tagline: "认知敏捷实验室", normalMode: "普通", mastermindMode: "大师模式", reactionEvolution: "反应时间变化 (ms)", topRecords: "最佳纪录", strategyTitle: "策略提示", strategyTip: "视线尽量保持在中央，并按行或分区扫描矩阵。", aboutEngineered: "一个紧凑的视觉搜索与反应挑战。", levelComplete: "关卡完成！", useProfile: "使用", noRecords: "暂无纪录。", duplicateProfile: "已存在同名玩家档案！", lightMode: "浅色模式", darkMode: "深色模式",
+    play: "开始游戏", marathon: "马拉松模式", stats: "脑力数据", options: "系统设置", info: "关于游戏",
+    back: "返回", selectLevel: "选择关卡", score: "得分", target: "下一个",
+    howToPlay: "游戏玩法", about: "关于", gamePaused: "已暂停", resume: "继续",
+    restart: "重新开始", exitMenu: "返回主菜单", nextLevel: "下一关", retry: "再试一次",
+    mainMenu: "主菜单", newRecord: "🏆 创造新纪录！", sfx: "音效 (SFX)",
+    bgm: "背景音乐 (BGM)", crt: "复古显像管效果", language: "语言",
+    colorScheme: "色彩主题", resetData: "清空全部数据", totalGames: "已游玩局数",
+    avgReaction: "平均反应时间", fastMove: "最快反应", slowMove: "最长犹豫",
+    totalPoints: "累计得分", penalties: "罚分", time: "用时", clear: "清空",
+    manageProfiles: "玩家档案管理", newProfile: "创建新档案", create: "添加",
+    selectProfile: "选择当前玩家:", delete: "删除",
+    confirmTitle: "⚠️ 确认执行操作？", confirmYes: "确认删除", confirmCancel: "取消",
+    confirmResetAll: "清空所有玩家档案及游戏进度？",
+    confirmClearStats: "清空当前玩家的全部统计记录？",
+    confirmDeleteProfile: "删除该玩家档案？",
+    help1: "1. 从00开始按升序依次点击数字。",
+    help2: "2. 完成所有数字后，按字母顺序点击A至Z。",
+    help3: "3. 点错扣除双倍分值，重置上一个有效方块并打乱矩阵！",
+    help4: "4. 字母分值递增：A=10 ... Z=260。"
+  }
+};
+
+let currentLang = "pt-BR";
+function applyI18n(lang) {
+  currentLang = I18N_DATA[lang] ? lang : "en";
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.getAttribute("data-i18n");
+    if (I18N_DATA[currentLang][key]) {
+      el.textContent = I18N_DATA[currentLang][key];
+    }
+  });
+}
+
+/* =========================================================================
+   2. SPACE-CHIPTUNE-ACID-LOFI PROCEDURAL AUDIO SYNTHESIZER
+   ========================================================================= */
+class ProceduralAudioEngine {
+  constructor() {
+    this.ctx = null;
+    this.sfxEnabled = true;
+    this.bgmEnabled = true;
+    this.isMuted = false;
+    this.bgmTimer = null;
+    this.bgmMode = "menu";
+    this.tension = 0.0;
+    this.step = 0;
+    this.masterGain = null;
+    this.compressor = null;
+    this.currentIntervalMs = 0;
+    this.lastHoverAt = 0;
+  }
+
+  init() {
+    if (!this.ctx) {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      this.ctx = new AudioCtx();
+      this.masterGain = this.ctx.createGain();
+      this.compressor = this.ctx.createDynamicsCompressor();
+      this.masterGain.gain.setValueAtTime(0.52, this.ctx.currentTime);
+      this.compressor.threshold.setValueAtTime(-18, this.ctx.currentTime);
+      this.compressor.knee.setValueAtTime(18, this.ctx.currentTime);
+      this.compressor.ratio.setValueAtTime(4, this.ctx.currentTime);
+      this.compressor.attack.setValueAtTime(0.006, this.ctx.currentTime);
+      this.compressor.release.setValueAtTime(0.22, this.ctx.currentTime);
+      this.masterGain.connect(this.compressor);
+      this.compressor.connect(this.ctx.destination);
+    }
+    if (this.ctx.state === "suspended") {
+      this.ctx.resume();
+    }
+  }
+
+  toggleMute() {
+    this.isMuted = !this.isMuted;
+    if (this.isMuted) this.stopBGM();
+    else if (this.bgmEnabled) this.startBGM(this.bgmMode);
+    return this.isMuted;
+  }
+
+  // SFX Pure Tones
+  playTone(freq, type = "square", duration = 0.1, gainVal = 0.1, pitchBend = null) {
+    if (this.isMuted || !this.sfxEnabled) return;
+    this.init();
+    try {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+      if (pitchBend) {
+        osc.frequency.exponentialRampToValueAtTime(pitchBend, this.ctx.currentTime + duration);
+      }
+      gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(this.masterGain);
+      osc.start();
+      osc.stop(this.ctx.currentTime + duration);
+    } catch(e) {}
+  }
+
+  playClick() {
+    this.playTone(760, "triangle", 0.035, 0.035, 940);
+    setTimeout(() => this.playTone(1520, "sine", 0.025, 0.012), 14);
+  }
+  playSuccess() {
+    this.playTone(523.25, "triangle", 0.075, 0.055, 548);
+    setTimeout(() => this.playTone(659.25, "sine", 0.11, 0.048, 698), 48);
+  }
+  playError() {
+    this.playTone(145, "sawtooth", 0.18, 0.075, 62);
+    setTimeout(() => this.playTone(92, "triangle", 0.12, 0.045, 54), 28);
+  }
+  playShuffle() {
+    for (let i = 0; i < 4; i++) {
+      setTimeout(() => this.playTone(300 + Math.random()*330, "triangle", 0.025, 0.024), i * 22);
+    }
+  }
+  playFocus() { this.playTone(420, "sine", 0.025, 0.012, 510); }
+  playHover() {
+    if (!this.ctx || this.ctx.state !== "running") return;
+    const now = performance.now();
+    if (now - this.lastHoverAt < 70) return;
+    this.lastHoverAt = now;
+    this.playTone(1180, "sine", 0.018, 0.007, 1260);
+  }
+  playBoot() {
+    this.playTone(110, "sine", 0.32, 0.035, 220);
+    setTimeout(() => this.playTone(440, "triangle", 0.18, 0.03, 880), 70);
+    setTimeout(() => this.playTone(1320, "sine", 0.12, 0.018, 1760), 150);
+  }
+  playDeploy() {
+    this.playTone(196, "triangle", 0.16, 0.04, 392);
+    setTimeout(() => this.playTone(784, "sine", 0.13, 0.035, 1175), 58);
+  }
+
+  // Synthesize Acid Bass Note (TB-303 Emulation)
+  playAcidNote(freq, accent = false, duration = 0.18) {
+    if (this.isMuted || !this.bgmEnabled) return;
+    this.init();
+    try {
+      const osc = this.ctx.createOscillator();
+      const filter = this.ctx.createBiquadFilter();
+      const gain = this.ctx.createGain();
+
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+
+      // Acid Resonant Low-Pass Filter
+      filter.type = "lowpass";
+      filter.Q.setValueAtTime(accent ? 14 : 9, this.ctx.currentTime);
+
+      const cutoffBase = 220 + this.tension * 1200;
+      const cutoffPeak = accent ? cutoffBase * 3.5 : cutoffBase * 2.0;
+
+      filter.frequency.setValueAtTime(cutoffBase, this.ctx.currentTime);
+      filter.frequency.exponentialRampToValueAtTime(cutoffPeak, this.ctx.currentTime + 0.03);
+      filter.frequency.exponentialRampToValueAtTime(cutoffBase * 0.8, this.ctx.currentTime + duration);
+
+      const vol = accent ? 0.062 : 0.036;
+      gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.masterGain);
+
+      osc.start();
+      osc.stop(this.ctx.currentTime + duration);
+    } catch(e) {}
+  }
+
+  // Synthesize Space-LoFi Ambient Lead
+  playSpaceLoFiArp(freq, duration = 0.3) {
+    if (this.isMuted || !this.bgmEnabled) return;
+    this.init();
+    try {
+      const osc = this.ctx.createOscillator();
+      const filter = this.ctx.createBiquadFilter();
+      const gain = this.ctx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+
+      filter.type = "lowpass";
+      filter.frequency.setValueAtTime(800 + this.tension * 1400, this.ctx.currentTime);
+
+      gain.gain.setValueAtTime(0.026, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.masterGain);
+
+      osc.start();
+      osc.stop(this.ctx.currentTime + duration);
+    } catch(e) {}
+  }
+
+  // Synthesize Lo-Fi Percussion
+  playLoFiBeat(type = "kick") {
+    if (this.isMuted || !this.bgmEnabled) return;
+    this.init();
+    try {
+      if (type === "kick") {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(110, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(35, this.ctx.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.085, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.12);
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.12);
+      } else if (type === "hat") {
+        const bufferSize = this.ctx.sampleRate * 0.03;
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = "highpass";
+        filter.frequency.value = 5000;
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(0.014, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 0.03);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.masterGain);
+        noise.start();
+      }
+    } catch(e) {}
+  }
+
+  playSpacePad(freqs = [110, 164.81, 220], duration = 1.25) {
+    if (this.isMuted || !this.bgmEnabled) return;
+    this.init();
+    try {
+      const now = this.ctx.currentTime;
+      freqs.slice(0, 3).forEach((freq, i) => {
+        const osc = this.ctx.createOscillator();
+        const filter = this.ctx.createBiquadFilter();
+        const gain = this.ctx.createGain();
+        osc.type = i === 0 ? "sine" : "triangle";
+        osc.frequency.setValueAtTime(freq, now);
+        filter.type = "lowpass";
+        filter.frequency.setValueAtTime(520 + this.tension * 420, now);
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(0.0085, now + 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.masterGain);
+        osc.start(now);
+        osc.stop(now + duration + 0.03);
+      });
+    } catch(e) {}
+  }
+
+  startBGM(mode = "menu") {
+    this.bgmMode = mode;
+    if (this.isMuted || !this.bgmEnabled) return;
+    this.init();
+    if (this.bgmTimer) clearInterval(this.bgmTimer);
+
+    // Minor Pentatonic / Dorian space patterns
+    const acidBassNotes = [110, 110, 130.81, 146.83, 110, 164.81, 146.83, 123.47];
+    const spaceArpNotes = [440, 523.25, 587.33, 659.25, 783.99, 880, 1046.5];
+
+    let interval = mode === "menu" ? 340 : Math.max(130, 240 - Math.floor(this.tension * 110));
+    this.currentIntervalMs = interval;
+
+    this.bgmTimer = setInterval(() => {
+      if (this.isMuted || !this.bgmEnabled) return;
+      this.step++;
+
+      if (this.bgmMode === "menu") {
+        // Deep Space Lo-Fi Atmosphere
+        if (this.step % 4 === 0) {
+          const bassFreq = [55, 65.41, 73.42, 65.41][(this.step / 4) % 4];
+          this.playAcidNote(bassFreq, false, 0.4);
+        }
+        if (this.step % 2 === 0) {
+          const note = spaceArpNotes[(this.step / 2) % spaceArpNotes.length];
+          this.playSpaceLoFiArp(note, 0.5);
+        }
+        if (this.step % 16 === 0) {
+          const roots = [[55,82.41,110],[65.41,98,130.81],[73.42,110,146.83],[65.41,98,130.81]];
+          this.playSpacePad(roots[(this.step / 16) % roots.length], 1.55);
+        }
+      } else if (this.bgmMode === "game") {
+        // Space-Chiptune-Acid Groove
+        const bassIdx = this.step % acidBassNotes.length;
+        const isAccent = (this.step % 4 === 0) || (this.tension > 0.5 && this.step % 3 === 0);
+        this.playAcidNote(acidBassNotes[bassIdx], isAccent, 0.16);
+
+        // Hi-Hat & Kick
+        if (this.step % 4 === 0) this.playLoFiBeat("kick");
+        if (this.step % 2 === 1) this.playLoFiBeat("hat");
+
+        // Cosmic Lead Arp
+        if (this.step % 2 === 0 || this.tension > 0.6) {
+          const arpIdx = (this.step + Math.floor(this.tension * 5)) % spaceArpNotes.length;
+          this.playSpaceLoFiArp(spaceArpNotes[arpIdx], 0.22);
+        }
+      }
+    }, interval);
+  }
+
+  setTension(progress) {
+    const oldInterval = Math.max(130, 240 - Math.floor(this.tension * 110));
+    this.tension = Math.min(1.0, Math.max(0.0, progress));
+    const newInterval = Math.max(130, 240 - Math.floor(this.tension * 110));
+    if (this.bgmMode === "game" && this.bgmEnabled && !this.isMuted && Math.abs(newInterval - oldInterval) >= 14) {
+      this.startBGM("game");
+    }
+  }
+
+  playFanfareWin() {
+    this.stopBGM();
+    if (!this.isMuted && this.sfxEnabled) {
+      const melody = [523.25, 659.25, 783.99, 1046.50, 783.99, 1046.50];
+      melody.forEach((f, i) => {
+        setTimeout(() => this.playTone(f, "triangle", 0.22, 0.065), i * 140);
+      });
+    }
+    if (!this.isMuted && this.bgmEnabled) {
+      setTimeout(() => this.startBGM("menu"), 1450);
+    }
+  }
+
+  stopBGM() {
+    if (this.bgmTimer) {
+      clearInterval(this.bgmTimer);
+      this.bgmTimer = null;
+    }
+  }
+}
+const audio = new ProceduralAudioEngine();
+
+/* =========================================================================
+   3. PROFILES, TELEMETRY & PERSISTENCE
+   ========================================================================= */
+const STORAGE_KEY = "PRIMATA_BRAIN_MATRIX_SAVE_V1";
+const PORTAL_STATS_KEY = "ppg_minigames_stats_v1";
+const GAME_ID = "brain_matrix";
+const PREVIEW = new URLSearchParams(location.search).get("preview") === "1";
+if (PREVIEW) document.body.classList.add("preview");
+let appData = {
+  profiles: { "Player 1": { history: [], records: {} } },
+  currentProfile: "Player 1",
+  options: { sfx: true, bgm: true, crt: true, lang: "pt-BR", theme: "synthwave", uiTheme: "dark", muted: false }
+};
+
+function loadStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed.profiles && Object.keys(parsed.profiles).length > 0) {
+        appData = parsed;
+      }
+    }
+  } catch(e) {}
+  appData.options = Object.assign(
+    { sfx:true, bgm:true, crt:true, lang:"pt-BR", theme:"synthwave", uiTheme:"dark", muted:false },
+    appData.options || {}
+  );
+  for (const prof of Object.values(appData.profiles || {})) {
+    prof.history = Array.isArray(prof.history) ? prof.history : [];
+    prof.records = prof.records && typeof prof.records === "object" ? prof.records : {};
+    // V1 stored records only by level, mixing modes. Preserve them as Normal records.
+    for (const key of Object.keys(prof.records)) {
+      if (/^\d+$/.test(key)) {
+        const migrated = `normal:${key}`;
+        if (!prof.records[migrated]) prof.records[migrated] = prof.records[key];
+        delete prof.records[key];
+      }
+    }
+  }
+}
+function saveStorage() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+  } catch(e) {}
+}
+
+function portalRead() {
+  try { return JSON.parse(localStorage.getItem(PORTAL_STATS_KEY)) || {}; } catch (_) { return {}; }
+}
+function portalWrite(v) {
+  try { localStorage.setItem(PORTAL_STATS_KEY, JSON.stringify(v)); } catch (_) {}
+}
+let portalSegmentStart = 0;
+let portalSessionActive = false;
+function portalStartRun() {
+  if (PREVIEW) return;
+  if (portalSessionActive) {
+    if (!portalSegmentStart) portalSegmentStart = performance.now();
+    return;
+  }
+  portalSessionActive = true;
+  const all = portalRead();
+  const st = all[GAME_ID] || {};
+  const day = new Date().toISOString().slice(0,10);
+  let streak = st.currentStreak || 0;
+  if (st.lastDay !== day) {
+    if (st.lastDay) {
+      const diff = (new Date(day+"T12:00:00") - new Date(st.lastDay+"T12:00:00")) / 86400000;
+      streak = diff === 1 ? streak + 1 : 1;
+    } else streak = 1;
+  }
+  st.starts = (st.starts || 0) + 1;
+  st.currentStreak = streak;
+  st.longestStreak = Math.max(st.longestStreak || 0, streak);
+  st.lastDay = day;
+  all[GAME_ID] = st;
+  portalWrite(all);
+  portalSegmentStart = performance.now();
+}
+function portalCommitActiveTime() {
+  if (PREVIEW || !portalSegmentStart) return;
+  const all = portalRead(), st = all[GAME_ID] || {};
+  st.totalSeconds = (st.totalSeconds || 0) + Math.max(0, (performance.now() - portalSegmentStart) / 1000);
+  all[GAME_ID] = st;
+  portalWrite(all);
+  portalSegmentStart = performance.now();
+}
+function portalPauseTime() {
+  if (!portalSegmentStart) return;
+  portalCommitActiveTime();
+  portalSegmentStart = 0;
+}
+function portalResumeTime() {
+  if (!PREVIEW && game && game.isPlaying && !game.isPaused && !portalSegmentStart) portalSegmentStart = performance.now();
+}
+window.addEventListener("pagehide", portalPauseTime);
+setInterval(() => { if (portalSegmentStart) portalCommitActiveTime(); }, 30000);
+
+/* =========================================================================
+   4. MODAL CONFIRMATION CONTROLLER
+   ========================================================================= */
+let pendingConfirmCallback = null;
+
+function requestConfirmation(msgKey, onConfirm) {
+  const modal = document.getElementById("modal-confirm");
+  const textEl = document.getElementById("confirm-modal-text");
+  
+  textEl.textContent = I18N_DATA[currentLang][msgKey] || I18N_DATA["en"][msgKey] || msgKey;
+  pendingConfirmCallback = onConfirm;
+  
+  modal.classList.add("active");
+  document.getElementById("btn-confirm-no").focus();
+  audio.playFocus();
+}
+
+document.getElementById("btn-confirm-yes").addEventListener("click", () => {
+  document.getElementById("modal-confirm").classList.remove("active");
+  if (pendingConfirmCallback) {
+    pendingConfirmCallback();
+    pendingConfirmCallback = null;
+  }
+  audio.playSuccess();
+});
+
+document.getElementById("btn-confirm-no").addEventListener("click", () => {
+  document.getElementById("modal-confirm").classList.remove("active");
+  pendingConfirmCallback = null;
+  audio.playClick();
+});
+
+function updateProfileUI() {
+  document.getElementById("current-profile-name").textContent = appData.currentProfile;
+  renderProfileModalList();
+}
+
+function renderProfileModalList() {
+  const container = document.getElementById("profile-list-container");
+  container.innerHTML = "";
+  const profileNames = Object.keys(appData.profiles);
+
+  profileNames.forEach(name => {
+    const div = document.createElement("div");
+    div.className = "profile-list-item" + (name === appData.currentProfile ? " active" : "");
+
+    const nameSpan = document.createElement("span");
+    nameSpan.textContent = name;
+    nameSpan.style.fontWeight = name === appData.currentProfile ? "bold" : "normal";
+    nameSpan.style.color = name === appData.currentProfile ? "var(--primary)" : "var(--text)";
+
+    const btnGroup = document.createElement("div");
+    btnGroup.style.display = "flex";
+    btnGroup.style.gap = "6px";
+
+    if (name !== appData.currentProfile) {
+      const btnSel = document.createElement("button");
+      btnSel.className = "btn btn-sm";
+      btnSel.textContent = I18N_DATA[currentLang].useProfile || I18N_DATA.en.useProfile;
+      btnSel.addEventListener("click", () => {
+        appData.currentProfile = name;
+        saveStorage();
+        updateProfileUI();
+        audio.playClick();
+      });
+      btnGroup.appendChild(btnSel);
+    }
+
+    if (profileNames.length > 1) {
+      const btnDel = document.createElement("button");
+      btnDel.className = "btn btn-sm btn-danger";
+      btnDel.textContent = "✕";
+      btnDel.title = I18N_DATA[currentLang].delete || I18N_DATA.en.delete || "Delete";
+      btnDel.addEventListener("click", () => {
+        requestConfirmation("confirmDeleteProfile", () => {
+          delete appData.profiles[name];
+          if (appData.currentProfile === name) {
+            appData.currentProfile = Object.keys(appData.profiles)[0];
+          }
+          saveStorage();
+          updateProfileUI();
+        });
+      });
+      btnGroup.appendChild(btnDel);
+    }
+
+    div.appendChild(nameSpan);
+    div.appendChild(btnGroup);
+    container.appendChild(div);
+  });
+}
+
+function addNewProfile(name) {
+  const sanitized = name.trim();
+  if (!sanitized) return;
+  if (appData.profiles[sanitized]) {
+    alert(I18N_DATA[currentLang].duplicateProfile || I18N_DATA.en.duplicateProfile);
+    return;
+  }
+  appData.profiles[sanitized] = { history: [], records: {} };
+  appData.currentProfile = sanitized;
+  saveStorage();
+  updateProfileUI();
+  audio.playSuccess();
+}
+
+/* =========================================================================
+   5. GAME ENGINE & MASTERMIND MATRIX LOGIC
+   ========================================================================= */
+const LEVEL_CONFIGS = [
+  { level: 1, size: 2, numCount: 4, letCount: 0, mult: 1.0 },
+  { level: 2, size: 3, numCount: 9, letCount: 0, mult: 1.1 },
+  { level: 3, size: 4, numCount: 16, letCount: 0, mult: 1.2 },
+  { level: 4, size: 5, numCount: 25, letCount: 0, mult: 1.3 },
+  { level: 5, size: 6, numCount: 36, letCount: 0, mult: 1.4 },
+  { level: 6, size: 7, numCount: 49, letCount: 0, mult: 1.5 },
+  { level: 7, size: 8, numCount: 64, letCount: 0, mult: 1.6 },
+  { level: 8, size: 9, numCount: 81, letCount: 0, mult: 1.7 },
+  { level: 9, size: 10, numCount: 100, letCount: 0, mult: 1.8 },
+  { level: 10, size: 11, numCount: 100, letCount: 10, mult: 1.9 },
+  { level: 11, size: 12, numCount: 100, letCount: 26, mult: 2.0 },
+  { level: 12, size: 12, numCount: 100, letCount: 26, mult: 2.5 }
+];
+
+const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+class GameEngine {
+  constructor() {
+    this.currentLevelIdx = 0;
+    this.mode = "normal";
+    this.tiles = [];
+    this.sequenceOrder = [];
+    this.targetIndex = 0;
+    this.score = 0;
+    this.penaltiesLost = 0;
+    this.pointsGained = 0;
+    this.gameStartTime = 0;
+    this.lastClickTime = 0;
+    this.moveDeltas = [];
+    this.lastFlippedTile = null;
+    this.lastCorrectValue = null;
+    this.pauseStartedAt = 0;
+    this.isPlaying = false;
+    this.isPaused = false;
+  }
+
+  setPaused(paused) {
+    if (!this.isPlaying || this.isPaused === paused) return;
+    const now = performance.now();
+    if (paused) {
+      this.pauseStartedAt = now;
+      this.isPaused = true;
+    } else {
+      const pausedFor = this.pauseStartedAt ? now - this.pauseStartedAt : 0;
+      this.gameStartTime += pausedFor;
+      this.lastClickTime += pausedFor;
+      this.pauseStartedAt = 0;
+      this.isPaused = false;
+    }
+  }
+
+  recordKey(level = this.currentLevelIdx + 1, mode = this.mode) {
+    return `${mode}:${level}`;
+  }
+
+  getTileScoreValue(label) {
+    if (typeof label === "number" || !isNaN(label)) return parseInt(label, 10);
+    const charCode = label.toUpperCase().charCodeAt(0);
+    if (charCode >= 65 && charCode <= 90) {
+      return (charCode - 64) * 10;
+    }
+    return 1;
+  }
+
+  initLevel(levelIndex, mode = "normal") {
+    this.currentLevelIdx = Math.min(levelIndex, LEVEL_CONFIGS.length - 1);
+    this.mode = mode;
+    const cfg = LEVEL_CONFIGS[this.currentLevelIdx];
+    this.targetIndex = 0;
+    this.tiles = [];
+    this.sequenceOrder = [];
+    this.moveDeltas = [];
+    this.lastFlippedTile = null;
+    this.lastCorrectValue = null;
+    this.pauseStartedAt = 0;
+    this.isPlaying = true;
+    this.isPaused = false;
+    this.score = 0;
+    this.penaltiesLost = 0;
+    this.pointsGained = 0;
+    this.gameStartTime = performance.now();
+    this.lastClickTime = this.gameStartTime;
+
+    for (let i = 0; i < cfg.numCount; i++) {
+      this.sequenceOrder.push(i < 10 ? "0" + i : "" + i);
+    }
+    for (let i = 0; i < cfg.letCount; i++) {
+      this.sequenceOrder.push(ALPHABET[i]);
+    }
+
+    const totalCells = cfg.size * cfg.size;
+    let pool = [...this.sequenceOrder];
+    while (pool.length < totalCells) {
+      pool.push(null);
+    }
+
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+
+    this.tiles = pool.map((val, idx) => ({
+      id: idx,
+      val: val,
+      isFlipped: val === null,
+      isVoid: val === null
+    }));
+
+    portalPauseTime();
+    portalStartRun();
+    audio.setTension(0);
+    audio.startBGM("game");
+  }
+
+  handleTileClick(tileIndex) {
+    if (!this.isPlaying || this.isPaused) return;
+    const tile = this.tiles[tileIndex];
+    if (!tile || tile.isFlipped || tile.isVoid) return;
+
+    const now = performance.now();
+    const delta = now - this.lastClickTime;
+    this.lastClickTime = now;
+    this.moveDeltas.push(delta);
+
+    const expectedVal = this.sequenceOrder[this.targetIndex];
+
+    if (tile.val === expectedVal) {
+      audio.playSuccess();
+      tile.isFlipped = true;
+      const pts = this.getTileScoreValue(tile.val);
+      this.score += pts;
+      this.pointsGained += pts;
+      this.lastFlippedTile = tile;
+      this.lastCorrectValue = tile.val;
+      this.targetIndex++;
+
+      const progress = this.targetIndex / this.sequenceOrder.length;
+      audio.setTension(progress);
+
+      if (this.mode === "mastermind" && this.targetIndex < this.sequenceOrder.length) {
+        this.shuffleActiveGrid();
+        audio.playShuffle();
+      }
+
+      if (this.targetIndex >= this.sequenceOrder.length) {
+        this.completeLevel();
+      }
+    } else {
+      audio.playError();
+      const penalty = this.getTileScoreValue(tile.val) * 2;
+      this.score = Math.max(0, this.score - penalty);
+      this.penaltiesLost += penalty;
+
+      if (this.targetIndex > 0) {
+        const valueToRollback = this.sequenceOrder[this.targetIndex - 1];
+        const rollbackTile = this.tiles.find(t => !t.isVoid && t.isFlipped && t.val === valueToRollback);
+        if (rollbackTile) rollbackTile.isFlipped = false;
+        this.targetIndex = Math.max(0, this.targetIndex - 1);
+        this.lastCorrectValue = this.targetIndex > 0 ? this.sequenceOrder[this.targetIndex - 1] : null;
+        this.lastFlippedTile = this.lastCorrectValue == null
+          ? null
+          : this.tiles.find(t => !t.isVoid && t.isFlipped && t.val === this.lastCorrectValue) || null;
+      }
+
+      this.shuffleActiveGrid();
+      audio.playShuffle();
+    }
+  }
+
+  shuffleActiveGrid() {
+    const nonVoidTiles = this.tiles.filter(t => !t.isVoid);
+    for (let i = nonVoidTiles.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const tempVal = nonVoidTiles[i].val;
+      const tempFlipped = nonVoidTiles[i].isFlipped;
+      nonVoidTiles[i].val = nonVoidTiles[j].val;
+      nonVoidTiles[i].isFlipped = nonVoidTiles[j].isFlipped;
+      nonVoidTiles[j].val = tempVal;
+      nonVoidTiles[j].isFlipped = tempFlipped;
+    }
+  }
+
+  completeLevel() {
+    this.isPlaying = false;
+    portalPauseTime();
+    audio.stopBGM();
+    const totalTimeMs = performance.now() - this.gameStartTime;
+    const cfg = LEVEL_CONFIGS[this.currentLevelIdx];
+    
+    let finalLevelScore = Math.round(this.score * (this.mode === "marathon" ? cfg.mult : 1.0));
+
+    const avgDelta = this.moveDeltas.length ? Math.round(this.moveDeltas.reduce((a,b)=>a+b,0) / this.moveDeltas.length) : 0;
+    const minDelta = this.moveDeltas.length ? Math.round(Math.min(...this.moveDeltas)) : 0;
+    const maxDelta = this.moveDeltas.length ? Math.round(Math.max(...this.moveDeltas)) : 0;
+
+    const recordPayload = {
+      date: new Date().toISOString(),
+      level: this.currentLevelIdx + 1,
+      mode: this.mode,
+      totalTimeMs,
+      score: finalLevelScore,
+      avgDelta,
+      minDelta,
+      maxDelta,
+      penaltiesLost: this.penaltiesLost,
+      pointsGained: this.pointsGained
+    };
+
+    const prof = appData.profiles[appData.currentProfile];
+    if (prof) {
+      if (!prof.history) prof.history = [];
+      if (!prof.records) prof.records = {};
+      prof.history.push(recordPayload);
+
+      const recordKey = this.recordKey(cfg.level, this.mode);
+      const previousRecord = prof.records[recordKey];
+      const isRecord = !previousRecord ||
+        finalLevelScore > previousRecord.score ||
+        (finalLevelScore === previousRecord.score && totalTimeMs < previousRecord.totalTimeMs);
+      if (isRecord) {
+        prof.records[recordKey] = recordPayload;
+        audio.playFanfareWin();
+      } else {
+        audio.playTone(600, "square", 0.3, 0.1);
+      }
+      saveStorage();
+      showResultsModal(recordPayload, isRecord);
+    }
+  }
+}
+const game = new GameEngine();
+
+/* =========================================================================
+   6. CANVAS RENDERER & INTERACTIVE MATRIX
+   ========================================================================= */
+const canvas = document.getElementById("game-canvas");
+const ctx = canvas.getContext("2d");
+let cellSize = 0;
+let keyboardTileIndex = 0;
+
+function resizeGameCanvas() {
+  const container = document.getElementById("canvas-container");
+  const minDim = Math.max(96, Math.floor(Math.min(container.clientWidth - 16, container.clientHeight - 16)));
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+  canvas.width = Math.max(1, Math.round(minDim * dpr));
+  canvas.height = Math.max(1, Math.round(minDim * dpr));
+  canvas.style.width = minDim + "px";
+  canvas.style.height = minDim + "px";
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+window.addEventListener("resize", resizeGameCanvas);
+
+function render() {
+  if (document.getElementById("screen-game").classList.contains("active")) {
+    const cfg = LEVEL_CONFIGS[game.currentLevelIdx];
+    const size = cfg ? cfg.size : 2;
+    const dpr = window.devicePixelRatio || 1;
+    const renderWidth = canvas.width / dpr;
+
+    ctx.clearRect(0, 0, renderWidth, renderWidth);
+    cellSize = renderWidth / size;
+    const styles = getComputedStyle(document.body);
+    const tileFlipped = styles.getPropertyValue('--tile-flipped').trim() || "#003322";
+    const tileFlippedBorder = styles.getPropertyValue('--tile-flipped-border').trim() || "#00ffcc";
+    const tileBg = styles.getPropertyValue('--tile-bg').trim() || "#1a1d2e";
+    const tileBorder = styles.getPropertyValue('--tile-border').trim() || "#2a304e";
+    const primary = styles.getPropertyValue('--primary').trim() || "#00ffcc";
+    const textColor = styles.getPropertyValue('--text').trim() || "#e0e6ed";
+    const accent = styles.getPropertyValue('--accent').trim() || "#ffe600";
+
+    for (let r = 0; r < size; r++) {
+      for (let c = 0; c < size; c++) {
+        const idx = r * size + c;
+        const tile = game.tiles[idx];
+        if (!tile) continue;
+
+        const x = c * cellSize;
+        const y = r * cellSize;
+        const pad = Math.max(2, Math.floor(cellSize * 0.06));
+
+        if (tile.isVoid) {
+          ctx.fillStyle = "rgba(0,0,0,0.3)";
+          ctx.fillRect(x + pad, y + pad, cellSize - pad*2, cellSize - pad*2);
+          continue;
+        }
+
+        if (tile.isFlipped) {
+          ctx.fillStyle = tileFlipped;
+          ctx.strokeStyle = tileFlippedBorder;
+        } else {
+          ctx.fillStyle = tileBg;
+          ctx.strokeStyle = tileBorder;
+        }
+
+        ctx.lineWidth = 2;
+        ctx.fillRect(x + pad, y + pad, cellSize - pad*2, cellSize - pad*2);
+        ctx.strokeRect(x + pad, y + pad, cellSize - pad*2, cellSize - pad*2);
+        if (idx === keyboardTileIndex && document.activeElement === canvas && !tile.isVoid) {
+          ctx.save();
+          ctx.strokeStyle = accent;
+          ctx.lineWidth = Math.max(2, cellSize * 0.045);
+          ctx.strokeRect(x + pad + 2, y + pad + 2, cellSize - pad*2 - 4, cellSize - pad*2 - 4);
+          ctx.restore();
+        }
+
+        ctx.fillStyle = tile.isFlipped ? primary : textColor;
+        ctx.font = `bold ${Math.floor(cellSize * 0.42)}px monospace`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(tile.val, x + cellSize/2, y + cellSize/2);
+      }
+    }
+
+    document.getElementById("hud-score").textContent = game.score;
+    document.getElementById("hud-target-val").textContent = game.sequenceOrder[game.targetIndex] || "--";
+    if (game.isPlaying && !game.isPaused) {
+      const elapsed = ((performance.now() - game.gameStartTime) / 1000).toFixed(2);
+      document.getElementById("hud-timer").textContent = elapsed;
+    }
+  }
+  requestAnimationFrame(render);
+}
+requestAnimationFrame(render);
+
+canvas.addEventListener("pointerdown", (e) => {
+  canvas.focus({preventScroll:true});
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  const cfg = LEVEL_CONFIGS[game.currentLevelIdx];
+  if (!cfg) return;
+
+  const col = Math.floor(x / (rect.width / cfg.size));
+  const row = Math.floor(y / (rect.height / cfg.size));
+  const idx = row * cfg.size + col;
+
+  game.handleTileClick(idx);
+});
+
+
+canvas.addEventListener("keydown", (e) => {
+  if (!game.isPlaying || game.isPaused) return;
+  const cfg = LEVEL_CONFIGS[game.currentLevelIdx];
+  if (!cfg) return;
+  const size = cfg.size;
+  let row = Math.floor(keyboardTileIndex / size);
+  let col = keyboardTileIndex % size;
+  let handled = true;
+  if (e.key === "ArrowLeft") col = (col - 1 + size) % size;
+  else if (e.key === "ArrowRight") col = (col + 1) % size;
+  else if (e.key === "ArrowUp") row = (row - 1 + size) % size;
+  else if (e.key === "ArrowDown") row = (row + 1) % size;
+  else if (e.key === "Enter" || e.key === " ") {
+    game.handleTileClick(keyboardTileIndex);
+  } else handled = false;
+  if (!handled) return;
+  e.preventDefault();
+  if (e.key.startsWith("Arrow")) {
+    let candidate = row * size + col;
+    for (let i = 0; i < size * size; i++) {
+      const tile = game.tiles[candidate];
+      if (tile && !tile.isVoid) break;
+      if (e.key === "ArrowLeft") col = (col - 1 + size) % size;
+      else if (e.key === "ArrowRight") col = (col + 1) % size;
+      else if (e.key === "ArrowUp") row = (row - 1 + size) % size;
+      else row = (row + 1) % size;
+      candidate = row * size + col;
+    }
+    keyboardTileIndex = candidate;
+  }
+});
+
+/* =========================================================================
+   7. UI NAVIGATION & EVENT CONTROLLERS
+   ========================================================================= */
+function switchScreen(screenId) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  const target = document.getElementById(screenId);
+  if (target) {
+    target.classList.add("active");
+    if (screenId === "screen-game") {
+      resizeGameCanvas();
+      keyboardTileIndex = 0;
+      requestAnimationFrame(() => canvas.focus({preventScroll:true}));
+    } else {
+      const focusable = target.querySelector("button, select, input");
+      if (focusable) focusable.focus();
+    }
+  }
+  audio.playFocus();
+}
+
+document.querySelectorAll(".btn-back").forEach(btn => {
+  btn.addEventListener("click", () => switchScreen(btn.dataset.target));
+});
+
+document.getElementById("btn-profile-switch").addEventListener("click", () => {
+  renderProfileModalList();
+  document.getElementById("modal-profile").classList.add("active");
+  document.getElementById("input-new-profile").focus();
+  audio.playFocus();
+});
+
+document.getElementById("btn-close-profile").addEventListener("click", () => {
+  document.getElementById("modal-profile").classList.remove("active");
+  audio.playClick();
+});
+
+document.getElementById("btn-add-profile").addEventListener("click", () => {
+  const input = document.getElementById("input-new-profile");
+  if (input.value.trim()) {
+    addNewProfile(input.value);
+    input.value = "";
+  }
+});
+document.getElementById("input-new-profile").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    document.getElementById("btn-add-profile").click();
+  }
+});
+
+function buildLevelsGrid() {
+  const container = document.getElementById("levels-grid");
+  container.innerHTML = "";
+  LEVEL_CONFIGS.forEach((lvl, idx) => {
+    const b = document.createElement("button");
+    b.className = "btn";
+    b.innerHTML = `L${lvl.level}<br><span style="font-size:0.7rem; color:var(--text-dim);">${lvl.size}x${lvl.size}</span>`;
+    b.addEventListener("click", () => {
+      game.initLevel(idx, game.mode);
+      switchScreen("screen-game");
+    });
+    container.appendChild(b);
+  });
+}
+
+document.getElementById("btn-play").addEventListener("click", () => {
+  audio.playDeploy();
+  buildLevelsGrid();
+  switchScreen("screen-levels");
+});
+
+document.getElementById("btn-marathon").addEventListener("click", () => {
+  audio.playDeploy();
+  game.initLevel(0, "marathon");
+  switchScreen("screen-game");
+});
+
+document.getElementById("btn-mode-normal").addEventListener("click", (e) => {
+  e.currentTarget.classList.add("mode-active");
+  document.getElementById("btn-mode-mastermind").classList.remove("mode-active");
+  game.mode = "normal";
+  audio.playClick();
+});
+
+document.getElementById("btn-mode-mastermind").addEventListener("click", (e) => {
+  e.currentTarget.classList.add("mode-active");
+  document.getElementById("btn-mode-normal").classList.remove("mode-active");
+  game.mode = "mastermind";
+  audio.playClick();
+});
+
+document.getElementById("btn-options").addEventListener("click", () => switchScreen("screen-options"));
+document.getElementById("btn-info").addEventListener("click", () => switchScreen("screen-info"));
+document.getElementById("btn-stats").addEventListener("click", () => {
+  renderTelemetryStats();
+  switchScreen("screen-stats");
+});
+
+function applyUiTheme() {
+  const light = appData.options.uiTheme === "light";
+  document.body.classList.toggle("ui-light", light);
+  const b = document.getElementById("btn-ui-theme");
+  b.textContent = light ? "🌙" : "☀";
+  b.title = light
+    ? (I18N_DATA[currentLang].darkMode || I18N_DATA.en.darkMode)
+    : (I18N_DATA[currentLang].lightMode || I18N_DATA.en.lightMode);
+}
+document.getElementById("btn-collection-menu").addEventListener("click", () => {
+  portalPauseTime();
+  location.href = "index.html";
+});
+document.getElementById("btn-ui-theme").addEventListener("click", () => {
+  appData.options.uiTheme = appData.options.uiTheme === "light" ? "dark" : "light";
+  applyUiTheme();
+  saveStorage();
+  audio.playClick();
+});
+document.getElementById("btn-mute").addEventListener("click", () => {
+  const muted = audio.toggleMute();
+  appData.options.muted = muted;
+  document.getElementById("btn-mute").textContent = muted ? "🔇" : "🔊";
+  saveStorage();
+});
+
+function togglePause(forcePause = null) {
+  if (!game.isPlaying) return;
+  const next = forcePause === null ? !game.isPaused : !!forcePause;
+  if (next === game.isPaused) return;
+  game.setPaused(next);
+  const modal = document.getElementById("modal-pause");
+  if (game.isPaused) {
+    portalPauseTime();
+    modal.classList.add("active");
+    document.getElementById("btn-resume").focus();
+    audio.startBGM("menu");
+  } else {
+    portalResumeTime();
+    modal.classList.remove("active");
+    audio.startBGM("game");
+    requestAnimationFrame(() => canvas.focus({preventScroll:true}));
+  }
+}
+document.getElementById("btn-pause").addEventListener("click", togglePause);
+window.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") togglePause();
+});
+
+document.getElementById("btn-resume").addEventListener("click", togglePause);
+document.getElementById("btn-restart").addEventListener("click", () => {
+  document.getElementById("modal-pause").classList.remove("active");
+  game.initLevel(game.currentLevelIdx, game.mode);
+});
+document.getElementById("btn-exit-menu").addEventListener("click", () => {
+  document.getElementById("modal-pause").classList.remove("active");
+  portalPauseTime();
+  portalSessionActive = false;
+  game.isPlaying = false;
+  audio.startBGM("menu");
+  switchScreen("screen-main");
+});
+
+function showResultsModal(data, isRecord) {
+  const modal = document.getElementById("modal-gameover");
+  document.getElementById("go-time").textContent = (data.totalTimeMs / 1000).toFixed(2) + "s";
+  document.getElementById("go-score").textContent = data.score;
+  document.getElementById("go-avg-time").textContent = data.avgDelta + "ms";
+  document.getElementById("go-penalties").textContent = data.penaltiesLost;
+  document.getElementById("go-record-banner").style.display = isRecord ? "block" : "none";
+  modal.classList.add("active");
+  document.getElementById("btn-go-next").focus();
+}
+
+document.getElementById("btn-go-next").addEventListener("click", () => {
+  document.getElementById("modal-gameover").classList.remove("active");
+  if (game.currentLevelIdx < LEVEL_CONFIGS.length - 1) {
+    game.initLevel(game.currentLevelIdx + 1, game.mode);
+    switchScreen("screen-game");
+  } else {
+    portalPauseTime();
+    portalSessionActive = false;
+    switchScreen("screen-main");
+    audio.startBGM("menu");
+  }
+});
+document.getElementById("btn-go-retry").addEventListener("click", () => {
+  document.getElementById("modal-gameover").classList.remove("active");
+  game.initLevel(game.currentLevelIdx, game.mode);
+  switchScreen("screen-game");
+});
+document.getElementById("btn-go-menu").addEventListener("click", () => {
+  document.getElementById("modal-gameover").classList.remove("active");
+  portalPauseTime();
+  portalSessionActive = false;
+  audio.startBGM("menu");
+  switchScreen("screen-main");
+});
+
+document.getElementById("opt-sfx").addEventListener("change", (e) => {
+  audio.sfxEnabled = e.target.checked;
+  appData.options.sfx = e.target.checked;
+  saveStorage();
+});
+document.getElementById("opt-bgm").addEventListener("change", (e) => {
+  audio.bgmEnabled = e.target.checked;
+  appData.options.bgm = e.target.checked;
+  if (!e.target.checked) audio.stopBGM();
+  else audio.startBGM("menu");
+  saveStorage();
+});
+document.getElementById("opt-crt").addEventListener("change", (e) => {
+  document.body.classList.toggle("no-crt", !e.target.checked);
+  appData.options.crt = e.target.checked;
+  saveStorage();
+});
+document.getElementById("opt-lang").addEventListener("change", (e) => {
+  applyI18n(e.target.value);
+  appData.options.lang = e.target.value;
+  saveStorage();
+});
+document.getElementById("opt-theme").addEventListener("change", (e) => {
+  document.body.setAttribute("data-theme", e.target.value);
+  appData.options.theme = e.target.value;
+  saveStorage();
+});
+
+// Reset with custom retro modal
+document.getElementById("btn-reset-data").addEventListener("click", () => {
+  requestConfirmation("confirmResetAll", () => {
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+  });
+});
+
+// Clear stats with custom retro modal
+document.getElementById("btn-clear-stats").addEventListener("click", () => {
+  requestConfirmation("confirmClearStats", () => {
+    const prof = appData.profiles[appData.currentProfile];
+    if (prof) {
+      prof.history = [];
+      prof.records = {};
+      saveStorage();
+      renderTelemetryStats();
+    }
+  });
+});
+
+function renderTelemetryStats() {
+  const prof = appData.profiles[appData.currentProfile];
+  if (!prof) return;
+
+  const history = prof.history || [];
+  document.getElementById("st-games").textContent = history.length;
+
+  if (history.length === 0) {
+    document.getElementById("st-avg-time").textContent = "0 ms";
+    document.getElementById("st-fast-time").textContent = "0 ms";
+    document.getElementById("st-slow-time").textContent = "0 ms";
+    document.getElementById("st-points-won").textContent = "0";
+    document.getElementById("st-points-lost").textContent = "0";
+    document.getElementById("leaderboard-list").innerHTML = `<p style="color:var(--text-dim);">${I18N_DATA[currentLang].noRecords || I18N_DATA.en.noRecords}</p>`;
+    
+    const tCanvas = document.getElementById("telemetry-canvas");
+    const tCtx = tCanvas.getContext("2d");
+    tCtx.clearRect(0, 0, tCanvas.width, tCanvas.height);
+    return;
+  }
+
+  const avgReaction = Math.round(history.reduce((a, b) => a + b.avgDelta, 0) / history.length);
+  const fastReaction = Math.min(...history.map(h => h.minDelta || 9999));
+  const slowReaction = Math.max(...history.map(h => h.maxDelta || 0));
+  const totalPtsWon = history.reduce((a, b) => a + b.pointsGained, 0);
+  const totalPtsLost = history.reduce((a, b) => a + b.penaltiesLost, 0);
+
+  document.getElementById("st-avg-time").textContent = avgReaction + " ms";
+  document.getElementById("st-fast-time").textContent = fastReaction + " ms";
+  document.getElementById("st-slow-time").textContent = slowReaction + " ms";
+  document.getElementById("st-points-won").textContent = totalPtsWon;
+  document.getElementById("st-points-lost").textContent = totalPtsLost;
+
+  const records = prof.records || {};
+  const lbContainer = document.getElementById("leaderboard-list");
+  lbContainer.innerHTML = "";
+  Object.keys(records)
+    .sort((a,b) => {
+      const [ma,la] = a.includes(":") ? a.split(":") : ["normal",a];
+      const [mb,lb] = b.includes(":") ? b.split(":") : ["normal",b];
+      return parseInt(la) - parseInt(lb) || ma.localeCompare(mb);
+    })
+    .forEach(key => {
+      const r = records[key];
+      const [mode, lvl] = key.includes(":") ? key.split(":") : ["normal", key];
+      const item = document.createElement("div");
+      item.style.padding = "4px 0";
+      item.style.borderBottom = "1px solid var(--tile-border)";
+      item.textContent = `L${lvl} · ${mode.toUpperCase()} — ${r.score} pts | ${(r.totalTimeMs/1000).toFixed(1)}s | Avg ${r.avgDelta}ms`;
+      lbContainer.appendChild(item);
+    });
+
+  const tCanvas = document.getElementById("telemetry-canvas");
+  const tCtx = tCanvas.getContext("2d");
+  tCanvas.width = tCanvas.clientWidth * 2;
+  tCanvas.height = tCanvas.clientHeight * 2;
+  tCtx.clearRect(0, 0, tCanvas.width, tCanvas.height);
+
+  const samples = history.slice(-20).map(h => h.avgDelta);
+  if (samples.length > 1) {
+    const maxVal = Math.max(...samples, 1000);
+    const minVal = Math.min(...samples, 0);
+    const stepX = tCanvas.width / (samples.length - 1);
+
+    tCtx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--primary').trim() || "#00ffcc";
+    tCtx.lineWidth = 4;
+    tCtx.beginPath();
+    samples.forEach((val, i) => {
+      const y = tCanvas.height - ((val - minVal) / (maxVal - minVal || 1)) * (tCanvas.height - 30) - 15;
+      if (i === 0) tCtx.moveTo(0, y);
+      else tCtx.lineTo(i * stepX, y);
+    });
+    tCtx.stroke();
+  }
+}
+
+
+/* =========================================================================
+   8.5 BOOT SPLASH & MICRO-INTERACTION AUDIO
+   ========================================================================= */
+(function setupOrbitalBoot() {
+  const splash = document.getElementById("boot-splash");
+  if (!splash) return;
+  let finished = false;
+  const finish = (withSound = false) => {
+    if (finished) return;
+    finished = true;
+    if (withSound) audio.playBoot();
+    splash.classList.add("done");
+    setTimeout(() => splash.remove(), 420);
+  };
+  splash.addEventListener("pointerdown", () => finish(true), { once:true });
+  splash.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " " || e.key === "Escape") finish(true);
+  });
+  splash.tabIndex = 0;
+  setTimeout(() => finish(false), matchMedia("(prefers-reduced-motion: reduce)").matches ? 450 : 1750);
+})();
+
+document.addEventListener("pointerover", (e) => {
+  const control = e.target.closest && e.target.closest(".menu-card, .btn, .icon-btn");
+  if (!control || control.dataset.hovered === "1") return;
+  control.dataset.hovered = "1";
+  audio.playHover();
+});
+document.addEventListener("pointerout", (e) => {
+  const control = e.target.closest && e.target.closest(".menu-card, .btn, .icon-btn");
+  if (!control) return;
+  if (e.relatedTarget && control.contains(e.relatedTarget)) return;
+  delete control.dataset.hovered;
+});
+
+/* =========================================================================
+   8. INITIALIZATION ON LOAD
+   ========================================================================= */
+window.addEventListener("DOMContentLoaded", () => {
+  loadStorage();
+  updateProfileUI();
+  applyI18n(appData.options.lang || "pt-BR");
+  document.getElementById("opt-lang").value = appData.options.lang || "pt-BR";
+  document.getElementById("opt-theme").value = appData.options.theme || "synthwave";
+  document.body.setAttribute("data-theme", appData.options.theme || "synthwave");
+  document.body.classList.toggle("no-crt", !appData.options.crt);
+  document.getElementById("opt-crt").checked = appData.options.crt;
+  document.getElementById("opt-sfx").checked = appData.options.sfx;
+  document.getElementById("opt-bgm").checked = appData.options.bgm;
+  audio.sfxEnabled = appData.options.sfx;
+  audio.bgmEnabled = appData.options.bgm;
+  audio.isMuted = !!appData.options.muted;
+  document.getElementById("btn-mute").textContent = audio.isMuted ? "🔇" : "🔊";
+  applyUiTheme();
+
+  document.body.addEventListener("pointerdown", () => {
+    audio.init();
+    if (!audio.bgmTimer && audio.bgmEnabled) audio.startBGM("menu");
+  }, { once: true });
+
+  if (PREVIEW) {
+    const splash = document.getElementById("boot-splash");
+    if (splash) splash.remove();
+    audio.isMuted = true;
+    audio.bgmEnabled = false;
+    game.initLevel(4, "normal");
+    switchScreen("screen-game");
+  }
+});
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden && game.isPlaying && !game.isPaused && !PREVIEW) togglePause(true);
+});
+</script>
+
+</body></html>
