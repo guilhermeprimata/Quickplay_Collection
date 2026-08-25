@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
 
@@ -23,41 +23,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Register Hover Heroes 2.5D in portal
-        shell: bash
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-
-          p = Path('index.html')
-          s = p.read_text(encoding='utf-8')
-          if "id:'hover_heroes_25d'" not in s:
-              anchor = "{file:'hover_heroes_2d.html',id:'hover_heroes_2d',name:'HOVER HEROES 2D',emoji:'🚁',desc:'Resgate aéreo em 2D com helicóptero, incêndios, vítimas, equipes terrestres e cidade procedural.',new:true},"
-              entry = "{file:'hover_heroes_25d.html',id:'hover_heroes_25d',name:'HOVER HEROES 2.5D',emoji:'🚁',desc:'Versão 2.5D de Hover Heroes com profundidade visual, operações de emergência, combate a incêndios e resgates em cidade procedural.',new:true},"
-              if anchor not in s:
-                  raise SystemExit('Portal anchor for Hover Heroes 2D not found')
-              s = s.replace(anchor, anchor + '\n' + entry, 1)
-              tier_old = "'hover_heroes_2d','hover_heroes_3d'"
-              tier_new = "'hover_heroes_2d','hover_heroes_25d','hover_heroes_3d'"
-              if tier_old not in s:
-                  raise SystemExit('Tier A Hover Heroes anchor not found')
-              s = s.replace(tier_old, tier_new, 1)
-              s = s.replace('trinta e três jogos', 'trinta e quatro jogos', 1)
-              s = s.replace('<b id="gameCount">24</b>', '<b id="gameCount">34</b>', 1)
-              p.write_text(s, encoding='utf-8')
-          PY
-
-      - name: Persist portal catalog update
-        shell: bash
-        run: |
-          if ! git diff --quiet -- index.html; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add index.html
-            git commit -m "Add Hover Heroes 2.5D to minigames portal"
-            git push origin HEAD:main
-          fi
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
