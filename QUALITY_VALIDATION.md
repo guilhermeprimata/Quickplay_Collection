@@ -25,7 +25,6 @@ Validation executed with Node.js syntax checking for every inline JavaScript blo
 | `pong.html` | 2 | 0 | ✅ | ✅ |
 | `reef_runner.html` | 1 | 0 | — | ✅ |
 | `rift_run.html` | 1 | 0 | ✅ | ✅ |
-| `salve_os_gatinhos.html` | 2 | 0 | — | — |
 | `skate_or_die.html` | 1 | 0 | ✅ | ✅ |
 | `snowball_avalanche.html` | 2 | 0 | ✅ | ✅ |
 | `space_raid_2093.html` | 5 | 0 | ✅ | ✅ |
@@ -35,15 +34,14 @@ Validation executed with Node.js syntax checking for every inline JavaScript blo
 
 ## Result
 
-- Games checked: **28**
+- Games checked: **27**
 - JavaScript syntax failures: **0**
 - External JavaScript dependencies: **0**
 - Direct Banco do Brasil branding signals: **0**
-- Remote non-JS asset warnings: **4**
+- Remote non-JS asset warnings: **3**
 
 ## Warnings
 
 - domination_wars.html: remote non-JS assets: https://guilhermeprimata.github.io/Quickplay_Collection/menu_minigames.html, https://guilhermeprimata.github.io/Quickplay_Collection/menu_minigames.html, https://guilhermeprimata.github.io/Quickplay_Collection/menu_minigames.html
 - iron_delta_25d.html: remote non-JS assets: https://guilhermeprimata.github.io/Quickplay_Collection/index.html
 - reef_runner.html: remote non-JS assets: https://guilhermeprimata.github.io/Quickplay_Collection/index.html
-- salve_os_gatinhos.html: remote non-JS assets: https://guilhermeprimata.github.io/Quickplay_Collection/index.html

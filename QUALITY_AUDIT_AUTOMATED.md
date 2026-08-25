@@ -25,7 +25,6 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 | `pong.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 51921 |
 | `reef_runner.html` | v2 | — | ✅ | ✅ | — | ✅ | ✅ | ✅ | 53847 |
 | `rift_run.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | — | 158626 |
-| `salve_os_gatinhos.html` | v2 | — | — | ✅ | — | ✅ | ✅ | ✅ | 78395 |
 | `skate_or_die.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 271934 |
 | `snowball_avalanche.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 942080 |
 | `space_raid_2093.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 378452 |
@@ -36,8 +35,8 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 ## Automated findings
 
 - Platform layer not v2: `atomic_raid.html`, `campo_minado.html`, `corrida_de_cavalos.html`, `dropworks.html`, `hover_heroes_2d.html`, `hover_heroes_3d.html`, `kombo_blocks.html`, `pixel_joust.html`, `pong.html`, `rift_run.html`, `snowball_avalanche.html`
-- No native pause signal: `advinhe_o_numero.html`, `corrida_de_cavalos.html`, `foguetinho.html`, `jogo_da_velha.html`, `reef_runner.html`, `salve_os_gatinhos.html`, `sudoku.html`, `torre_de_hanoi.html`
-- No native restart/new-game signal: `foguetinho.html`, `salve_os_gatinhos.html`, `sudoku.html`
+- No native pause signal: `advinhe_o_numero.html`, `corrida_de_cavalos.html`, `foguetinho.html`, `jogo_da_velha.html`, `reef_runner.html`, `sudoku.html`, `torre_de_hanoi.html`
+- No native restart/new-game signal: `foguetinho.html`, `sudoku.html`
 - Canvas + keyboard but no native touch signal: `advinhe_o_numero.html`
 
 ## Per-game controls and balance candidates
@@ -740,50 +739,6 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 - `L340: let damageEmissionAccumulator = 0;`
 - `L341: let damageAlarmTimer = 0;`
 - `L342: let damageAlarmVisualPulse = 0;`
-
-### `salve_os_gatinhos.html`
-**Control flow signals**
-- `L108: let state = 'menu';`
-- `L275: if (ac.state === 'suspended') ac.resume().catch(() => {});`
-- `L357: function startBGM() {`
-- `L409: function reset() {`
-- `L435: state = 'play';`
-- `L458: function gameOver() {`
-- `L460: state = 'over';`
-- `L597: function resetInput() {`
-- `L612: const cameraIntent = state === 'play' ? (deadZoneDelta * .014 + player.vx * .0058) : 0;`
-- `L1465: el.addEventListener('pointerdown', on);`
-- `L1466: el.addEventListener('pointerup', off);`
-- `L1467: el.addEventListener('pointercancel', off);`
-**Gameplay tuning signals**
-- `L61: maxLives: 3,`
-- `L62: maxCombo: 15,`
-- `L63: difficultySeconds: 150,`
-- `L64: difficultyGrace: 9,`
-- `L67: maxParticles: 500,`
-- `L68: maxSmoke: 94,`
-- `L69: maxCatFallSpeed: 430,`
-- `L70: maxCatSideSpeed: 132,`
-- `L71: cameraMaxOffset: 10,`
-- `L72: qualityTargetMs: 18.8`
-- `L100: bestScore: 0,`
-- `L102: bestCombo: 1,`
-- `L106: meta = { bestScore: 0, bestRescues: 0, bestCombo: 1, bestPerfect: 0, plays: 0, ...meta };`
-- `L109: let score = 0;`
-- `L111: let combo = 1;`
-- `L112: let maxCombo = 1;`
-- `L116: let spawnTimer = 1.5;`
-- `L117: let sceneCheckTimer = 2.8;`
-- `L122: let currentPhase = 0;`
-- `L125: let toastTimer = 0;`
-- `L128: const player = { x: 427, y: 444, w: 106, h: 26, vx: 0, maxSpeed: 390, acc: 2860, drag: 8.9 };`
-- `L140: const camera25D = { x: 0, targetX: 0, lean: 0, kick: 0, settle: 0 };`
-- `L147: const perf25D = { avgMs: 16.7, bad: 0, good: 0, level: 'high' };`
-- `L174: const directional = camera25D.lean * Math.min(1.25, depth * 2.8);`
-- `L201: { name: 'orange', color: '#f69d3b', inner: '#ffd383', points: 100 },`
-- `L223: speed: .45 + Math.random() * .8`
-- `L241: spawnGlow: 0,`
-- `L284: masterGain.gain.setTargetAtTime(muted ? 0.0001 : 0.34, now, 0.015);`
 
 ### `skate_or_die.html`
 **Control flow signals**
