@@ -6,7 +6,6 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 |---|---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|---:|
 | `advinhe_o_numero.html` | v2 | — | ✅ | — | ⚠️ | ✅ | ✅ | ✅ | 22428 |
 | `atomic_raid.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 363869 |
-| `brain_matrix.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 86497 |
 | `campo_minado.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 73963 |
 | `click_speed.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 35680 |
 | `corrida_de_cavalos.html` | none | — | ✅ | ✅ | — | ✅ | ✅ | ✅ | 47510 |
@@ -37,7 +36,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 
 ## Automated findings
 
-- Platform layer not v2: `atomic_raid.html`, `brain_matrix.html`, `campo_minado.html`, `corrida_de_cavalos.html`, `dropworks.html`, `hover_heroes_2d.html`, `hover_heroes_3d.html`, `idle_trader.html`, `kombo_blocks.html`, `pixel_joust.html`, `pong.html`, `rift_run.html`, `snowball_avalanche.html`
+- Platform layer not v2: `atomic_raid.html`, `campo_minado.html`, `corrida_de_cavalos.html`, `dropworks.html`, `hover_heroes_2d.html`, `hover_heroes_3d.html`, `idle_trader.html`, `kombo_blocks.html`, `pixel_joust.html`, `pong.html`, `rift_run.html`, `snowball_avalanche.html`
 - No native pause signal: `advinhe_o_numero.html`, `corrida_de_cavalos.html`, `foguetinho.html`, `jogo_da_velha.html`, `reef_runner.html`, `salve_os_gatinhos.html`, `sudoku.html`, `torre_de_hanoi.html`
 - No native restart/new-game signal: `foguetinho.html`, `salve_os_gatinhos.html`, `sudoku.html`
 - Canvas + keyboard but no native touch signal: `advinhe_o_numero.html`
@@ -100,50 +99,6 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 - `L1418: const INITIAL_RIVER_MIN_WIDTH_PERCENT = 0.60, INITIAL_RIVER_MAX_WIDTH_PERCENT = 0.70;`
 - `L1419: const INITIAL_SCROLL_SPEED = 0.77 * 1.2075;`
 - `L1420: const isTouchDevice = ('ontouchstart' in window || navigator.maxTouchPoints > 0);`
-
-### `brain_matrix.html`
-**Control flow signals**
-- `L867: if (this.ctx.state === "suspended") {`
-- `L1147: function portalStartRun() {`
-- `L1180: function portalPauseTime() {`
-- `L1185: function portalResumeTime() {`
-- `L1208: document.getElementById("btn-confirm-yes").addEventListener("click", () => {`
-- `L1217: document.getElementById("btn-confirm-no").addEventListener("click", () => {`
-- `L1250: btnSel.addEventListener("click", () => {`
-- `L1264: btnDel.addEventListener("click", () => {`
-- `L1283: function addNewProfile(name) {`
-- `L1626: canvas.addEventListener("pointerdown", (e) => {`
-- `L1642: canvas.addEventListener("keydown", (e) => {`
-- `L1695: btn.addEventListener("click", () => switchScreen(btn.dataset.target));`
-**Gameplay tuning signals**
-- `L605: help2: "2. Clear numbers first, then letters in alphabetical order (A-Z).",`
-- `L627: help2: "2. Termine os números primeiro, depois as letras em ordem (A-Z).",`
-- `L628: help3: "3. Erros descontam o dobro de pontos, desviram a última peça e embaralham a tela!",`
-- `L716: help3: "3. Gli errori tolgono il doppio, annullano l'ultima mossa e rimescolano la matrice!",`
-- `L856: this.currentIntervalMs = 0;`
-- `L1028: let interval = mode === "menu" ? 340 : Math.max(130, 240 - Math.floor(this.tension * 110));`
-- `L1065: const oldInterval = Math.max(130, 240 - Math.floor(this.tension * 110));`
-- `L1066: this.tension = Math.min(1.0, Math.max(0.0, progress));`
-- `L1067: const newInterval = Math.max(130, 240 - Math.floor(this.tension * 110));`
-- `L1068: if (this.bgmMode === "game" && this.bgmEnabled && !this.isMuted && Math.abs(newInterval - oldInterval) >= 14) {`
-- `L1096: const PORTAL_STATS_KEY = "ppg_minigames_stats_v1";`
-- `L1098: const PREVIEW = new URLSearchParams(location.search).get("preview") === "1";`
-- `L1123: // V1 stored records only by level, mixing modes. Preserve them as Normal records.`
-- `L1166: st.longestStreak = Math.max(st.longestStreak || 0, streak);`
-- `L1175: st.totalSeconds = (st.totalSeconds || 0) + Math.max(0, (performance.now() - portalSegmentStart) / 1000);`
-- `L1189: setInterval(() => { if (portalSegmentStart) portalCommitActiveTime(); }, 30000);`
-- `L1244: btnGroup.style.gap = "6px";`
-- `L1298: 5. GAME ENGINE & MASTERMIND MATRIX LOGIC`
-- `L1301: { level: 1, size: 2, numCount: 4, letCount: 0, mult: 1.0 },`
-- `L1302: { level: 2, size: 3, numCount: 9, letCount: 0, mult: 1.1 },`
-- `L1303: { level: 3, size: 4, numCount: 16, letCount: 0, mult: 1.2 },`
-- `L1304: { level: 4, size: 5, numCount: 25, letCount: 0, mult: 1.3 },`
-- `L1305: { level: 5, size: 6, numCount: 36, letCount: 0, mult: 1.4 },`
-- `L1306: { level: 6, size: 7, numCount: 49, letCount: 0, mult: 1.5 },`
-- `L1307: { level: 7, size: 8, numCount: 64, letCount: 0, mult: 1.6 },`
-- `L1308: { level: 8, size: 9, numCount: 81, letCount: 0, mult: 1.7 },`
-- `L1309: { level: 9, size: 10, numCount: 100, letCount: 0, mult: 1.8 },`
-- `L1310: { level: 10, size: 11, numCount: 100, letCount: 10, mult: 1.9 },`
 
 ### `campo_minado.html`
 **Control flow signals**
