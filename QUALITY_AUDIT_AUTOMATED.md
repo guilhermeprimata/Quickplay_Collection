@@ -14,7 +14,6 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 | `foguetinho.html` | v2 | — | — | ✅ | — | ✅ | ✅ | ✅ | 71237 |
 | `hover_heroes_2d.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 2578531 |
 | `hover_heroes_3d.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 3156819 |
-| `idle_trader.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 63644 |
 | `iron_delta.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 167632 |
 | `iron_delta_25d.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 215342 |
 | `jogo_da_forca.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 61874 |
@@ -36,7 +35,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 
 ## Automated findings
 
-- Platform layer not v2: `atomic_raid.html`, `campo_minado.html`, `corrida_de_cavalos.html`, `dropworks.html`, `hover_heroes_2d.html`, `hover_heroes_3d.html`, `idle_trader.html`, `kombo_blocks.html`, `pixel_joust.html`, `pong.html`, `rift_run.html`, `snowball_avalanche.html`
+- Platform layer not v2: `atomic_raid.html`, `campo_minado.html`, `corrida_de_cavalos.html`, `dropworks.html`, `hover_heroes_2d.html`, `hover_heroes_3d.html`, `kombo_blocks.html`, `pixel_joust.html`, `pong.html`, `rift_run.html`, `snowball_avalanche.html`
 - No native pause signal: `advinhe_o_numero.html`, `corrida_de_cavalos.html`, `foguetinho.html`, `jogo_da_velha.html`, `reef_runner.html`, `salve_os_gatinhos.html`, `sudoku.html`, `torre_de_hanoi.html`
 - No native restart/new-game signal: `foguetinho.html`, `salve_os_gatinhos.html`, `sudoku.html`
 - Canvas + keyboard but no native touch signal: `advinhe_o_numero.html`
@@ -368,50 +367,6 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 - `L517: truck_accident:{label:'ACIDENTE COM CAMINHÃO',short:'CAMINHÃO',decay:.72,stability:55,patients:1},`
 - `L521: function operationDef(){if(typeof runMode!=='undefined'&&runMode==='infinite')return INFINITE_OPERATION;return OPERATIONS[Math.max(0,Math.min(OPERATIONS.length-1,level-1))]||OPERATIONS[0]}`
 - `L605: function cameraZoom(value){const raw=value==null?(typeof cfg!=='undefined'?Number(cfg.zoomScale):CAMERA_ZOOM.default):Number(value),maxZoom=Math.max(CAMERA_ZOOM.max,1.30);return clamp(Number.isFinite(raw)?raw:CAMERA_ZOOM.default,CAMERA_ZOOM.min,maxZoom)}`
-
-### `idle_trader.html`
-**Control flow signals**
-- `L147: function restart(){if(paused)setPaused(false);if(typeof window.PPGGameRestart==='function'){window.PPGGameRestart();return}location.reload()}`
-- `L275: const state = {`
-- `L422: document.getElementById("saveBtn").addEventListener("click", ()=>save(true));`
-- `L423: document.getElementById("resetBtn").addEventListener("click", ()=>{`
-- `L428: modeBtn.addEventListener("click", ()=>{`
-- `L495: document.getElementById('buy1-${a.key}').addEventListener("click", ()=>buyAsset(a.key,1));`
-- `L496: document.getElementById('buy10-${a.key}').addEventListener("click", ()=>buyAsset(a.key,10));`
-- `L497: document.getElementById('buyMax-${a.key}').addEventListener("click", ()=>{`
-- `L536: document.getElementById('buyUpg-${u.key}').addEventListener("click", ()=>buyUpgrade(u.key));`
-- `L637: document.getElementById("prestigeBtn").addEventListener("click", doPrestige);`
-- `L639: function softReset(preserveRep=true){`
-- `L773: function newCandle(initial=false){`
-**Gameplay tuning signals**
-- `L118: const qs=new URLSearchParams(location.search);if(qs.get('preview')==='1'||qs.has('preview'))return;`
-- `L128: window.setTimeout=(fn,ms,...args)=>{if(typeof fn!=='function')return nativeSetTimeout(fn,ms,...args);const run=()=>{if(paused)return nativeSetTimeout(run,50);fn(...args)};return nativeSetTimeout(run,ms)};`
-- `L244: const dpr = window.devicePixelRatio || 1;`
-- `L246: const maxW = Math.max(1, Math.floor(r.width * dpr));`
-- `L247: const maxH = Math.max(1, Math.floor(r.height * dpr));`
-- `L248: const sx = Math.max(1, Math.floor(maxW / BASE_W));`
-- `L249: const sy = Math.max(1, Math.floor(maxH / BASE_H));`
-- `L250: PP.scale = Math.max(1, Math.min(sx, sy));`
-- `L266: if(n<1e3) return (neg?"-":"")+n.toLocaleString("pt-BR",{maximumFractionDigits:2});`
-- `L269: return (neg?"-":"")+n.toLocaleString("pt-BR",{maximumFractionDigits:2})+(u>=0?units[u]:"");`
-- `L280: prestige: { rep:0, mult:1.00, times:0 },`
-- `L295: const IPO_THRESHOLD = 1e9;`
-- `L365: const elapsed = Math.min(OFFLINE_CAP_HRS*3600, Math.max(0, (Date.now()- (state.lastSave||Date.now()))/1000));`
-- `L377: function getIPS(){ return getIPSBase() * state.ipsMult * state.prestige.mult * (state.market?.multIPS||1); }`
-- `L378: function getClickValue(){ return state.click * state.prestige.mult * (state.market?.multClick||1); }`
-- `L393: return Math.max(0, Math.floor(Math.log(numerator)/Math.log(r)));`
-- `L426: soundTgl.addEventListener("change", (e)=>{ state.sound = e.target.checked; if(state.sound) beep(1200,0.05,"square",0.08); save(); });`
-- `L461: prestigeBadge.textContent= (em?"🌟 ":"") + 'Reputação x${state.prestige.mult.toFixed(2)}';`
-- `L467: prestigeInfo.textContent = 'A cada IPO: converta patrimônio em Reputação permanente. Ganho atual: +${nextRep.toFixed(2)} Rep. (libera em R$ ${fmt(IPO_THRESHOLD)})';`
-- `L491: <button class="btn buy" id="buyMax-${a.key}">Máx<br><small id="costMax-${a.key}">R$ 0</small></button>`
-- `L498: const k = maxAffordable(a.key, state.money); if(k>0) buyAsset(a.key, k);`
-- `L515: if(btnMax){ btnMax.disabled = kmax<=0; document.getElementById('costMax-${a.key}').textContent = kmax>0?'x${kmax} = R$ ${fmt(cmax)}':"x0 = R$ 0"; }`
-- `L560: {key:"primeira_ipo", name:"Primeira IPO", desc:"Realize 1 Prestígio.", test: ()=>state.prestige.times>=1},`
-- `L600: const kmax = maxAffordable(key, state.money); k = Math.min(k, kmax); if(k<=0) return;`
-- `L604: if(!state.ui.reduced) particleBurst(BASE_W/2, BASE_H/2, 10+Math.min(50,k*2), "#73ffa5");`
-- `L605: if(!state.ui.reduced) beep(480+Math.min(1200, k*15), 0.05, "square", 0.08);`
-- `L627: function calcRepGain(money){ const base = money/1e6; const rep = Math.cbrt(base) * 0.9; return Math.max(0, rep); }`
-- `L632: state.prestige.rep += gain; state.prestige.times += 1;`
 
 ### `iron_delta.html`
 **Control flow signals**
