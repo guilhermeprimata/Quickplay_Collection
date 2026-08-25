@@ -27,7 +27,6 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 | `rift_run.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | — | 158626 |
 | `skate_or_die.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 271934 |
 | `snowball_avalanche.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 942080 |
-| `space_raid_2093.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 378452 |
 | `sudoku.html` | v2 | — | — | — | — | ✅ | ✅ | ✅ | 39066 |
 | `the_worm.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 34279 |
 | `torre_de_hanoi.html` | v2 | — | ✅ | ✅ | — | ✅ | ✅ | ✅ | 31009 |
@@ -825,50 +824,6 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 - `L248: function formatDuration(sec){sec=Math.max(0,Math.floor(sec||0));let m=Math.floor(sec/60),s=sec%60;return m+':'+String(s).padStart(2,'0')}`
 - `L256: function msg(s){let e=$('#msg');e.textContent=s;e.style.opacity=1;e.classList.remove('signal');void e.offsetWidth;e.classList.add('signal');clearTimeout(e.t);e.t=setTimeout(()=>{e.style.opacity=0;e.classList.remove('signal')},1000)}`
 - `L264: function spawnX(size=10){let b=camera.bounds||getCameraBounds(),m=Math.max(30,size*.75);return rnd(b.left+m,b.right-m)}`
-
-### `space_raid_2093.html`
-**Control flow signals**
-- `L1750: window.addEventListener('keydown', handleKeyDown);`
-- `L1754: canvas.addEventListener('touchstart', handleTouchStart, { passive: false });`
-- `L1755: canvas.addEventListener('touchmove', handleTouchMove, { passive: false });`
-- `L1756: canvas.addEventListener('touchend', handleTouchEnd);`
-- `L1757: canvas.addEventListener('touchcancel', handleTouchEnd);`
-- `L1823: let state = { ...s, player: { ...s.player }, stats: { ...s.stats }, screenShake: { ...s.screenShake }, screenFlash: { ...s.screenFlash }, combo: { ...s.combo },`
-- `L2234: const gameState = (0, react_1.useRef)(getInitialState(upgrades, settings, currentLevel));`
-- `L2352: (0, react_1.useEffect)(() => { const handleKey = (e) => { if (e.key === 'Escape' || e.code === 'KeyP') { e.preventDefault(); setIsPaused(p => !p); } }; window.addEventListener('keydown', handleKey); return () => window.removeEventListener('keydown', handleKey); }, []);`
-- `L2462: window.addEventListener('keydown', handleKeyPress);`
-- `L2655: window.addEventListener('keydown', handleKeyDown);`
-- `L2740: window.addEventListener('keydown', handleKeyDown);`
-- `L2831: document.addEventListener('keydown', handleKeyDown);`
-**Gameplay tuning signals**
-- `L483: const { screen, setScreen, lastGameStats, settings, t, currentLevel, completeLevel, startLevel } = (0, GameContext_1.useGameState)();`
-- `L505: const onLevelComplete = (0, react_1.useCallback)(() => {`
-- `L506: if (currentLevel === 20) {`
-- `L517: const onRetryLevel = (0, react_1.useCallback)(() => { startLevel(currentLevel); }, [startLevel, currentLevel]);`
-- `L527: return react_1.default.createElement(Game_1.default, { onGameOver: onGameOver, onLevelComplete: onLevelComplete, onReturnToMenu: onReturnToMenu });`
-- `L529: return react_1.default.createElement(GameOverScreen_1.default, { stats: lastGameStats, onRestart: onReturnToMenu, onRetry: onRetryLevel });`
-- `L540: react_1.default.createElement("div", { className: "relative w-full h-full max-w-[1200px] aspect-[4/3] md:max-h-[90vh] md:w-auto glassmorphism rounded-2xl shadow-2xl shadow-[var(--primary-glow)]/10 flex items-center justify-center" },`
-- `L589: const { highestLevelUnlocked, startLevel, t } = (0, GameContext_1.useGameState)();`
-- `L590: const currentLevelRef = (0, react_1.useRef)(null);`
-- `L591: const TOTAL_LEVELS = 20;`
-- `L608: react_1.default.createElement("div", { className: "w-full h-full max-h-[70vh] overflow-y-auto relative py-8" },`
-- `L610: react_1.default.createElement("div", { className: "space-y-4" }, [...Array(TOTAL_LEVELS)].map((_, index) => {`
-- `L611: const level = index + 1;`
-- `L628: return (react_1.default.createElement("div", { key: level, className: "flex items-center justify-center" },`
-- `L629: react_1.default.createElement("button", { ref: isCurrent ? currentLevelRef : null, onClick: () => handleLevelSelect(level), disabled: !isUnlocked, className: buttonClass, "aria-label": t('campaign_map_level', { level }) }, text)));`
-- `L683: const BASE_PLAYER_SPEED = 5;`
-- `L684: const BASE_BULLET_SPEED = 10;`
-- `L685: const BASE_BULLET_DAMAGE = 1;`
-- `L686: const BASE_MAX_FUEL = 500;`
-- `L687: const BASE_MAX_AMMO = 200;`
-- `L693: FIGHTER: { health: 1, score: 10, width: 32, height: 29 },`
-- `L694: WAVER: { health: 2, score: 20, width: 35, height: 24 },`
-- `L695: DIVER: { health: 1, score: 15, width: 27, height: 37 },`
-- `L696: SNIPER: { health: 3, score: 30, width: 30, height: 30 },`
-- `L697: SAUCER: { health: 4, score: 50, width: 38, height: 22 },`
-- `L698: BOMBER: { health: 5, score: 40, width: 42, height: 32 },`
-- `L699: GUARDIAN: { health: 10, score: 75, width: 38, height: 38 },`
-- `L700: ASSASSIN: { health: 2, score: 100, width: 22, height: 40 },`
 
 ### `sudoku.html`
 **Control flow signals**
