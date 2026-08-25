@@ -5,15 +5,21 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 | Game | Platform | Native pause | Native restart | Native touch | Touch gap? | Audio | Storage | i18n signal | Bytes |
 |---|---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|---:|
 | `advinhe_o_numero.html` | v2 | — | ✅ | — | ⚠️ | ✅ | ✅ | ✅ | 22428 |
+| `alien_threat.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 551938 |
+| `alien_threat_3d.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 524508 |
 | `atomic_raid.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 363869 |
+| `bow_and_arrow.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 94923 |
+| `brain_matrix.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 111629 |
 | `campo_minado.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 73963 |
 | `click_speed.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 35680 |
 | `corrida_de_cavalos.html` | none | — | ✅ | ✅ | — | ✅ | ✅ | ✅ | 47510 |
 | `domination_wars.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 67573 |
 | `dropworks.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 144991 |
 | `foguetinho.html` | v2 | — | — | ✅ | — | ✅ | ✅ | ✅ | 71237 |
+| `hover_heroes_25d.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 2668863 |
 | `hover_heroes_2d.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 2578531 |
 | `hover_heroes_3d.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 3156819 |
+| `idle_trader.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 82615 |
 | `iron_delta.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 167632 |
 | `iron_delta_25d.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 215342 |
 | `jogo_da_forca.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 61874 |
@@ -25,17 +31,19 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 | `pong.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 51921 |
 | `reef_runner.html` | v2 | — | ✅ | ✅ | — | ✅ | ✅ | ✅ | 53847 |
 | `rift_run.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | — | 158626 |
+| `salve_os_gatinhos.html` | v2 | — | — | ✅ | — | ✅ | ✅ | ✅ | 122409 |
 | `skate_or_die.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 271934 |
 | `snowball_avalanche.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 942080 |
+| `space_raid_2093.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 317942 |
 | `sudoku.html` | v2 | — | — | — | — | ✅ | ✅ | ✅ | 39066 |
 | `the_worm.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 34279 |
 | `torre_de_hanoi.html` | v2 | — | ✅ | ✅ | — | ✅ | ✅ | ✅ | 31009 |
 
 ## Automated findings
 
-- Platform layer not v2: `atomic_raid.html`, `campo_minado.html`, `corrida_de_cavalos.html`, `dropworks.html`, `hover_heroes_2d.html`, `hover_heroes_3d.html`, `kombo_blocks.html`, `pixel_joust.html`, `pong.html`, `rift_run.html`, `snowball_avalanche.html`
-- No native pause signal: `advinhe_o_numero.html`, `corrida_de_cavalos.html`, `foguetinho.html`, `jogo_da_velha.html`, `reef_runner.html`, `sudoku.html`, `torre_de_hanoi.html`
-- No native restart/new-game signal: `foguetinho.html`, `sudoku.html`
+- Platform layer not v2: `alien_threat.html`, `alien_threat_3d.html`, `atomic_raid.html`, `brain_matrix.html`, `campo_minado.html`, `corrida_de_cavalos.html`, `dropworks.html`, `hover_heroes_25d.html`, `hover_heroes_2d.html`, `hover_heroes_3d.html`, `idle_trader.html`, `kombo_blocks.html`, `pixel_joust.html`, `pong.html`, `rift_run.html`, `snowball_avalanche.html`
+- No native pause signal: `advinhe_o_numero.html`, `corrida_de_cavalos.html`, `foguetinho.html`, `jogo_da_velha.html`, `reef_runner.html`, `salve_os_gatinhos.html`, `sudoku.html`, `torre_de_hanoi.html`
+- No native restart/new-game signal: `foguetinho.html`, `salve_os_gatinhos.html`, `sudoku.html`
 - Canvas + keyboard but no native touch signal: `advinhe_o_numero.html`
 
 ## Per-game controls and balance candidates
@@ -52,6 +60,94 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 - `L116: if (tentativas === 0) iniciarCronometro();`
 - `L139: tentativas = 0;`
 - `L140: tempoRestante = 180;`
+
+### `alien_threat.html`
+**Control flow signals**
+- `L277: function resumeAudio(){let ctx=ensureAudio();if(!ctx)return Promise.resolve(null);if(ctx.state==='running')return Promise.resolve(ctx);if(audioResumePromise)return audioResumePromise;audioResumePromise=ctx.resume().catch(()=>null).then(()=>{audioResumePromise=null;return ctx.state==='running'?ctx:null});return audioResumePromise}`
+- `L279: function startCue(){if(!cfg.sound)return;duckMusic(.48,.7);alienPulseSfx(.8);tone(63,.42,'sine',.055,'sfx');tone(91,.28,'sawtooth',.022,'sfx',.12)}`
+- `L303: function beginRunAudio(withCue=true){if(!cfg.sound)return;let token=++runAudioToken,ctx=ensureAudio();if(!ctx)return;resumeAudio().then(ok=>{if(!ok||token!==runAudioToken||state!=='play'||!cfg.sound)return;if(withCue)startCue();setTimeout(()=>{if(token===runAudioToken&&state==='play'&&cfg.sound)music()},withCue?430:0)})}`
+- `L304: function unlockAudioFromGesture(){if(!cfg.sound)return;resumeAudio().then(ok=>{if(ok&&state==='play'&&!seqTimer)music(musicKind||'normal')})}`
+- `L317: function music(kind='normal'){if(seqTimer){clearTimeout(seqTimer);seqTimer=null}let token=++musicToken;if(kind==='off'||!cfg.sound)return;musicKind=kind;musicStep=0;let ctx=ensureAudio();if(!ctx)return;if(ctx.state==='running')scheduleMusic(token);else resumeAudio().then(ok=>{if(ok&&token===musicToken&&cfg.sound&&state==='play')scheduleMusic(token)})}`
+- `L321: let input={x:0,y:-1,keys:{},jump:false,trick:false,gpj:false,gpp:false},state='menu',world=[],biomass=[],fx=[],trail=[],marks=[],absorptionFx=[],santa=null,ufo=null,beast=null,deathCrash=null,nextSanta=210,nextUfo=95,mode='survival',time=0,dist=0,score=0,style=0,gates=0,miss=0,cam=0,shake=0,buried=0,life=100,timeLimit=60,terrainNotice=0;`
+- `L398: addEventListener('keydown',e=>{input.keys[e.code]=true;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();if(e.code==='Escape')pause();if(e.code==='F2'&&state==='play')reset(mode);if(e.code==='KeyH')$('#hud').classList.toggle('hidden')});addEventListener('keyup',e=>input.keys[e.code]=false);`
+- `L399: cv.addEventListener('mousemove',e=>{if(state!=='play')return;let r=cv.getBoundingClientRect(),sx=(e.clientX-r.left)/r.width*W,sy=(e.clientY-r.top)/r.height*H,m=screenToWorld(sx,sy);input.x=clamp((m.x-p.x)/92,-1,1);input.y=clamp((m.y-p.y)/115,-1,1);pointerSteerUntil=performance.now()+320});`
+- `L520: if(state==='crash'&&deathCrash?.shattered)return;`
+- `L653: function startIncidentIntro(modeName){installCommercialOverlay();commercialV3.seen.clear();commercialV3.intro=null;commercialV3.skipArmed=false;baseReset(modeName)}`
+- `L656: function reset(m='survival'){commercialV3.intro=null;commercialV3.skipArmed=false;baseReset(m)}`
+- `L666: function drawCommercialV3(){if(state==='intro'){drawIncidentIntro();return}if(state!=='play'&&state!=='pause')return;let s=worldToScreen(p.x,p.y),r=Math.max(18,p.r*camera.finalZoom),pulse=1+Math.sin(time*5.2)*.06;g.save();g.globalCompositeOperation='screen';`
+**Gameplay tuning signals**
+- `L122: const IS_MOBILE=matchMedia('(pointer: coarse)').matches,MIN_ZOOM=IS_MOBILE?.32:.34,MAX_ZOOM=1,MAX_RADIUS=600,DEBUG_CAMERA=false,MAX_SPAWN_PER_UPDATE=IS_MOBILE?4:7,MAX_ENTITIES=IS_MOBILE?125:170,MAX_PARTICLES=IS_MOBILE?280:450,MAX_MARKS=IS_MOBILE?220:350,MAX_TRAIL=500;`
+- `L123: const camera={x:W/2,y:H/2,zoom:1,targetZoom:1,impactZoom:1,growthZoom:1,lookAheadX:0,lookAheadY:0,offsetY:0,finalZoom:1,bounds:null};`
+- `L124: const ISLAND_RADIUS=7600,COAST_WIDTH=520,CHUNK_WIDTH=720,CHUNK_HEIGHT=620,MAX_CHUNKS_GENERATED_PER_UPDATE=IS_MOBILE?1:2,REBASE_DISTANCE=50000,WORLD_SEED=0x5a17c9d3;`
+- `L127: const CONTAM_CELL=24,MAX_CONTAM_PER_CHUNK=220;let contaminationStore=new Map(),contaminationStep=0;`
+- `L128: const deluxe={weather:'clear',weatherStrength:0,targetWeatherStrength:0,lastBiome:'alpine',combo:0,comboTimer:0,bestCombo:0,variety:new Set(),districtScore:0,eventBonus:0,wind:0,oneShotBiome:true};`
+- `L133: function updateCombo(type,value){deluxe.combo=Math.min(99,deluxe.combo+1);deluxe.comboTimer=2.8;deluxe.bestCombo=Math.max(deluxe.bestCombo,deluxe.combo);deluxe.variety.add(type);let varietyBonus=Math.min(2.5,1+deluxe.variety.size*.08),multi=1+Math.min(3,deluxe.combo*.035);return Math.round(value*varietyBonus*multi)}`
+- `L156: return{key:chunkKey(cx,cy),x:cx,y:cy,seed,biome,district:biome,urbanity:biome==='downtown'?1:biome==='commercial'?.82:biome==='industrial'?.7:biome==='residential'?.48:biome==='village'?.2:.05,difficulty:Math.min(1,Math.max(0,cy/80)),density:.9+random()*.35,corridor:0,roadWidth:avenueX||avenueY?88:54,avenueX,avenueY,events:[],entities:[],loaded:false};`
+- `L161: if(b==='frozen')return r<.24?'dog':r<.37?'bear':r<.43?'villager':r<.54?'rock':r<.65?'hydrant':r<.74?'skatePark':r<.82?'cityBlock':r<.90?'tourist':r<.97?'truck':'waterTower';`
+- `L162: if(b==='industrial')return r<.13?'warehouse':r<.24?'factory':r<.33?'garage':r<.42?'parking':r<.50?'train':r<.57?'maintenance':r<.64?'truck':r<.71?'fireTruck':r<.77?'car':r<.84?'waterTower':r<.90?'billboard':r<.96?'powerPlant':r<.985?'villager':'monsterTruck';`
+- `L168: const STRUCTURE_COMBO_WINDOW=2.2;let structureCombo={count:0,lastAt:-99,expires:0,mult:1,best:0,lastTier:0};`
+- `L179: function featureEntity(chunk,type,x,y,extra={}){let st=OBJECT_STATS[type]||[10,10];return pushChunkEntity(chunk,{type,x,y,w:st[0]*1.2,h:st[0],size:st[0],value:st[1],variant:0,phase:0,hit:false,gone:false,chunkKey:chunk.key,biome:chunk.biome,material:materialFor(type),hp:1,maxHp:1,...extra})}`
+- `L182: function makeRiverPoints(random,height=CHUNK_HEIGHT*1.18,turns=7){let pts=[],phase=random()*TAU,amp=35+random()*90,drift=(random()-.5)*60;for(let i=0;i<turns;i++){let t=i/(turns-1),yy=-height/2+t*height,xx=Math.sin(phase+t*(2.2+random()*2.2)*Math.PI)*amp+(t-.5)*drift;pts.push([xx,yy])}return pts}`
+- `L203: if(random()<.045)featureEntity(chunk,'lake',cx,cy,{w:100+random()*170,h:60+random()*100,size:0,terrainHazard:true,decorative:true,waterPower:.5});`
+- `L204: if(random()<.035)featureEntity(chunk,'river',cx,cy,{w:18+random()*20,h:CHUNK_HEIGHT*1.2,size:0,terrainHazard:true,decorative:true,points:makeRiverPoints(random),waterPower:.45});chunk.loaded=true;return`
+- `L206: let pool=cityBuildingPool(d),roadX=chunk.avenueX?88:54,roadY=chunk.avenueY?78:48,sidewalk=14,marginX=roadX*.5+sidewalk+12,marginY=roadY*.5+sidewalk+12,blocks=[[-1,-1],[1,-1],[-1,1],[1,1]],blockW=CHUNK_WIDTH*.5-marginX-18,blockH=CHUNK_HEIGHT*.5-marginY-18;`
+- `L223: function canOverrun(e){if(!e||e.terrainHazard||e.decorative)return false;let ballSpan=Math.max(p.r,p.targetR*.96)*2,objectSpan=Math.max(4,e.size||Math.max(e.w||0,e.h||0)*.5),need=overrunRequirement(e);return ballSpan>=objectSpan*need}`
+- `L224: function overrunImpact(e){let beforeSpeed=p.speed,beforeMass=p.mass;bury(e);p.speed=Math.max(beforeSpeed,p.speed,p.speedPeak||0);p.speedPeak=Math.max(p.speedPeak||0,p.speed);p.vx*=.985;camera.impactZoom=Math.max(camera.impactZoom,.985);shake=Math.min(shake,Math.max(1.2,(e.size||8)*.035));return p.mass>beforeMass}`
+- `L227: function clamp(v,a,b){return Math.max(a,Math.min(b,v))}function lerp(a,b,t){return a+(b-a)*clamp(t,0,1)}`
+- `L228: function radiusFromMass(mass){let raw=Math.sqrt(Math.max(0,mass));if(raw<=80)return raw;if(raw<=160)return 80+(raw-80)*.7;return Math.min(MAX_RADIUS,136+(raw-160)*.45)}`
+- `L229: function calculateTargetZoom(r){let z;if(r<=40)z=1;else if(r<=75)z=lerp(1,.9,(r-40)/35);else if(r<=130)z=lerp(.9,.79,(r-75)/55);else if(r<=180)z=lerp(.79,.70,(r-130)/50);else if(r<=300)z=lerp(.70,.58,(r-180)/120);else if(r<=450)z=lerp(.58,.46,(r-300)/150);else z=lerp(.46,IS_MOBILE?.35:.37,(r-450)/150);return clamp(z*.5,MIN_ZOOM*.88,MAX_ZOOM*.5)}`
+- `L233: function getTargetEntityCount(){let factor=1/(camera.zoom*camera.zoom),raw=46*DIFF[cfg.dif].density*Math.min(2.8,factor);return clamp(Math.round(raw),40,MAX_ENTITIES)}`
+- `L264: const PREVIEW=new URLSearchParams(location.search).get('preview')==='1',GAME_ID='alien_threat',SHARED_STATS='ppg_minigames_stats_v1';let statActive=false,statLast=performance.now();`
+- `L268: function flushShared(){if(PREVIEW||!statActive)return;let now=performance.now(),delta=Math.min(10,Math.max(0,(now-statLast)/1000));statLast=now;if(delta<.05)return;let all=sharedRead(),s=all[GAME_ID]||{};s.totalSeconds=(s.totalSeconds||0)+delta;all[GAME_ID]=s;sharedWrite(all)}`
+- `L273: let ac,seqTimer=null,musicToken=0,musicStep=0,musicKind='normal',noiseBuffer=null,windBuffer=null,crowdAudioTimer=0,windAudioTimer=0,bgmBus=null,bgmTone=null,sfxBus=null,masterBus=null,masterComp=null,audioResumePromise=null,runAudioToken=0,musicRecoveryCooldown=0,lastMusicBeat=0,crawlAudioTimer=0,growthAudioRadius=9;const MUSIC_GAIN=1.9;`
+- `L276: function duckMusic(amount=.58,duration=.34){let ctx=ensureAudio();if(!ctx||!bgmBus)return;let now=ctx.currentTime,target=Math.max(.24,Math.min(1.06,amount));bgmBus.gain.cancelScheduledValues(now);bgmBus.gain.setTargetAtTime(target,now,.025);bgmBus.gain.setTargetAtTime(1.06,now+Math.max(.08,duration),.08)}`
+- `L284: function crawlSfx(){if(!cfg.sound||state!=='play')return;let size=clamp(p.r/300,0,1),speed=clamp(p.speed/260,0,1),base=48-size*15;filteredNoise(.12+.08*size,'lowpass',135+speed*95,.009+.014*size);tone(base,.09+.07*size,'sine',.01+.012*size,'sfx');if(size>.45)tone(base*.66,.16,'triangle',.006+.008*size,'sfx',.025)}`
+- `L314: function windGust(intensity=.5){alienPulseSfx(.3+intensity*.5)}`
+- `L315: function updateEnvironmentalAudio(dt){if(!cfg.sound||state!=='play')return;crawlAudioTimer-=dt;crowdAudioTimer-=dt;if(crawlAudioTimer<=0){crawlSfx();crawlAudioTimer=clamp(.48-p.speed*.0007-p.r*.00035,.17,.48)}if(crowdAudioTimer<=0){let danger=musicTension();if(Math.random()<.18+danger*.2)alienPulseSfx(.25+danger*.55);crowdAudioTimer=rnd(2.4,4.8)}}`
+
+### `alien_threat_3d.html`
+**Control flow signals**
+- `L277: function resumeAudio(){let ctx=ensureAudio();if(!ctx)return Promise.resolve(null);if(ctx.state==='running')return Promise.resolve(ctx);if(audioResumePromise)return audioResumePromise;audioResumePromise=ctx.resume().catch(()=>null).then(()=>{audioResumePromise=null;return ctx.state==='running'?ctx:null});return audioResumePromise}`
+- `L279: function startCue(){if(!cfg.sound)return;duckMusic(.48,.7);alienPulseSfx(.8);tone(63,.42,'sine',.055,'sfx');tone(91,.28,'sawtooth',.022,'sfx',.12)}`
+- `L303: function beginRunAudio(withCue=true){if(!cfg.sound)return;let token=++runAudioToken,ctx=ensureAudio();if(!ctx)return;resumeAudio().then(ok=>{if(!ok||token!==runAudioToken||state!=='play'||!cfg.sound)return;if(withCue)startCue();setTimeout(()=>{if(token===runAudioToken&&state==='play'&&cfg.sound)music()},withCue?430:0)})}`
+- `L304: function unlockAudioFromGesture(){if(!cfg.sound)return;resumeAudio().then(ok=>{if(ok&&state==='play'&&!seqTimer)music(musicKind||'normal')})}`
+- `L317: function music(kind='normal'){if(seqTimer){clearTimeout(seqTimer);seqTimer=null}let token=++musicToken;if(kind==='off'||!cfg.sound)return;musicKind=kind;musicStep=0;let ctx=ensureAudio();if(!ctx)return;if(ctx.state==='running')scheduleMusic(token);else resumeAudio().then(ok=>{if(ok&&token===musicToken&&cfg.sound&&state==='play')scheduleMusic(token)})}`
+- `L321: let input={x:0,y:-1,keys:{},jump:false,trick:false,gpj:false,gpp:false},state='menu',world=[],biomass=[],fx=[],trail=[],marks=[],absorptionFx=[],santa=null,ufo=null,beast=null,deathCrash=null,nextSanta=210,nextUfo=95,mode='survival',time=0,dist=0,score=0,style=0,gates=0,miss=0,cam=0,shake=0,buried=0,life=100,timeLimit=60,terrainNotice=0;`
+- `L398: addEventListener('keydown',e=>{input.keys[e.code]=true;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();if(e.code==='Escape')pause();if(e.code==='F2'&&state==='play')reset(mode);if(e.code==='KeyH')$('#hud').classList.toggle('hidden')});addEventListener('keyup',e=>input.keys[e.code]=false);`
+- `L399: cv.addEventListener('mousemove',e=>{if(state!=='play')return;let r=cv.getBoundingClientRect(),sx=(e.clientX-r.left)/r.width*W,sy=(e.clientY-r.top)/r.height*H,m=screenToWorld(sx,sy);input.x=clamp((m.x-p.x)/92,-1,1);input.y=clamp((m.y-p.y)/115,-1,1);pointerSteerUntil=performance.now()+320});`
+- `L520: if(state==='crash'&&deathCrash?.shattered)return;`
+- `L653: function startIncidentIntro(modeName){installCommercialOverlay();commercialV3.seen.clear();commercialV3.intro=null;commercialV3.skipArmed=false;baseReset(modeName)}`
+- `L656: function reset(m='survival'){commercialV3.intro=null;commercialV3.skipArmed=false;baseReset(m)}`
+- `L666: function drawCommercialV3(){if(state==='intro'){drawIncidentIntro();return}if(state!=='play'&&state!=='pause')return;let s=worldToScreen(p.x,p.y),r=Math.max(18,p.r*camera.finalZoom),pulse=1+Math.sin(time*5.2)*.06;g.save();g.globalCompositeOperation='screen';`
+**Gameplay tuning signals**
+- `L122: const IS_MOBILE=matchMedia('(pointer: coarse)').matches,MIN_ZOOM=IS_MOBILE?.32:.34,MAX_ZOOM=1,MAX_RADIUS=600,DEBUG_CAMERA=false,MAX_SPAWN_PER_UPDATE=IS_MOBILE?4:7,MAX_ENTITIES=IS_MOBILE?125:170,MAX_PARTICLES=IS_MOBILE?280:450,MAX_MARKS=IS_MOBILE?220:350,MAX_TRAIL=500;`
+- `L123: const camera={x:W/2,y:H/2,zoom:1,targetZoom:1,impactZoom:1,growthZoom:1,lookAheadX:0,lookAheadY:0,offsetY:0,finalZoom:1,bounds:null};`
+- `L124: const ISLAND_RADIUS=7600,COAST_WIDTH=520,CHUNK_WIDTH=720,CHUNK_HEIGHT=620,MAX_CHUNKS_GENERATED_PER_UPDATE=IS_MOBILE?1:2,REBASE_DISTANCE=50000,WORLD_SEED=0x5a17c9d3;`
+- `L127: const CONTAM_CELL=24,MAX_CONTAM_PER_CHUNK=220;let contaminationStore=new Map(),contaminationStep=0;`
+- `L128: const deluxe={weather:'clear',weatherStrength:0,targetWeatherStrength:0,lastBiome:'alpine',combo:0,comboTimer:0,bestCombo:0,variety:new Set(),districtScore:0,eventBonus:0,wind:0,oneShotBiome:true};`
+- `L133: function updateCombo(type,value){deluxe.combo=Math.min(99,deluxe.combo+1);deluxe.comboTimer=2.8;deluxe.bestCombo=Math.max(deluxe.bestCombo,deluxe.combo);deluxe.variety.add(type);let varietyBonus=Math.min(2.5,1+deluxe.variety.size*.08),multi=1+Math.min(3,deluxe.combo*.035);return Math.round(value*varietyBonus*multi)}`
+- `L156: return{key:chunkKey(cx,cy),x:cx,y:cy,seed,biome,district:biome,urbanity:biome==='downtown'?1:biome==='commercial'?.82:biome==='industrial'?.7:biome==='residential'?.48:biome==='village'?.2:.05,difficulty:Math.min(1,Math.max(0,cy/80)),density:.9+random()*.35,corridor:0,roadWidth:avenueX||avenueY?88:54,avenueX,avenueY,events:[],entities:[],loaded:false};`
+- `L161: if(b==='frozen')return r<.24?'dog':r<.37?'bear':r<.43?'villager':r<.54?'rock':r<.65?'hydrant':r<.74?'skatePark':r<.82?'cityBlock':r<.90?'tourist':r<.97?'truck':'waterTower';`
+- `L162: if(b==='industrial')return r<.13?'warehouse':r<.24?'factory':r<.33?'garage':r<.42?'parking':r<.50?'train':r<.57?'maintenance':r<.64?'truck':r<.71?'fireTruck':r<.77?'car':r<.84?'waterTower':r<.90?'billboard':r<.96?'powerPlant':r<.985?'villager':'monsterTruck';`
+- `L168: const STRUCTURE_COMBO_WINDOW=2.2;let structureCombo={count:0,lastAt:-99,expires:0,mult:1,best:0,lastTier:0};`
+- `L179: function featureEntity(chunk,type,x,y,extra={}){let st=OBJECT_STATS[type]||[10,10];return pushChunkEntity(chunk,{type,x,y,w:st[0]*1.2,h:st[0],size:st[0],value:st[1],variant:0,phase:0,hit:false,gone:false,chunkKey:chunk.key,biome:chunk.biome,material:materialFor(type),hp:1,maxHp:1,...extra})}`
+- `L182: function makeRiverPoints(random,height=CHUNK_HEIGHT*1.18,turns=7){let pts=[],phase=random()*TAU,amp=35+random()*90,drift=(random()-.5)*60;for(let i=0;i<turns;i++){let t=i/(turns-1),yy=-height/2+t*height,xx=Math.sin(phase+t*(2.2+random()*2.2)*Math.PI)*amp+(t-.5)*drift;pts.push([xx,yy])}return pts}`
+- `L203: if(random()<.045)featureEntity(chunk,'lake',cx,cy,{w:100+random()*170,h:60+random()*100,size:0,terrainHazard:true,decorative:true,waterPower:.5});`
+- `L204: if(random()<.035)featureEntity(chunk,'river',cx,cy,{w:18+random()*20,h:CHUNK_HEIGHT*1.2,size:0,terrainHazard:true,decorative:true,points:makeRiverPoints(random),waterPower:.45});chunk.loaded=true;return`
+- `L206: let pool=cityBuildingPool(d),roadX=chunk.avenueX?88:54,roadY=chunk.avenueY?78:48,sidewalk=14,marginX=roadX*.5+sidewalk+12,marginY=roadY*.5+sidewalk+12,blocks=[[-1,-1],[1,-1],[-1,1],[1,1]],blockW=CHUNK_WIDTH*.5-marginX-18,blockH=CHUNK_HEIGHT*.5-marginY-18;`
+- `L223: function canOverrun(e){if(!e||e.terrainHazard||e.decorative)return false;let ballSpan=Math.max(p.r,p.targetR*.96)*2,objectSpan=Math.max(4,e.size||Math.max(e.w||0,e.h||0)*.5),need=overrunRequirement(e);return ballSpan>=objectSpan*need}`
+- `L224: function overrunImpact(e){let beforeSpeed=p.speed,beforeMass=p.mass;bury(e);p.speed=Math.max(beforeSpeed,p.speed,p.speedPeak||0);p.speedPeak=Math.max(p.speedPeak||0,p.speed);p.vx*=.985;camera.impactZoom=Math.max(camera.impactZoom,.985);shake=Math.min(shake,Math.max(1.2,(e.size||8)*.035));return p.mass>beforeMass}`
+- `L227: function clamp(v,a,b){return Math.max(a,Math.min(b,v))}function lerp(a,b,t){return a+(b-a)*clamp(t,0,1)}`
+- `L228: function radiusFromMass(mass){let raw=Math.sqrt(Math.max(0,mass));if(raw<=80)return raw;if(raw<=160)return 80+(raw-80)*.7;return Math.min(MAX_RADIUS,136+(raw-160)*.45)}`
+- `L229: function calculateTargetZoom(r){let z;if(r<=40)z=1;else if(r<=75)z=lerp(1,.9,(r-40)/35);else if(r<=130)z=lerp(.9,.79,(r-75)/55);else if(r<=180)z=lerp(.79,.70,(r-130)/50);else if(r<=300)z=lerp(.70,.58,(r-180)/120);else if(r<=450)z=lerp(.58,.46,(r-300)/150);else z=lerp(.46,IS_MOBILE?.35:.37,(r-450)/150);return clamp(z*.5,MIN_ZOOM*.88,MAX_ZOOM*.5)}`
+- `L233: function getTargetEntityCount(){let factor=1/(camera.zoom*camera.zoom),raw=46*DIFF[cfg.dif].density*Math.min(2.8,factor);return clamp(Math.round(raw),40,MAX_ENTITIES)}`
+- `L264: const PREVIEW=new URLSearchParams(location.search).get('preview')==='1',GAME_ID='alien_threat',SHARED_STATS='ppg_minigames_stats_v1';let statActive=false,statLast=performance.now();`
+- `L268: function flushShared(){if(PREVIEW||!statActive)return;let now=performance.now(),delta=Math.min(10,Math.max(0,(now-statLast)/1000));statLast=now;if(delta<.05)return;let all=sharedRead(),s=all[GAME_ID]||{};s.totalSeconds=(s.totalSeconds||0)+delta;all[GAME_ID]=s;sharedWrite(all)}`
+- `L273: let ac,seqTimer=null,musicToken=0,musicStep=0,musicKind='normal',noiseBuffer=null,windBuffer=null,crowdAudioTimer=0,windAudioTimer=0,bgmBus=null,bgmTone=null,sfxBus=null,masterBus=null,masterComp=null,audioResumePromise=null,runAudioToken=0,musicRecoveryCooldown=0,lastMusicBeat=0,crawlAudioTimer=0,growthAudioRadius=9;const MUSIC_GAIN=1.9;`
+- `L276: function duckMusic(amount=.58,duration=.34){let ctx=ensureAudio();if(!ctx||!bgmBus)return;let now=ctx.currentTime,target=Math.max(.24,Math.min(1.06,amount));bgmBus.gain.cancelScheduledValues(now);bgmBus.gain.setTargetAtTime(target,now,.025);bgmBus.gain.setTargetAtTime(1.06,now+Math.max(.08,duration),.08)}`
+- `L284: function crawlSfx(){if(!cfg.sound||state!=='play')return;let size=clamp(p.r/300,0,1),speed=clamp(p.speed/260,0,1),base=48-size*15;filteredNoise(.12+.08*size,'lowpass',135+speed*95,.009+.014*size);tone(base,.09+.07*size,'sine',.01+.012*size,'sfx');if(size>.45)tone(base*.66,.16,'triangle',.006+.008*size,'sfx',.025)}`
+- `L314: function windGust(intensity=.5){alienPulseSfx(.3+intensity*.5)}`
+- `L315: function updateEnvironmentalAudio(dt){if(!cfg.sound||state!=='play')return;crawlAudioTimer-=dt;crowdAudioTimer-=dt;if(crawlAudioTimer<=0){crawlSfx();crawlAudioTimer=clamp(.48-p.speed*.0007-p.r*.00035,.17,.48)}if(crowdAudioTimer<=0){let danger=musicTension();if(Math.random()<.18+danger*.2)alienPulseSfx(.25+danger*.55);crowdAudioTimer=rnd(2.4,4.8)}}`
 
 ### `atomic_raid.html`
 **Control flow signals**
@@ -96,6 +192,86 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 - `L1418: const INITIAL_RIVER_MIN_WIDTH_PERCENT = 0.60, INITIAL_RIVER_MAX_WIDTH_PERCENT = 0.70;`
 - `L1419: const INITIAL_SCROLL_SPEED = 0.77 * 1.2075;`
 - `L1420: const isTouchDevice = ('ontouchstart' in window || navigator.maxTouchPoints > 0);`
+
+### `bow_and_arrow.html`
+**Control flow signals**
+- `L43: function restart(){if(paused)setPaused(false);if(typeof window.PPGGameRestart==='function'){window.PPGGameRestart();return}location.reload()}`
+- `L141: function audio(){if(!audioOn)return;if(!AC){const A=window.AudioContext||window.webkitAudioContext;if(A)AC=new A()}if(AC&&AC.state==='suspended')AC.resume()}`
+- `L152: function start(mode=runMode){if(running)return;configureMode(mode);audio();reset();running=true;$('menu').className='menu hidden';document.dispatchEvent(new CustomEvent('ppg:run-start',{detail:{game:'arqueiro',mode:runMode,date:dailyDate}}));startMusic()}`
+- `L176: function restartGame(){running=false;charging=false;stopMusic();start()}`
+**Gameplay tuning signals**
+- `L14: const qs=new URLSearchParams(location.search);if(qs.get('preview')==='1'||qs.has('preview'))return;`
+- `L24: window.setTimeout=(fn,ms,...args)=>{if(typeof fn!=='function')return nativeSetTimeout(fn,ms,...args);const run=()=>{if(paused)return nativeSetTimeout(run,50);fn(...args)};return nativeSetTimeout(run,ms)};`
+- `L61: const PREVIEW=new URLSearchParams(location.search).get('preview')==='1';`
+- `L63: const LIVES_MAX=12, COMBO_STEP=4, BEST_KEY='ppg_arqueiro_best_v3', DAILY_KEY='ppg_arqueiro_daily_v1';`
+- `L64: let W=800,H=600,DPR=1,last=performance.now(),running=false,charging=false,charge=0,score=0,combo=0,lives=LIVES_MAX,phase=1,totalTime=0,phaseTime=22,spawnTimer=.55,bannerTime=0;`
+- `L65: let runMode='normal',dailyDate='',gameRng=Math.random,weatherRng=Math.random,currentObjective=null,objectivesCompleted=0,objectiveBonusTotal=0,hitStreak=0,criticalStreak=0,bossDefeated=false,phaseStartLives=LIVES_MAX;`
+- `L66: const aim={x:600,y:250},arrows=[],targets=[],particles=[],rainDrops=[],floaters=[];`
+- `L67: let shots=0,hitShots=0,kills=0,bestCombo=0,perfectHits=0,volleySeq=0;`
+- `L69: let audioOn=!PREVIEW,AC=null,NOISE_BUFFER=null,musicTimer=null,musicStep=0,currentWeather=null,tripleShotTime=0,screenShake=0,lightning=0,frameErrors=0;`
+- `L70: const wind={value:0,target:0,change:0};`
+- `L73: balloon:{name:'Balão',points:10,r:31,hp:1,speed:25,material:'soft'},`
+- `L74: bird:{name:'Pássaro',points:25,r:21,hp:1,speed:54,material:'soft'},`
+- `L75: kite:{name:'Pipa',points:40,r:29,hp:1,speed:39,material:'soft'},`
+- `L76: drone:{name:'Drone',points:70,r:30,hp:3,speed:28,material:'dense'},`
+- `L77: ghost:{name:'Fantasma',points:85,r:27,hp:1,speed:37,material:'soft'},`
+- `L78: meteor:{name:'Meteoro',points:100,r:30,hp:2,speed:57,material:'dense'},`
+- `L79: saucer:{name:'Disco',points:120,r:30,hp:2,speed:50,material:'dense'},`
+- `L80: rocket:{name:'Foguete',points:145,r:24,hp:2,speed:66,material:'dense'},`
+- `L81: boss:{name:'Mini-chefe',points:200,r:40,hp:4,speed:33,material:'dense'},`
+- `L82: dragon:{name:'Dragão',points:350,r:64,hp:20,speed:44,material:'dense'},`
+- `L83: fireball:{name:'Bola de Fogo',points:35,r:18,hp:1,speed:92,material:'soft'},`
+- `L84: gift:{name:'Presente',points:0,r:33,hp:1,speed:18,material:'soft',power:true}`
+- `L87: {name:'Festival dos Balões',duration:22,types:['balloon','balloon','balloon','balloon','bird'],rate:1.05,weather:[0,0,1],objective:{type:'killsType',targetType:'balloon',target:7,label:'Estoure 7 balões',bonus:160}},`
+- `L88: {name:'Bando ao Entardecer',duration:23,types:['bird','bird','bird','balloon'],rate:.94,weather:[0,1,1],objective:{type:'volleyStreak',target:5,label:'Acerte 5 disparos seguidos',bonus:200}},`
+- `L89: {name:'Dança dos Ventos',duration:24,types:['kite','kite','bird','kite'],rate:.92,weather:[1,1,2],objective:{type:'criticalStreak',target:3,label:'Faça 3 críticos seguidos',bonus:240}},`
+- `L90: {name:'Patrulha Mecânica',duration:25,types:['drone','drone','balloon','drone'],rate:1.00,weather:[1,2,2],objective:{type:'killsType',targetType:'drone',target:2,label:'Derrube 2 drones antes que escapem',bonus:280}},`
+- `L91: {name:'Névoa dos Antigos',duration:25,types:['ghost','ghost','kite','ghost'],rate:.88,weather:[2,2,3],objective:{type:'killsType',targetType:'ghost',target:5,label:'Dissipe 5 fantasmas',bonus:300}},`
+- `L92: {name:'Chuva de Pedra',duration:25,types:['meteor','meteor','bird','meteor'],rate:.90,weather:[2,3,3],objective:{type:'survive',target:1,label:'Atravesse a chuva sem perder vida',bonus:360}},`
+
+### `brain_matrix.html`
+**Control flow signals**
+- `L1473: if (this.ctx.state === "suspended") {`
+- `L1805: function portalStartRun() {`
+- `L1838: function portalPauseTime() {`
+- `L1843: function portalResumeTime() {`
+- `L1866: document.getElementById("btn-confirm-yes").addEventListener("click", () => {`
+- `L1875: document.getElementById("btn-confirm-no").addEventListener("click", () => {`
+- `L1908: btnSel.addEventListener("click", () => {`
+- `L1922: btnDel.addEventListener("click", () => {`
+- `L1941: function addNewProfile(name) {`
+- `L2284: canvas.addEventListener("pointerdown", (e) => {`
+- `L2300: canvas.addEventListener("keydown", (e) => {`
+- `L2353: btn.addEventListener("click", () => switchScreen(btn.dataset.target));`
+**Gameplay tuning signals**
+- `L1202: help2: "2. Clear numbers first, then letters in alphabetical order (A-Z).",`
+- `L1224: help2: "2. Termine os números primeiro, depois as letras em ordem (A-Z).",`
+- `L1225: help3: "3. Erros descontam o dobro de pontos, desviram a última peça e embaralham a tela!",`
+- `L1313: help3: "3. Gli errori tolgono il doppio, annullano l'ultima mossa e rimescolano la matrice!",`
+- `L1454: this.currentIntervalMs = 0;`
+- `L1465: this.compressor.threshold.setValueAtTime(-18, this.ctx.currentTime);`
+- `L1679: let interval = mode === "menu" ? 340 : Math.max(130, 240 - Math.floor(this.tension * 110));`
+- `L1720: const oldInterval = Math.max(130, 240 - Math.floor(this.tension * 110));`
+- `L1721: this.tension = Math.min(1.0, Math.max(0.0, progress));`
+- `L1722: const newInterval = Math.max(130, 240 - Math.floor(this.tension * 110));`
+- `L1723: if (this.bgmMode === "game" && this.bgmEnabled && !this.isMuted && Math.abs(newInterval - oldInterval) >= 14) {`
+- `L1754: const PORTAL_STATS_KEY = "ppg_minigames_stats_v1";`
+- `L1756: const PREVIEW = new URLSearchParams(location.search).get("preview") === "1";`
+- `L1781: // V1 stored records only by level, mixing modes. Preserve them as Normal records.`
+- `L1824: st.longestStreak = Math.max(st.longestStreak || 0, streak);`
+- `L1833: st.totalSeconds = (st.totalSeconds || 0) + Math.max(0, (performance.now() - portalSegmentStart) / 1000);`
+- `L1847: setInterval(() => { if (portalSegmentStart) portalCommitActiveTime(); }, 30000);`
+- `L1902: btnGroup.style.gap = "6px";`
+- `L1956: 5. GAME ENGINE & MASTERMIND MATRIX LOGIC`
+- `L1959: { level: 1, size: 2, numCount: 4, letCount: 0, mult: 1.0 },`
+- `L1960: { level: 2, size: 3, numCount: 9, letCount: 0, mult: 1.1 },`
+- `L1961: { level: 3, size: 4, numCount: 16, letCount: 0, mult: 1.2 },`
+- `L1962: { level: 4, size: 5, numCount: 25, letCount: 0, mult: 1.3 },`
+- `L1963: { level: 5, size: 6, numCount: 36, letCount: 0, mult: 1.4 },`
+- `L1964: { level: 6, size: 7, numCount: 49, letCount: 0, mult: 1.5 },`
+- `L1965: { level: 7, size: 8, numCount: 64, letCount: 0, mult: 1.6 },`
+- `L1966: { level: 8, size: 9, numCount: 81, letCount: 0, mult: 1.7 },`
+- `L1967: { level: 9, size: 10, numCount: 100, letCount: 0, mult: 1.8 },`
 
 ### `campo_minado.html`
 **Control flow signals**
@@ -278,6 +454,50 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 - `L251: radZones.push({x:55+Math.random()*(W-110),y:-r-30,r,vy:70+st*10+Math.random()*18,phase:Math.random()*6.28,tick:.1+Math.random()*.35,life:16});`
 - `L256: emStormT=3.8+st*.75+Math.random()*1.6;emStormCooldown=(st===2?19:st===3?13:8)*(dampenerT>0?1.45:1);`
 
+### `hover_heroes_25d.html`
+**Control flow signals**
+- `L689: function clinicalLabel(r){if(!r)return '—';if(r.incidentType==='cat')return r.stability>=72?'ASSUSTADO, MAS SEGURO':'ESTRESSADO';if(r.state==='carrying'&&(r.stability<56||cable.risk>.62))return 'INSTÁVEL NO TRANSPORTE';if(r.stability>=76)return 'ESTÁVEL';if(r.stability>=54)return 'GRAVE';return 'CRÍTICO'}`
+- `L837: function resetContextualTutorial(){tutorialSeen={};Store.set(TUTORIAL_KEY,tutorialSeen);message('Dicas contextuais reativadas.')}`
+- `L960: begin(){this.active=true;this.frames=0;this.tipPending=true;state='boot';renderOperationalBriefing();const tip=$('#firstRunTip');if(tip)tip.classList.add('hidden')},`
+- `L961: afterRender(){if(!this.active||state!=='boot')return;this.frames++;if(this.frames<2)return;this.active=false;if(this.tipPending){renderOperationalBriefing();const tip=$('#firstRunTip');if(tip)tip.classList.remove('hidden')}else{state='play';QuickControls.show()}},`
+- `L962: accept(){Store.set(FIRST_RUN_BOOT_KEY,true);const tip=$('#firstRunTip');if(tip)tip.classList.add('hidden');this.active=false;state='play';QuickControls.show()},`
+- `L998: pad.addEventListener('pointerdown',e=>{pad.setPointerCapture(e.pointerId);move(e)});pad.addEventListener('pointermove',e=>{if(e.buttons)move(e)});pad.addEventListener('pointerup',end);pad.addEventListener('pointercancel',end);`
+- `L1003: cv.addEventListener('mousemove',e=>{if(state!=='play'||isMobileWorldBudget()||desktopControlMode()!=='MOUSE')return;let r=cv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*W,y=(e.clientY-r.top)/r.height*H;pointer.x=clamp((x-W/2)/180,-1,1);pointer.y=clamp((y-H/2)/150,-1,1);pointer.active=Math.hypot(pointer.x,pointer.y)>.10});`
+- `L1004: cv.addEventListener('mouseleave',()=>pointer.active=false);`
+- `L1005: cv.addEventListener('mousedown',e=>{if(e.button===0)pointer.drop=true});`
+- `L1006: addEventListener('mouseup',()=>pointer.drop=false);`
+- `L1017: addEventListener('keydown',e=>{if(state!=='play'||!e.ctrlKey)return;const plus=e.code==='NumpadAdd'||e.code==='Equal'||e.key==='+';const minus=e.code==='NumpadSubtract'||e.code==='Minus'||e.key==='-';if(!plus&&!minus)return;e.preventDefault();adjustGameplayZoom(plus?1:-1)},{capture:true});`
+- `L1019: addEventListener('keydown',e=>{if(state!=='play'||e.repeat)return;const code=cfg.bindings?.land||DEFAULT_BINDINGS.land;if(e.code===code){e.preventDefault();Aeromedical.toggleLanding()}},{capture:true});`
+**Gameplay tuning signals**
+- `L557: 4. Pipelines coordinate extension points whose order matters (rescue, HUD, minimap, i18n and`
+- `L559: 5. cleanupTransientRuntimeState() is the lifecycle boundary for timers/input residue when a`
+- `L589: Stage 1 removes only duplicates proven equivalent and leaves active wrapper chains intact.`
+- `L622: const CAMERA_ZOOM=Object.freeze({min:.60,default:.90,max:1.25,step:.05});`
+- `L623: const GAMEPLAY_VIEW_ZOOM=.90; // +50% closer than the previous locked 60% view; streaming envelope remains unchanged.`
+- `L629: const DIFF=Object.freeze({easy:{spread:.78,damage:.70,ground:1.20},normal:{spread:1.10,damage:1.03,ground:1.04},hard:{spread:1.48,damage:1.31,ground:.84}});`
+- `L632: emptyThrust:278,fullThrust:214,emptyMaxSpeed:148,fullMaxSpeed:121,`
+- `L633: emptyCoastBrake:3.32,fullCoastBrake:2.34,emptyActiveDrag:1.12,fullActiveDrag:.90,`
+- `L634: precisionMaxSpeed:58,precisionThrust:.62,precisionBrakeBoost:2.72,`
+- `L635: carryMaxSpeed:86,carryThrust:.74,carryControlResponse:2.82,`
+- `L641: rotor:{label:'ROTOR',effect:'velocidade máxima reduzida',repair:5.8},`
+- `L649: explosion:{engine:.62,rotor:.78,cable:.48,hydraulic:.66,tank:1.0,radio:.72},`
+- `L654: attack:{label:'Caminhão de combate',short:'COMBATE',icon:'🚒',color:'#e84f3f',speed:35,waterCap:130,hose:110,heatLimit:.78,vehicle:true,attack:true,protect:true},`
+- `L655: tanker:{label:'Caminhão-pipa',short:'PIPA',icon:'🚛',color:'#3fa8d8',speed:29,waterCap:280,hose:72,heatLimit:.64,vehicle:true,attack:true,protect:true,supply:true},`
+- `L656: ambulance:{label:'Ambulância',short:'AMB',icon:'✚',color:'#f4f4f4',speed:39,waterCap:0,hose:0,heatLimit:.48,vehicle:true,medical:true,victims:true},`
+- `L657: rescue:{label:'Equipe de salvamento',short:'SALV',icon:'⛑',color:'#f0c43f',speed:25,waterCap:0,hose:0,heatLimit:.60,vehicle:false,victims:true},`
+- `L658: evacuation:{label:'Equipe de evacuação',short:'EVAC',icon:'⇢',color:'#d08be8',speed:24,waterCap:0,hose:0,heatLimit:.52,vehicle:false,victims:true,evac:true},`
+- `L659: utility:{label:'Manutenção elétrica',short:'ELÉTRICA',icon:'⚡',color:'#f3de65',speed:30,waterCap:0,hose:0,heatLimit:.46,vehicle:true,protect:true,utility:true}`
+- `L672: firefighter:{label:'BOMBEIRO FERIDO',short:'BOMBEIRO',decay:.68,stability:62,patients:1},`
+- `L684: truck_accident:{label:'ACIDENTE COM CAMINHÃO',short:'CAMINHÃO',decay:.72,stability:55,patients:1},`
+- `L688: function operationDef(){if(typeof runMode!=='undefined'&&runMode==='infinite')return INFINITE_OPERATION;return OPERATIONS[Math.max(0,Math.min(OPERATIONS.length-1,level-1))]||OPERATIONS[0]}`
+- `L769: function getCameraScreenBounds(zoom=cameraZoom(),pad=0){const z=cameraZoom(zoom),p=Math.max(0,Number(pad)||0),halfWidth=W/(2*z)+p,halfHeight=H/(2*z)+p;return {left:W/2-halfWidth,right:W/2+halfWidth,top:H/2-halfHeight,bottom:H/2+halfHeight,halfWidth,halfHeight,zoom:z,pad:p}}`
+- `L788: meta.version=1;meta.activeSlot=Math.max(1,Math.min(5,Number(meta.activeSlot)||1));meta.slots=(meta.slots||[]).filter(s=>s&&s.slotIndex>=1&&s.slotIndex<=5);`
+- `L794: physicalKey(key,slot=HH2D_PROFILE_BOOT.activeSlot){const k=String(key),base=k.endsWith('.bak')?k.slice(0,-4):k;if(k===HH2D_PROFILE_META_KEY||HH2D_GLOBAL_STORAGE_KEYS.has(k)||k.startsWith('hh2d:p'))return k;if(HH2D_PROFILE_STORAGE_KEYS.has(base))return 'hh2d:p${Math.max(1,Math.min(5,Number(slot)||1))}:${k}';return k},`
+- `L819: if(!Store.get(READABILITY_MIGRATION_KEY,false)){cfg.hudScale=Math.max(Number(cfg.hudScale)||1,1.18);cfg.dispatchPanelScale=Math.max(Number(cfg.dispatchPanelScale)||1,1.08);Store.set('fightingFireCfg',cfg);Store.set(READABILITY_MIGRATION_KEY,true)}`
+- `L822: let tutorialSeen=safeObject(Store.get(TUTORIAL_KEY,{}),{}),tutorialCooldown=0;`
+- `L836: function tutorialOnce(key){if(tutorialSeen[key]||tutorialCooldown>0)return false;tutorialSeen[key]=true;Store.set(TUTORIAL_KEY,tutorialSeen);tutorialCooldown=4;message('💡 '+tutorialText(key));return true}`
+- `L845: function addParticle(type,x,y,vx,vy,life,size,color){const mobile=isMobileWorldBudget(),cap=cfg.reducedParticles?(mobile?160:220):(mobile?360:550);if(cfg.reducedParticles&&Math.random()<.58)return;if(particles.length<cap)particles.push({type,x,y,vx,vy,life,max:life,size,color})}`
+
 ### `hover_heroes_2d.html`
 **Control flow signals**
 - `L673: function clinicalLabel(r){if(!r)return '—';if(r.incidentType==='cat')return r.stability>=72?'ASSUSTADO, MAS SEGURO':'ESTRESSADO';if(r.state==='carrying'&&(r.stability<56||cable.risk>.62))return 'INSTÁVEL NO TRANSPORTE';if(r.stability>=76)return 'ESTÁVEL';if(r.stability>=54)return 'GRAVE';return 'CRÍTICO'}`
@@ -365,6 +585,50 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 - `L517: truck_accident:{label:'ACIDENTE COM CAMINHÃO',short:'CAMINHÃO',decay:.72,stability:55,patients:1},`
 - `L521: function operationDef(){if(typeof runMode!=='undefined'&&runMode==='infinite')return INFINITE_OPERATION;return OPERATIONS[Math.max(0,Math.min(OPERATIONS.length-1,level-1))]||OPERATIONS[0]}`
 - `L605: function cameraZoom(value){const raw=value==null?(typeof cfg!=='undefined'?Number(cfg.zoomScale):CAMERA_ZOOM.default):Number(value),maxZoom=Math.max(CAMERA_ZOOM.max,1.30);return clamp(Number.isFinite(raw)?raw:CAMERA_ZOOM.default,CAMERA_ZOOM.min,maxZoom)}`
+
+### `idle_trader.html`
+**Control flow signals**
+- `L595: function restart(){if(paused)setPaused(false);if(typeof window.PPGGameRestart==='function'){window.PPGGameRestart();return}location.reload()}`
+- `L737: const state = {`
+- `L888: tab.addEventListener("click",()=>activateTerminalPanel(index));`
+- `L889: tab.addEventListener("keydown",event=>{`
+- `L908: document.getElementById("saveBtn").addEventListener("click", ()=>save(true));`
+- `L909: document.getElementById("resetBtn").addEventListener("click", ()=>{`
+- `L914: modeBtn.addEventListener("click", ()=>{`
+- `L981: document.getElementById('buy1-${a.key}').addEventListener("click", ()=>buyAsset(a.key,1));`
+- `L982: document.getElementById('buy10-${a.key}').addEventListener("click", ()=>buyAsset(a.key,10));`
+- `L983: document.getElementById('buyMax-${a.key}').addEventListener("click", ()=>{`
+- `L1022: document.getElementById('buyUpg-${u.key}').addEventListener("click", ()=>buyUpgrade(u.key));`
+- `L1123: document.getElementById("prestigeBtn").addEventListener("click", doPrestige);`
+**Gameplay tuning signals**
+- `L566: const qs=new URLSearchParams(location.search);if(qs.get('preview')==='1'||qs.has('preview'))return;`
+- `L576: window.setTimeout=(fn,ms,...args)=>{if(typeof fn!=='function')return nativeSetTimeout(fn,ms,...args);const run=()=>{if(paused)return nativeSetTimeout(run,50);fn(...args)};return nativeSetTimeout(run,ms)};`
+- `L701: const dpr=Math.max(1,window.devicePixelRatio||1);`
+- `L707: const cssW=Math.max(1,r.width-inset),cssH=Math.max(1,r.height-insetY);`
+- `L709: const integerScale=Math.max(1,Math.floor(Math.min(cssW/BASE_W,cssH/BASE_H)*dpr));`
+- `L714: canvas.style.width=Math.max(1,Math.floor(BASE_W*fit))+"px";`
+- `L715: canvas.style.height=Math.max(1,Math.floor(BASE_H*fit))+"px";`
+- `L728: if(n<1e3) return (neg?"-":"")+n.toLocaleString("pt-BR",{maximumFractionDigits:2});`
+- `L731: return (neg?"-":"")+n.toLocaleString("pt-BR",{maximumFractionDigits:2})+(u>=0?units[u]:"");`
+- `L742: prestige: { rep:0, mult:1.00, times:0 },`
+- `L757: const IPO_THRESHOLD = 1e9;`
+- `L827: const elapsed = Math.min(OFFLINE_CAP_HRS*3600, Math.max(0, (Date.now()- (state.lastSave||Date.now()))/1000));`
+- `L839: function getIPS(){ return getIPSBase() * state.ipsMult * state.prestige.mult * (state.market?.multIPS||1); }`
+- `L840: function getClickValue(){ return state.click * state.prestige.mult * (state.market?.multClick||1); }`
+- `L855: return Math.max(0, Math.floor(Math.log(numerator)/Math.log(r)));`
+- `L879: index=Math.max(0,Math.min(terminalPanels.length-1,Number(index)||0));`
+- `L893: if(event.key==="ArrowLeft")next=(index-1+terminalTabs.length)%terminalTabs.length;`
+- `L894: if(event.key==="ArrowRight")next=(index+1)%terminalTabs.length;`
+- `L896: if(event.key==="End")next=terminalTabs.length-1;`
+- `L900: activateTerminalPanel(0);`
+- `L912: soundTgl.addEventListener("change", (e)=>{ state.sound = e.target.checked; if(state.sound) beep(1200,0.05,"square",0.08); save(); });`
+- `L947: prestigeBadge.textContent= (em?"🌟 ":"") + 'Reputação x${state.prestige.mult.toFixed(2)}';`
+- `L953: prestigeInfo.textContent = 'A cada IPO: converta patrimônio em Reputação permanente. Ganho atual: +${nextRep.toFixed(2)} Rep. (libera em R$ ${fmt(IPO_THRESHOLD)})';`
+- `L977: <button class="btn buy" id="buyMax-${a.key}">Máx<br><small id="costMax-${a.key}">R$ 0</small></button>`
+- `L984: const k = maxAffordable(a.key, state.money); if(k>0) buyAsset(a.key, k);`
+- `L1001: if(btnMax){ btnMax.disabled = kmax<=0; document.getElementById('costMax-${a.key}').textContent = kmax>0?'x${kmax} = R$ ${fmt(cmax)}':"x0 = R$ 0"; }`
+- `L1046: {key:"primeira_ipo", name:"Primeira IPO", desc:"Realize 1 Prestígio.", test: ()=>state.prestige.times>=1},`
+- `L1086: const kmax = maxAffordable(key, state.money); k = Math.min(k, kmax); if(k<=0) return;`
 
 ### `iron_delta.html`
 **Control flow signals**
@@ -739,6 +1003,50 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 - `L341: let damageAlarmTimer = 0;`
 - `L342: let damageAlarmVisualPulse = 0;`
 
+### `salve_os_gatinhos.html`
+**Control flow signals**
+- `L115: let state = 'menu';`
+- `L324: if (ac.state === 'suspended') ac.resume().catch(() => {});`
+- `L406: function startBGM() {`
+- `L458: function reset() {`
+- `L489: state = 'play';`
+- `L512: function gameOver() {`
+- `L514: state = 'over';`
+- `L657: function resetInput() {`
+- `L672: const cameraIntent = state === 'play' ? (deadZoneDelta * .014 + player.vx * .0058) : 0;`
+- `L1548: canvas.addEventListener('pointermove',e=>{ if(e.pointerType==='mouse') setMouseTarget(e); });`
+- `L1549: canvas.addEventListener('pointerdown',e=>{ if(e.pointerType==='mouse'){ setMouseTarget(e); audioInit(); } });`
+- `L1550: canvas.addEventListener('pointerleave',e=>{ if(state!=='play') return; const r=canvas.getBoundingClientRect(); const localX=(e.clientX-r.left)*W/r.width; mouseTargetX=localX < W/2 ? -W*.35 : W*1.35; });`
+**Gameplay tuning signals**
+- `L61: maxLives: 3,`
+- `L62: maxCombo: 15,`
+- `L63: difficultySeconds: 150,`
+- `L64: difficultyGrace: 9,`
+- `L67: maxParticles: 500,`
+- `L68: maxSmoke: 94,`
+- `L69: maxCatFallSpeed: 430,`
+- `L70: maxCatSideSpeed: 132,`
+- `L71: cameraMaxOffset: 10,`
+- `L72: qualityTargetMs: 18.8`
+- `L100: bestScore: 0, bestRescues: 0, bestCombo: 1, bestPerfect: 0, plays: 0,`
+- `L101: coins: 0, totalCoins: 0, highestLevel: 1, collectibles: [],`
+- `L102: upgrades: { width: 0, acceleration: 0, magnet: 0, insurance: 0 },`
+- `L104: steamStats: { catsSaved: 0, perfects: 0, odditiesCaught: 0, levelsReached: 1 }`
+- `L106: meta = { bestScore: 0, bestRescues: 0, bestCombo: 1, bestPerfect: 0, plays: 0,`
+- `L107: coins: 0, totalCoins: 0, highestLevel: 1, collectibles: [],`
+- `L108: upgrades: { width: 0, acceleration: 0, magnet: 0, insurance: 0 },`
+- `L110: steamStats: { catsSaved: 0, perfects: 0, odditiesCaught: 0, levelsReached: 1 }, ...meta };`
+- `L111: meta.upgrades = { width:0, acceleration:0, magnet:0, insurance:0, ...(meta.upgrades||{}) };`
+- `L113: meta.steamStats = { catsSaved:0, perfects:0, odditiesCaught:0, levelsReached:1, ...(meta.steamStats||{}) };`
+- `L116: let score = 0;`
+- `L118: let combo = 1;`
+- `L119: let maxCombo = 1;`
+- `L123: let spawnTimer = 1.5;`
+- `L124: let sceneCheckTimer = 2.8;`
+- `L129: let currentPhase = 0;`
+- `L130: let level = 1;`
+- `L131: let levelProgress = 0;`
+
 ### `skate_or_die.html`
 **Control flow signals**
 - `L1050: if (this.audioCtx && this.audioCtx.state === 'running') {`
@@ -824,6 +1132,46 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 - `L248: function formatDuration(sec){sec=Math.max(0,Math.floor(sec||0));let m=Math.floor(sec/60),s=sec%60;return m+':'+String(s).padStart(2,'0')}`
 - `L256: function msg(s){let e=$('#msg');e.textContent=s;e.style.opacity=1;e.classList.remove('signal');void e.offsetWidth;e.classList.add('signal');clearTimeout(e.t);e.t=setTimeout(()=>{e.style.opacity=0;e.classList.remove('signal')},1000)}`
 - `L264: function spawnX(size=10){let b=camera.bounds||getCameraBounds(),m=Math.max(30,size*.75);return rnd(b.left+m,b.right-m)}`
+
+### `space_raid_2093.html`
+**Control flow signals**
+- `L1893: window.addEventListener('keydown', handleKeyDown);`
+- `L2094: window.addEventListener('keydown', handleKeyPress);`
+- `L2253: window.addEventListener('keydown', handleKeyDown);`
+- `L2356: window.addEventListener('keydown', handleKeyDown);`
+- `L2447: document.addEventListener('keydown', handleKeyDown);`
+- `L3217: function startLoop(mode) {`
+- `L3244: if (audioContext.state === 'suspended') {`
+- `L3340: const resumeMusic = () => { paused = false; if (audioContext?.state === 'suspended')`
+**Gameplay tuning signals**
+- `L546: const timer = window.setTimeout(() => setReady(true), 850);`
+- `L574: const { screen, setScreen, lastGameStats, settings, t, currentLevel, completeLevel, startLevel } = (0, GameContext_1.useGameState)();`
+- `L597: const onLevelComplete = (0, react_1.useCallback)(() => {`
+- `L598: if (currentLevel === 20) {`
+- `L609: const onRetryLevel = (0, react_1.useCallback)(() => { startLevel(currentLevel); }, [startLevel, currentLevel]);`
+- `L619: return react_1.default.createElement(Game_1.default, { onGameOver: onGameOver, onLevelComplete: onLevelComplete, onReturnToMenu: onReturnToMenu });`
+- `L621: return react_1.default.createElement(GameOverScreen_1.default, { stats: lastGameStats, onRestart: onReturnToMenu, onRetry: onRetryLevel });`
+- `L632: react_1.default.createElement("div", { className: "relative w-full max-w-[1200px] aspect-[4/3] glassmorphism rounded-2xl shadow-2xl shadow-[var(--primary-glow)]/10 flex items-center justify-center" },`
+- `L681: const { highestLevelUnlocked, startLevel, t } = (0, GameContext_1.useGameState)();`
+- `L682: const currentLevelRef = (0, react_1.useRef)(null);`
+- `L683: const TOTAL_LEVELS = 20;`
+- `L700: react_1.default.createElement("div", { className: "w-full h-full max-h-[70vh] overflow-y-auto relative py-8" },`
+- `L702: react_1.default.createElement("div", { className: "space-y-4" }, [...Array(TOTAL_LEVELS)].map((_, index) => {`
+- `L703: const level = index + 1;`
+- `L720: return (react_1.default.createElement("div", { key: level, className: "flex items-center justify-center" },`
+- `L721: react_1.default.createElement("button", { ref: isCurrent ? currentLevelRef : null, onClick: () => handleLevelSelect(level), disabled: !isUnlocked, className: buttonClass, "aria-label": t('campaign_map_level', { level }) }, text)));`
+- `L776: const MIN_SCALE = 0.20;`
+- `L779: const MAX_SCALE = 1.0;`
+- `L781: const ENEMY_BASE = { x: WORLD_WIDTH - 360, y: 320, size: 160, keyTaken: false, name: 'OMEGA BASE' };`
+- `L785: { id: 'R1', x: WORLD_CENTER.x - 760, y: WORLD_CENTER.y - 430, radius: 82, name: 'FUEL RELAY NW' },`
+- `L786: { id: 'R2', x: WORLD_CENTER.x + 760, y: WORLD_CENTER.y - 430, radius: 82, name: 'FUEL RELAY NE' },`
+- `L787: { id: 'R3', x: WORLD_CENTER.x - 760, y: WORLD_CENTER.y + 430, radius: 82, name: 'FUEL RELAY SW' },`
+- `L788: { id: 'R4', x: WORLD_CENTER.x + 760, y: WORLD_CENTER.y + 430, radius: 82, name: 'FUEL RELAY SE' },`
+- `L796: const PLAYER_SPEED = 255;`
+- `L797: const BACK_SPEED = 150;`
+- `L798: const TURN_SPEED = 2.7;`
+- `L799: const BULLET_SPEED = 520;`
+- `L800: const BULLET_LIFE = 1.7;`
 
 ### `sudoku.html`
 **Control flow signals**
