@@ -6,7 +6,6 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 |---|---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|---:|
 | `advinhe_o_numero.html` | v2 | — | ✅ | — | ⚠️ | ✅ | ✅ | ✅ | 22428 |
 | `atomic_raid.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 363869 |
-| `bow_and_arrow.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 77498 |
 | `brain_matrix.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 86497 |
 | `campo_minado.html` | v1 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 73963 |
 | `click_speed.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 35680 |
@@ -101,42 +100,6 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 - `L1418: const INITIAL_RIVER_MIN_WIDTH_PERCENT = 0.60, INITIAL_RIVER_MAX_WIDTH_PERCENT = 0.70;`
 - `L1419: const INITIAL_SCROLL_SPEED = 0.77 * 1.2075;`
 - `L1420: const isTouchDevice = ('ontouchstart' in window || navigator.maxTouchPoints > 0);`
-
-### `bow_and_arrow.html`
-**Control flow signals**
-- `L43: function restart(){if(paused)setPaused(false);if(typeof window.PPGGameRestart==='function'){window.PPGGameRestart();return}location.reload()}`
-- `L141: function audio(){if(!audioOn)return;if(!AC){const A=window.AudioContext||window.webkitAudioContext;if(A)AC=new A()}if(AC&&AC.state==='suspended')AC.resume()}`
-- `L152: function start(mode=runMode){if(running)return;configureMode(mode);audio();reset();running=true;$('menu').className='menu hidden';document.dispatchEvent(new CustomEvent('ppg:run-start',{detail:{game:'arqueiro',mode:runMode,date:dailyDate}}));startMusic()}`
-- `L176: function restartGame(){running=false;charging=false;stopMusic();start()}`
-**Gameplay tuning signals**
-- `L14: const qs=new URLSearchParams(location.search);if(qs.get('preview')==='1'||qs.has('preview'))return;`
-- `L24: window.setTimeout=(fn,ms,...args)=>{if(typeof fn!=='function')return nativeSetTimeout(fn,ms,...args);const run=()=>{if(paused)return nativeSetTimeout(run,50);fn(...args)};return nativeSetTimeout(run,ms)};`
-- `L61: const PREVIEW=new URLSearchParams(location.search).get('preview')==='1';`
-- `L63: const LIVES_MAX=12, COMBO_STEP=4, BEST_KEY='ppg_arqueiro_best_v3', DAILY_KEY='ppg_arqueiro_daily_v1';`
-- `L64: let W=800,H=600,DPR=1,last=performance.now(),running=false,charging=false,charge=0,score=0,combo=0,lives=LIVES_MAX,phase=1,totalTime=0,phaseTime=22,spawnTimer=.55,bannerTime=0;`
-- `L65: let runMode='normal',dailyDate='',gameRng=Math.random,weatherRng=Math.random,currentObjective=null,objectivesCompleted=0,objectiveBonusTotal=0,hitStreak=0,criticalStreak=0,bossDefeated=false,phaseStartLives=LIVES_MAX;`
-- `L66: const aim={x:600,y:250},arrows=[],targets=[],particles=[],rainDrops=[],floaters=[];`
-- `L67: let shots=0,hitShots=0,kills=0,bestCombo=0,perfectHits=0,volleySeq=0;`
-- `L69: let audioOn=!PREVIEW,AC=null,NOISE_BUFFER=null,musicTimer=null,musicStep=0,currentWeather=null,tripleShotTime=0,screenShake=0,lightning=0,frameErrors=0;`
-- `L70: const wind={value:0,target:0,change:0};`
-- `L73: balloon:{name:'Balão',points:10,r:31,hp:1,speed:25,material:'soft'},`
-- `L74: bird:{name:'Pássaro',points:25,r:21,hp:1,speed:54,material:'soft'},`
-- `L75: kite:{name:'Pipa',points:40,r:29,hp:1,speed:39,material:'soft'},`
-- `L76: drone:{name:'Drone',points:70,r:30,hp:3,speed:28,material:'dense'},`
-- `L77: ghost:{name:'Fantasma',points:85,r:27,hp:1,speed:37,material:'soft'},`
-- `L78: meteor:{name:'Meteoro',points:100,r:30,hp:2,speed:57,material:'dense'},`
-- `L79: saucer:{name:'Disco',points:120,r:30,hp:2,speed:50,material:'dense'},`
-- `L80: rocket:{name:'Foguete',points:145,r:24,hp:2,speed:66,material:'dense'},`
-- `L81: boss:{name:'Mini-chefe',points:200,r:40,hp:4,speed:33,material:'dense'},`
-- `L82: dragon:{name:'Dragão',points:350,r:64,hp:20,speed:44,material:'dense'},`
-- `L83: fireball:{name:'Bola de Fogo',points:35,r:18,hp:1,speed:92,material:'soft'},`
-- `L84: gift:{name:'Presente',points:0,r:33,hp:1,speed:18,material:'soft',power:true}`
-- `L87: {name:'Festival dos Balões',duration:22,types:['balloon','balloon','balloon','balloon','bird'],rate:1.05,weather:[0,0,1],objective:{type:'killsType',targetType:'balloon',target:7,label:'Estoure 7 balões',bonus:160}},`
-- `L88: {name:'Bando ao Entardecer',duration:23,types:['bird','bird','bird','balloon'],rate:.94,weather:[0,1,1],objective:{type:'volleyStreak',target:5,label:'Acerte 5 disparos seguidos',bonus:200}},`
-- `L89: {name:'Dança dos Ventos',duration:24,types:['kite','kite','bird','kite'],rate:.92,weather:[1,1,2],objective:{type:'criticalStreak',target:3,label:'Faça 3 críticos seguidos',bonus:240}},`
-- `L90: {name:'Patrulha Mecânica',duration:25,types:['drone','drone','balloon','drone'],rate:1.00,weather:[1,2,2],objective:{type:'killsType',targetType:'drone',target:2,label:'Derrube 2 drones antes que escapem',bonus:280}},`
-- `L91: {name:'Névoa dos Antigos',duration:25,types:['ghost','ghost','kite','ghost'],rate:.88,weather:[2,2,3],objective:{type:'killsType',targetType:'ghost',target:5,label:'Dissipe 5 fantasmas',bonus:300}},`
-- `L92: {name:'Chuva de Pedra',duration:25,types:['meteor','meteor','bird','meteor'],rate:.90,weather:[2,3,3],objective:{type:'survive',target:1,label:'Atravesse a chuva sem perder vida',bonus:360}},`
 
 ### `brain_matrix.html`
 **Control flow signals**
