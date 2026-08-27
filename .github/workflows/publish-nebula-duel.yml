@@ -46,50 +46,37 @@ jobs:
           if url in s:
               raise SystemExit('Three.js CDN URL still present after vendoring')
           p.write_text(s,encoding='utf-8')
-          print('Three.js vendored:',len(js),'bytes')
           PY
           else
             echo 'Three.js already vendored.'
           fi
 
-      - name: Replace retired Space Raid slot with Nebula Duel
+      - name: Keep Nebula Duel in retired Space Raid slot
         shell: bash
         run: |
           set -euo pipefail
-          test -f Nebula_Duel.html
           python - <<'PY'
           from pathlib import Path
           import re
-          p=Path('index.html')
-          s=p.read_text(encoding='utf-8')
-          nebula_card="{file:'Nebula_Duel.html',id:'nebula_duel',name:'NEBULA DUEL',emoji:'🌌',desc:'Duelo espacial pelo cofre central: invada a base rival, conquiste a chave, sobreviva ao combate e retorne ao objetivo.',new:true},"
-          old_missing=not Path('space_raid_2093.html').exists()
-          if old_missing:
-              s,_=re.subn(r"\{file:'space_raid_2093\.html',id:'space_raid_2093',[^\n]*\},\n?",'',s,count=1)
+          p=Path('index.html'); s=p.read_text(encoding='utf-8')
+          card="{file:'Nebula_Duel.html',id:'nebula_duel',name:'NEBULA DUEL',emoji:'🌌',desc:'Duelo espacial pelo cofre central: invada a base rival, conquiste a chave, sobreviva ao combate e retorne ao objetivo.',new:true},"
+          if not Path('space_raid_2093.html').exists():
+              s=re.sub(r"\{file:'space_raid_2093\.html',id:'space_raid_2093',[^\n]*\},\n?",'',s,count=1)
           if "id:'nebula_duel'" not in s:
-              anchor="{file:'skate_or_die.html',id:'skate_or_die',name:'SKATE OR DIE',emoji:'🛹',desc:'Skate arcade cyberpunk: encadeie manobras, mantenha o combo, use boost e evolua o skatista.',new:true},"
-              if anchor in s:
-                  s=s.replace(anchor,nebula_card+'\n'+anchor,1)
-              else:
-                  marker='\n];\nconst TIERS=['
-                  if marker not in s: raise SystemExit('Could not find GAMES insertion point')
-                  s=s.replace(marker,'\n'+nebula_card+marker,1)
+              marker="{file:'skate_or_die.html',id:'skate_or_die'"
+              pos=s.find(marker)
+              if pos < 0: raise SystemExit('GAMES insertion point missing')
+              s=s[:pos]+card+'\n'+s[pos:]
           m=re.search(r"\{id:'A',title:'Tier A',games:\[([^\]]*)\]\},",s)
-          if not m: raise SystemExit('Tier A menu definition not found')
+          if not m: raise SystemExit('Tier A missing')
           games=[x.strip().strip("'") for x in m.group(1).split(',') if x.strip()]
-          old_pos=games.index('space_raid_2093') if 'space_raid_2093' in games else None
-          if old_missing: games=[g for g in games if g!='space_raid_2093']
-          games=[g for i,g in enumerate(games) if g!='nebula_duel' or 'nebula_duel' not in games[:i]]
-          if 'nebula_duel' not in games:
-              games.insert(min(old_pos if old_pos is not None else 10,len(games)),'nebula_duel')
+          games=[g for g in games if g!='space_raid_2093']
+          seen=set(); games=[g for g in games if not (g in seen or seen.add(g))]
+          if 'nebula_duel' not in games: games.insert(min(10,len(games)),'nebula_duel')
           repl="{id:'A',title:'Tier A',games:["+','.join(repr(x) for x in games)+']},'
           s=s[:m.start()]+repl+s[m.end():]
-          if s.count("id:'nebula_duel'") != 1: raise SystemExit('Nebula Duel card must appear exactly once')
-          tierA=re.search(r"\{id:'A',title:'Tier A',games:\[([^\]]*)\]\},",s)
-          if not tierA or tierA.group(1).count("'nebula_duel'") != 1: raise SystemExit('Nebula Duel must appear exactly once in Tier A')
-          if old_missing and ("file:'space_raid_2093.html'" in s or "'space_raid_2093'" in tierA.group(1)): raise SystemExit('Retired Space Raid reference still present')
+          if s.count("id:'nebula_duel'") != 1: raise SystemExit('Nebula card count invalid')
           p.write_text(s,encoding='utf-8')
-          print('Nebula Duel hall state OK')
           PY
 
       - name: Validate hall and standalone dependency
@@ -99,8 +86,7 @@ jobs:
           node - <<'NODE'
           const fs=require('fs');
           const menu=fs.readFileSync('index.html','utf8');
-          const scripts=menu.match(/<script[^>]*>([\s\S]*?)<\/script>/g)||[];
-          for(const b of scripts){
+          for(const b of (menu.match(/<script[^>]*>([\s\S]*?)<\/script>/g)||[])){
             const open=b.match(/^<script[^>]*>/)?.[0]||'';
             if(/type=["'](?:application\/json|importmap)["']/i.test(open)) continue;
             new Function(b.replace(/^<script[^>]*>/,'').replace(/<\/script>$/,''));
@@ -110,22 +96,26 @@ jobs:
           for(const f of cards) if(!fs.existsSync(f)) throw new Error('Hall points to missing game: '+f);
           if(!cards.includes('Nebula_Duel.html')) throw new Error('Nebula Duel missing from hall');
           const nebula=fs.readFileSync('Nebula_Duel.html','utf8');
-          if(/<script[^>]+src=["']https?:\/\//i.test(nebula)) throw new Error('Nebula Duel still has an external script dependency');
-          console.log('Hall OK:',cards.length,'games; Nebula standalone dependency check OK');
+          if(/<script[^>]+src=["']https?:\/\//i.test(nebula)) throw new Error('Nebula Duel has external script dependency');
+          console.log('Hall + standalone validation OK:',cards.length,'games');
           NODE
 
-      - name: Build complete ZIP
+      - name: Build complete ZIP and artifact tree
         shell: bash
         run: |
           set -euo pipefail
           python - <<'PY'
           from pathlib import Path
-          import zipfile, hashlib, re
-          root=Path('.'); out=root/'Quickplay_Collection_COMPLETE.zip'; include=[]
+          import zipfile, hashlib, re, shutil
+          root=Path('.'); out=root/'Quickplay_Collection_COMPLETE.zip'; stage=root/'artifact_complete'
+          if stage.exists(): shutil.rmtree(stage)
+          stage.mkdir()
+          include=[]
           for f in root.iterdir():
               if not f.is_file() or f.name in {out.name,'Quickplay_Collection_COMPLETE.zip.sha256'}: continue
               if f.suffix.lower() in {'.html','.md','.txt'} or f.name=='.nojekyll': include.append(f)
           include.sort(key=lambda f:f.name.lower())
+          for f in include: shutil.copy2(f,stage/f.name)
           with zipfile.ZipFile(out,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as z:
               for f in include:
                   info=zipfile.ZipInfo(f.name,date_time=(2026,8,27,12,0,0)); info.compress_type=zipfile.ZIP_DEFLATED; info.external_attr=0o644<<16
@@ -135,11 +125,19 @@ jobs:
               missing=[f for f in cards if f not in names]
               if missing: raise SystemExit('Hall games missing from ZIP: '+','.join(missing))
               if 'Nebula_Duel.html' not in names: raise SystemExit('Nebula Duel missing from ZIP')
-              print('Complete ZIP OK:',len(names),'files,',len(cards),'hall games')
           digest=hashlib.sha256(out.read_bytes()).hexdigest()
           Path('Quickplay_Collection_COMPLETE.zip.sha256').write_text(digest+'  Quickplay_Collection_COMPLETE.zip\n',encoding='ascii')
-          print('SHA256',digest)
+          print('ZIP SHA256',digest,'files',len(include))
           PY
+
+      - name: Upload complete collection artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Quickplay_Collection_COMPLETE
+          path: artifact_complete/
+          include-hidden-files: true
+          compression-level: 9
+          retention-days: 30
 
       - name: Commit refreshed standalone game, hall and package
         shell: bash
@@ -149,8 +147,8 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add Nebula_Duel.html index.html Quickplay_Collection_COMPLETE.zip Quickplay_Collection_COMPLETE.zip.sha256
           if git diff --cached --quiet; then
-            echo 'Nebula Duel collection state already current.'
+            echo 'Collection files already current.'
             exit 0
           fi
-          git commit -m 'Vendor Three.js in Nebula Duel and refresh Quickplay package'
+          git commit -m 'Refresh standalone Nebula Duel package'
           git push origin HEAD:main
