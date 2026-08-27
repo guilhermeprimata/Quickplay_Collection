@@ -1,0 +1,151 @@
+name: Publish Nebula Duel
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-nebula-duel.yml'
+      - 'Nebula_Duel.html'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-nebula-duel
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Integrate Nebula Duel in hall
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f Nebula_Duel.html
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          card="{file:'Nebula_Duel.html',id:'nebula_duel',name:'NEBULA DUEL',emoji:'🌌',desc:'Duelo espacial pelo cofre central: invada a base rival, conquiste a chave, sobreviva ao combate e retorne ao objetivo.',new:true},"
+
+          if "id:'nebula_duel'" not in s:
+              anchors=[
+                  "{file:'space_raid_2093.html',id:'space_raid_2093',name:'SPACE RAID 2093',emoji:'🚀',desc:'Shooter espacial de campanha com 20 setores, paleta Spectrum 2093, upgrades persistentes, arsenal especial e replay instantâneo.',new:true},",
+                  "{file:'skate_or_die.html',id:'skate_or_die',name:'SKATE OR DIE',emoji:'🛹',desc:'Skate arcade cyberpunk: encadeie manobras, mantenha o combo, use boost e evolua o skatista.',new:true},"
+              ]
+              for anchor in anchors:
+                  if anchor in s:
+                      s=s.replace(anchor,anchor+'\n'+card,1)
+                      break
+              else:
+                  marker='\n];\nconst TIERS=['
+                  if marker not in s:
+                      raise SystemExit('Could not find GAMES insertion point')
+                  s=s.replace(marker,'\n'+card+marker,1)
+
+          m=re.search(r"\{id:'A',title:'Tier A',games:\[([^\]]*)\]\},",s)
+          if not m:
+              raise SystemExit('Tier A menu definition not found')
+          games=[x.strip().strip("'") for x in m.group(1).split(',') if x.strip()]
+          if 'nebula_duel' not in games:
+              if 'space_raid_2093' in games:
+                  games.insert(games.index('space_raid_2093')+1,'nebula_duel')
+              else:
+                  games.append('nebula_duel')
+              repl="{id:'A',title:'Tier A',games:["+','.join(repr(x) for x in games)+']},'
+              # Correct the trailing quote added only to simplify string construction above.
+              repl=repl[:-1]
+              s=s[:m.start()]+repl+s[m.end():]
+
+          if s.count("id:'nebula_duel'") != 1:
+              raise SystemExit('Nebula Duel card must appear exactly once')
+          tierA=re.search(r"\{id:'A',title:'Tier A',games:\[([^\]]*)\]\},",s)
+          if not tierA or tierA.group(1).count("'nebula_duel'") != 1:
+              raise SystemExit('Nebula Duel must appear exactly once in Tier A')
+          if "file:'Nebula_Duel.html'" not in s:
+              raise SystemExit('Nebula Duel file link missing')
+
+          p.write_text(s,encoding='utf-8')
+          print('Nebula Duel integrated into Tier A')
+          PY
+
+      - name: Validate hall
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const menu=fs.readFileSync('index.html','utf8');
+          const scripts=menu.match(/<script[^>]*>([\s\S]*?)<\/script>/g)||[];
+          for(const b of scripts){
+            const open=b.match(/^<script[^>]*>/)?.[0]||'';
+            if(/type=["'](?:application\/json|importmap)["']/i.test(open)) continue;
+            new Function(b.replace(/^<script[^>]*>/,'').replace(/<\/script>$/,''));
+          }
+          const cards=[...menu.matchAll(/file:'([^']+)'/g)].map(m=>m[1]);
+          if(new Set(cards).size!==cards.length) throw new Error('Duplicate game files in hall');
+          for(const f of cards) if(!fs.existsSync(f)) throw new Error('Hall points to missing game: '+f);
+          if(!cards.includes('Nebula_Duel.html')) throw new Error('Nebula Duel missing from hall');
+          const tierA=menu.match(/\{id:'A',title:'Tier A',games:\[([^\]]*)\]\},/)?.[1]||'';
+          if(!tierA.includes("'nebula_duel'")) throw new Error('Nebula Duel missing from Tier A');
+          console.log('Hall OK:',cards.length,'games');
+          NODE
+
+      - name: Build complete ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import zipfile, hashlib, re
+          root=Path('.')
+          out=root/'Quickplay_Collection_COMPLETE.zip'
+          include=[]
+          for f in root.iterdir():
+              if not f.is_file() or f.name in {out.name,'Quickplay_Collection_COMPLETE.zip.sha256'}:
+                  continue
+              if f.suffix.lower() in {'.html','.md','.txt'} or f.name=='.nojekyll':
+                  include.append(f)
+          include.sort(key=lambda f:f.name.lower())
+          with zipfile.ZipFile(out,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+              for f in include:
+                  info=zipfile.ZipInfo(f.name,date_time=(2026,8,27,12,0,0))
+                  info.compress_type=zipfile.ZIP_DEFLATED
+                  info.external_attr=0o644<<16
+                  z.writestr(info,f.read_bytes(),compress_type=zipfile.ZIP_DEFLATED,compresslevel=9)
+          with zipfile.ZipFile(out) as z:
+              names=set(z.namelist())
+              menu=z.read('index.html').decode('utf-8')
+              cards=re.findall(r"file:'([^']+)'",menu)
+              missing=[f for f in cards if f not in names]
+              if missing:
+                  raise SystemExit('Hall games missing from ZIP: '+','.join(missing))
+              if 'Nebula_Duel.html' not in names:
+                  raise SystemExit('Nebula Duel missing from ZIP')
+              print('Complete ZIP OK:',len(names),'files,',len(cards),'hall games')
+          digest=hashlib.sha256(out.read_bytes()).hexdigest()
+          Path('Quickplay_Collection_COMPLETE.zip.sha256').write_text(digest+'  Quickplay_Collection_COMPLETE.zip\n',encoding='ascii')
+          print('SHA256',digest)
+          PY
+
+      - name: Commit refreshed hall and package
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html Quickplay_Collection_COMPLETE.zip Quickplay_Collection_COMPLETE.zip.sha256
+          if git diff --cached --quiet; then
+            echo 'Nebula Duel collection state already current.'
+            exit 0
+          fi
+          git commit -m 'Add Nebula Duel to Tier A and refresh complete ZIP'
+          git push origin HEAD:main
