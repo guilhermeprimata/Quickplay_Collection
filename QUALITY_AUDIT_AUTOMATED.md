@@ -4,6 +4,7 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 
 | Game | Platform | Native pause | Native restart | Native touch | Touch gap? | Audio | Storage | i18n signal | Bytes |
 |---|---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|---:|
+| `Nebula_Duel.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 1280448 |
 | `advinhe_o_numero.html` | v2 | — | ✅ | — | ⚠️ | ✅ | ✅ | ✅ | 22428 |
 | `alien_threat.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 551938 |
 | `alien_threat_3d.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 524508 |
@@ -34,7 +35,6 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 | `salve_os_gatinhos.html` | v2 | — | — | ✅ | — | ✅ | ✅ | ✅ | 122409 |
 | `skate_or_die.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 271934 |
 | `snowball_avalanche.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 942080 |
-| `space_raid_2093.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 317942 |
 | `sudoku.html` | v2 | — | — | — | — | ✅ | ✅ | ✅ | 39066 |
 | `the_worm.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 34279 |
 | `torre_de_hanoi.html` | v2 | — | ✅ | ✅ | — | ✅ | ✅ | ✅ | 31009 |
@@ -47,6 +47,47 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 - Canvas + keyboard but no native touch signal: `advinhe_o_numero.html`
 
 ## Per-game controls and balance candidates
+
+### `Nebula_Duel.html`
+**Control flow signals**
+- `L2714: function startAsteroidRain(gs) {`
+- `L3874: window.addEventListener('keydown', handleKeyDown);`
+- `L4133: window.addEventListener('keydown', handleKeyPress);`
+- `L4415: window.addEventListener('keydown', handleKeyDown);`
+- `L4538: window.addEventListener('keydown', handleKeyDown);`
+- `L4629: document.addEventListener('keydown', handleKeyDown);`
+- `L5460: function startLoop(mode) {`
+- `L5491: if (audioContext.state === 'suspended') {`
+- `L5635: const resumeMusic = () => { paused = false; if (audioContext?.state === 'suspended')`
+**Gameplay tuning signals**
+- `L623: console.warn('Scripts "build/three.js" and "build/three.min.js" are deprecated with r150+, and will be removed with r160. Please use ES Modules or alternatives: https://threejs.org/docs/index.html#manual/en/introduction/Installation'),`
+- `L780: function luminance(hex){ const c = hexToRgb(hex); const n = [c.r,c.g,c.b].map(v => { v/=255; return v <= 0.04045 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4);}); return n[0]*0.2126+n[1]*0.7152+n[2]*0.0722; }`
+- `L781: function textColorFor(bg){ return luminance(bg) > 0.46 ? '#0a1020' : '#f8fcff'; }`
+- `L863: const ring = (radius=s*.22, alpha=1) => { ctx.save(); ctx.globalAlpha=alpha; ctx.strokeStyle = accent; ctx.lineWidth = s*.035; ctx.beginPath(); ctx.arc(0,-s*.02,radius,0,Math.PI*2); ctx.stroke(); ctx.restore(); };`
+- `L919: const countryColors = pickUnique(rng, country.palette, Math.min(3, country.palette.length));`
+- `L924: const accent = luminance(mixed[2]) > 0.45 ? darken(mixed[2],0.18) : lighten(mixed[2],0.18);`
+- `L974: const plateW=Math.min(w*.58,170);const plateX=(w-plateW)/2;const plateY=h*.79;`
+- `L989: const speedDeltaPct = forced.isCustom ? 0 : Math.round(-10 + rng()*20);`
+- `L990: const speedBaseFactor = forced.isCustom ? 1 : +(1 + speedDeltaPct/100).toFixed(3);`
+- `L1009: speedVariance: forced.isCustom ? 0.03 : 0.02,`
+- `L1011: averageSpeedLabel: forced.isCustom ? 'Padrão ±3%' : '${speedDeltaPct>=0?'+':''}${speedDeltaPct}% base · oscilação ±2%'`
+- `L1025: teams.forEach((team,index)=>{ team.intelligenceRank = index + 1; team.levelSeed = index + 1; });`
+- `L1049: const active = picked.map((team,index) => ({...team, tournamentLevel:index+1, tournamentSlot:index+1}));`
+- `L1055: function getLevelTeam(activeTournament, roster, level){ return (Array.isArray(activeTournament) && activeTournament[level-1]) || (Array.isArray(roster) && roster[level-1]) || null; }`
+- `L1057: function formatSpeed(team){ if (!team) return '0%'; if (team.isCustom) return 'Padrão ±3%'; return '${team.speedDeltaPct >= 0 ? '+' : ''}${team.speedDeltaPct}% · oscilação ±2%'; }`
+- `L1060: 'P01 — Criar módulo TeamSystem com gerador procedural de 100 equipes, nacionalidades, nomes, estilos, velocidades e inteligência, mais desenho de brasões e mini-bandeiras em canvas.',`
+- `L1129: const timer = window.setTimeout(() => setReady(true), 850);`
+- `L1153: react_1.default.createElement("div", { className: "sr-duel-ship enemy" },`
+- `L1171: const { screen, setScreen, lastGameStats, settings, t, currentLevel, completeLevel, startLevel, rerollTournament } = (0, GameContext_1.useGameState)();`
+- `L1195: const onLevelComplete = (0, react_1.useCallback)(() => {`
+- `L1207: const onRetryLevel = (0, react_1.useCallback)(() => { startLevel(currentLevel); }, [startLevel, currentLevel]);`
+- `L1217: return react_1.default.createElement(Game_1.default, { onGameOver: onGameOver, onLevelComplete: onLevelComplete, onReturnToMenu: onReturnToMenu });`
+- `L1219: return react_1.default.createElement(GameOverScreen_1.default, { stats: lastGameStats, onRestart: onReturnToMenu, onRetry: onRetryLevel });`
+- `L1231: react_1.default.createElement("div", { className: 'relative w-full max-w-[1200px] aspect-[4/3] glassmorphism rounded-2xl shadow-2xl shadow-[var(--primary-glow)]/10 flex items-center justify-center ${immersiveUiClass}' },`
+- `L1259: const { highestLevelUnlocked, startLevel, t, activeTournament } = (0, GameContext_1.useGameState)();`
+- `L1260: const currentLevelRef = (0, react_1.useRef)(null);`
+- `L1267: const level = index + 1;`
+- `L1271: const levelData = window.SR_LEVELS[level - 1];`
 
 ### `advinhe_o_numero.html`
 **Control flow signals**
@@ -1132,46 +1173,6 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 - `L248: function formatDuration(sec){sec=Math.max(0,Math.floor(sec||0));let m=Math.floor(sec/60),s=sec%60;return m+':'+String(s).padStart(2,'0')}`
 - `L256: function msg(s){let e=$('#msg');e.textContent=s;e.style.opacity=1;e.classList.remove('signal');void e.offsetWidth;e.classList.add('signal');clearTimeout(e.t);e.t=setTimeout(()=>{e.style.opacity=0;e.classList.remove('signal')},1000)}`
 - `L264: function spawnX(size=10){let b=camera.bounds||getCameraBounds(),m=Math.max(30,size*.75);return rnd(b.left+m,b.right-m)}`
-
-### `space_raid_2093.html`
-**Control flow signals**
-- `L1893: window.addEventListener('keydown', handleKeyDown);`
-- `L2094: window.addEventListener('keydown', handleKeyPress);`
-- `L2253: window.addEventListener('keydown', handleKeyDown);`
-- `L2356: window.addEventListener('keydown', handleKeyDown);`
-- `L2447: document.addEventListener('keydown', handleKeyDown);`
-- `L3217: function startLoop(mode) {`
-- `L3244: if (audioContext.state === 'suspended') {`
-- `L3340: const resumeMusic = () => { paused = false; if (audioContext?.state === 'suspended')`
-**Gameplay tuning signals**
-- `L546: const timer = window.setTimeout(() => setReady(true), 850);`
-- `L574: const { screen, setScreen, lastGameStats, settings, t, currentLevel, completeLevel, startLevel } = (0, GameContext_1.useGameState)();`
-- `L597: const onLevelComplete = (0, react_1.useCallback)(() => {`
-- `L598: if (currentLevel === 20) {`
-- `L609: const onRetryLevel = (0, react_1.useCallback)(() => { startLevel(currentLevel); }, [startLevel, currentLevel]);`
-- `L619: return react_1.default.createElement(Game_1.default, { onGameOver: onGameOver, onLevelComplete: onLevelComplete, onReturnToMenu: onReturnToMenu });`
-- `L621: return react_1.default.createElement(GameOverScreen_1.default, { stats: lastGameStats, onRestart: onReturnToMenu, onRetry: onRetryLevel });`
-- `L632: react_1.default.createElement("div", { className: "relative w-full max-w-[1200px] aspect-[4/3] glassmorphism rounded-2xl shadow-2xl shadow-[var(--primary-glow)]/10 flex items-center justify-center" },`
-- `L681: const { highestLevelUnlocked, startLevel, t } = (0, GameContext_1.useGameState)();`
-- `L682: const currentLevelRef = (0, react_1.useRef)(null);`
-- `L683: const TOTAL_LEVELS = 20;`
-- `L700: react_1.default.createElement("div", { className: "w-full h-full max-h-[70vh] overflow-y-auto relative py-8" },`
-- `L702: react_1.default.createElement("div", { className: "space-y-4" }, [...Array(TOTAL_LEVELS)].map((_, index) => {`
-- `L703: const level = index + 1;`
-- `L720: return (react_1.default.createElement("div", { key: level, className: "flex items-center justify-center" },`
-- `L721: react_1.default.createElement("button", { ref: isCurrent ? currentLevelRef : null, onClick: () => handleLevelSelect(level), disabled: !isUnlocked, className: buttonClass, "aria-label": t('campaign_map_level', { level }) }, text)));`
-- `L776: const MIN_SCALE = 0.20;`
-- `L779: const MAX_SCALE = 1.0;`
-- `L781: const ENEMY_BASE = { x: WORLD_WIDTH - 360, y: 320, size: 160, keyTaken: false, name: 'OMEGA BASE' };`
-- `L785: { id: 'R1', x: WORLD_CENTER.x - 760, y: WORLD_CENTER.y - 430, radius: 82, name: 'FUEL RELAY NW' },`
-- `L786: { id: 'R2', x: WORLD_CENTER.x + 760, y: WORLD_CENTER.y - 430, radius: 82, name: 'FUEL RELAY NE' },`
-- `L787: { id: 'R3', x: WORLD_CENTER.x - 760, y: WORLD_CENTER.y + 430, radius: 82, name: 'FUEL RELAY SW' },`
-- `L788: { id: 'R4', x: WORLD_CENTER.x + 760, y: WORLD_CENTER.y + 430, radius: 82, name: 'FUEL RELAY SE' },`
-- `L796: const PLAYER_SPEED = 255;`
-- `L797: const BACK_SPEED = 150;`
-- `L798: const TURN_SPEED = 2.7;`
-- `L799: const BULLET_SPEED = 520;`
-- `L800: const BULLET_LIFE = 1.7;`
 
 ### `sudoku.html`
 **Control flow signals**

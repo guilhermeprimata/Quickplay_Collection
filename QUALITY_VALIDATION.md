@@ -4,6 +4,7 @@ Validation executed with Node.js syntax checking for every inline JavaScript blo
 
 | Game | Inline JS blocks | External JS | Pause signal | Restart/New Game signal |
 |---|---:|---:|:---:|:---:|
+| `Nebula_Duel.html` | 11 | 0 | ✅ | ✅ |
 | `advinhe_o_numero.html` | 2 | 0 | — | ✅ |
 | `alien_threat.html` | 16 | 0 | ✅ | ✅ |
 | `alien_threat_3d.html` | 12 | 0 | ✅ | ✅ |
@@ -34,7 +35,6 @@ Validation executed with Node.js syntax checking for every inline JavaScript blo
 | `salve_os_gatinhos.html` | 6 | 0 | ✅ | ✅ |
 | `skate_or_die.html` | 1 | 0 | ✅ | ✅ |
 | `snowball_avalanche.html` | 2 | 0 | ✅ | ✅ |
-| `space_raid_2093.html` | 5 | 0 | ✅ | ✅ |
 | `sudoku.html` | 2 | 0 | — | — |
 | `the_worm.html` | 3 | 0 | ✅ | ✅ |
 | `torre_de_hanoi.html` | 2 | 0 | — | ✅ |
@@ -49,8 +49,8 @@ Validation executed with Node.js syntax checking for every inline JavaScript blo
 
 ## Warnings
 
+- Nebula_Duel.html: remote non-JS assets: https://guilhermeprimata.github.io/Quickplay_Collection/index.html
 - domination_wars.html: remote non-JS assets: https://guilhermeprimata.github.io/Quickplay_Collection/menu_minigames.html, https://guilhermeprimata.github.io/Quickplay_Collection/menu_minigames.html, https://guilhermeprimata.github.io/Quickplay_Collection/menu_minigames.html
 - iron_delta_25d.html: remote non-JS assets: https://guilhermeprimata.github.io/Quickplay_Collection/index.html
 - reef_runner.html: remote non-JS assets: https://guilhermeprimata.github.io/Quickplay_Collection/index.html
 - salve_os_gatinhos.html: remote non-JS assets: https://guilhermeprimata.github.io/Quickplay_Collection/index.html
-- space_raid_2093.html: remote non-JS assets: https://guilhermeprimata.github.io/Quickplay_Collection/index.html
