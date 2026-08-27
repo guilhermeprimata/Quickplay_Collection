@@ -23,7 +23,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Integrate Nebula Duel in hall
+      - name: Replace retired Space Raid slot with Nebula Duel
         shell: bash
         run: |
           set -euo pipefail
@@ -34,45 +34,60 @@ jobs:
 
           p=Path('index.html')
           s=p.read_text(encoding='utf-8')
-          card="{file:'Nebula_Duel.html',id:'nebula_duel',name:'NEBULA DUEL',emoji:'🌌',desc:'Duelo espacial pelo cofre central: invada a base rival, conquiste a chave, sobreviva ao combate e retorne ao objetivo.',new:true},"
+          nebula_card="{file:'Nebula_Duel.html',id:'nebula_duel',name:'NEBULA DUEL',emoji:'🌌',desc:'Duelo espacial pelo cofre central: invada a base rival, conquiste a chave, sobreviva ao combate e retorne ao objetivo.',new:true},"
+          old_missing=not Path('space_raid_2093.html').exists()
+
+          # The user retired space_raid_2093.html before uploading Nebula Duel.
+          # Remove the orphaned card when that source file is gone.
+          if old_missing:
+              s,n=re.subn(r"\{file:'space_raid_2093\.html',id:'space_raid_2093',[^\n]*\},\n?",'',s,count=1)
+              print('Removed retired Space Raid card:',n)
 
           if "id:'nebula_duel'" not in s:
               anchors=[
-                  "{file:'space_raid_2093.html',id:'space_raid_2093',name:'SPACE RAID 2093',emoji:'🚀',desc:'Shooter espacial de campanha com 20 setores, paleta Spectrum 2093, upgrades persistentes, arsenal especial e replay instantâneo.',new:true},",
-                  "{file:'skate_or_die.html',id:'skate_or_die',name:'SKATE OR DIE',emoji:'🛹',desc:'Skate arcade cyberpunk: encadeie manobras, mantenha o combo, use boost e evolua o skatista.',new:true},"
+                  "{file:'skate_or_die.html',id:'skate_or_die',name:'SKATE OR DIE',emoji:'🛹',desc:'Skate arcade cyberpunk: encadeie manobras, mantenha o combo, use boost e evolua o skatista.',new:true},",
+                  "  {id:'atomic_raid',name:'ATOMIC RAID',emoji:'☢️',file:'atomic_raid.html',desc:'Arcade shooter procedural autocontido: pilote, combata, gerencie combustível e evolua sua nave.',new:true}"
               ]
+              inserted=False
               for anchor in anchors:
                   if anchor in s:
-                      s=s.replace(anchor,anchor+'\n'+card,1)
+                      s=s.replace(anchor,nebula_card+'\n'+anchor,1)
+                      inserted=True
                       break
-              else:
+              if not inserted:
                   marker='\n];\nconst TIERS=['
                   if marker not in s:
                       raise SystemExit('Could not find GAMES insertion point')
-                  s=s.replace(marker,'\n'+card+marker,1)
+                  s=s.replace(marker,'\n'+nebula_card+marker,1)
 
           m=re.search(r"\{id:'A',title:'Tier A',games:\[([^\]]*)\]\},",s)
           if not m:
               raise SystemExit('Tier A menu definition not found')
           games=[x.strip().strip("'") for x in m.group(1).split(',') if x.strip()]
+          old_pos=games.index('space_raid_2093') if 'space_raid_2093' in games else None
+          if old_missing:
+              games=[g for g in games if g!='space_raid_2093']
           if 'nebula_duel' not in games:
-              if 'space_raid_2093' in games:
-                  games.insert(games.index('space_raid_2093')+1,'nebula_duel')
-              else:
-                  games.append('nebula_duel')
-              repl="{id:'A',title:'Tier A',games:["+','.join(repr(x) for x in games)+']},'
-              s=s[:m.start()]+repl+s[m.end():]
+              pos=old_pos if old_pos is not None else min(len(games),10)
+              games.insert(min(pos,len(games)),'nebula_duel')
+          else:
+              # Deduplicate defensively while preserving order.
+              seen=set(); games=[g for g in games if not (g in seen or seen.add(g))]
+          repl="{id:'A',title:'Tier A',games:["+','.join(repr(x) for x in games)+']},'
+          s=s[:m.start()]+repl+s[m.end():]
 
           if s.count("id:'nebula_duel'") != 1:
               raise SystemExit('Nebula Duel card must appear exactly once')
           tierA=re.search(r"\{id:'A',title:'Tier A',games:\[([^\]]*)\]\},",s)
           if not tierA or tierA.group(1).count("'nebula_duel'") != 1:
               raise SystemExit('Nebula Duel must appear exactly once in Tier A')
+          if old_missing and ("file:'space_raid_2093.html'" in s or "'space_raid_2093'" in tierA.group(1)):
+              raise SystemExit('Retired Space Raid reference still present')
           if "file:'Nebula_Duel.html'" not in s:
               raise SystemExit('Nebula Duel file link missing')
 
           p.write_text(s,encoding='utf-8')
-          print('Nebula Duel integrated into Tier A')
+          print('Nebula Duel cleanly replaced the retired Space Raid slot')
           PY
 
       - name: Validate hall
@@ -92,6 +107,7 @@ jobs:
           if(new Set(cards).size!==cards.length) throw new Error('Duplicate game files in hall');
           for(const f of cards) if(!fs.existsSync(f)) throw new Error('Hall points to missing game: '+f);
           if(!cards.includes('Nebula_Duel.html')) throw new Error('Nebula Duel missing from hall');
+          if(cards.includes('space_raid_2093.html') && !fs.existsSync('space_raid_2093.html')) throw new Error('Retired Space Raid still referenced');
           const tierA=menu.match(/\{id:'A',title:'Tier A',games:\[([^\]]*)\]\},/)?.[1]||'';
           if(!tierA.includes("'nebula_duel'")) throw new Error('Nebula Duel missing from Tier A');
           console.log('Hall OK:',cards.length,'games');
@@ -145,5 +161,5 @@ jobs:
             echo 'Nebula Duel collection state already current.'
             exit 0
           fi
-          git commit -m 'Add Nebula Duel to Tier A and refresh complete ZIP'
+          git commit -m 'Replace Space Raid with Nebula Duel and refresh complete ZIP'
           git push origin HEAD:main
