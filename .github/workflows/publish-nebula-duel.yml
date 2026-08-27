@@ -61,8 +61,6 @@ jobs:
               else:
                   games.append('nebula_duel')
               repl="{id:'A',title:'Tier A',games:["+','.join(repr(x) for x in games)+']},'
-              # Correct the trailing quote added only to simplify string construction above.
-              repl=repl[:-1]
               s=s[:m.start()]+repl+s[m.end():]
 
           if s.count("id:'nebula_duel'") != 1:
