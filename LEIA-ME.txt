@@ -32,3 +32,11 @@ ATUALIZAÇÃO V14 — 16/08/2026
 - Ranking e recordes locais preservados; telemetria do hub registra partidas, tempo e sequência de dias.
 - Preview ?preview=1 roda silencioso e não contamina estatísticas ou recordes.
 - Hall passa a conter 28 jogos oficiais.
+
+ATUALIZAÇÃO V15 — 01/11/2026
+- PSYCHO WORMS v1.3.5 e SURVIVE — Ninja Mayhem: Apocalipse Psy integrados oficialmente ao Tier A.
+- Os dois jogos permanecem autocontidos em um único HTML e ganharam retorno direto ao Menu de Mini Games.
+- Telemetria local do hub registra inicializações, tempo jogado e sequência de dias, sem contar os previews dos cards.
+- PSYCHO WORMS inclui mouse padrão com pointer lock restrito à arena, rankings, loja, progresso e pausa refinados.
+- SURVIVE inclui campanha apocalíptica de 15 fases, sistema de vida e recuperação, meteoros/crateras e áudio psytrance responsivo.
+- O catálogo passa a conter 36 jogos oficiais.
