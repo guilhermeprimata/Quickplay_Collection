@@ -30,18 +30,20 @@ Validation executed with Node.js syntax checking for every inline JavaScript blo
 | `pixel_bomberman.html` | 4 | 0 | ✅ | ✅ |
 | `pixel_joust.html` | 1 | 0 | ✅ | ✅ |
 | `pong.html` | 2 | 0 | ✅ | ✅ |
+| `psycho_worms.html` | 2 | 0 | ✅ | ✅ |
 | `reef_runner.html` | 1 | 0 | — | ✅ |
 | `rift_run.html` | 1 | 0 | ✅ | ✅ |
 | `salve_os_gatinhos.html` | 6 | 0 | ✅ | ✅ |
 | `skate_or_die.html` | 1 | 0 | ✅ | ✅ |
 | `snowball_avalanche.html` | 2 | 0 | ✅ | ✅ |
 | `sudoku.html` | 2 | 0 | — | — |
+| `survive_ninja_mayhem.html` | 4 | 0 | ✅ | ✅ |
 | `the_worm.html` | 3 | 0 | ✅ | ✅ |
 | `torre_de_hanoi.html` | 2 | 0 | — | ✅ |
 
 ## Result
 
-- Games checked: **34**
+- Games checked: **36**
 - JavaScript syntax failures: **0**
 - External JavaScript dependencies: **0**
 - Direct Banco do Brasil branding signals: **0**

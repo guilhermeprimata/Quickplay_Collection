@@ -30,18 +30,20 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 | `pixel_bomberman.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 35170 |
 | `pixel_joust.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 39531 |
 | `pong.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 51921 |
+| `psycho_worms.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 6611051 |
 | `reef_runner.html` | v2 | — | ✅ | ✅ | — | ✅ | ✅ | ✅ | 53847 |
 | `rift_run.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | — | 158626 |
 | `salve_os_gatinhos.html` | v2 | — | — | ✅ | — | ✅ | ✅ | ✅ | 122409 |
 | `skate_or_die.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 271934 |
 | `snowball_avalanche.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 942080 |
 | `sudoku.html` | v2 | — | — | — | — | ✅ | ✅ | ✅ | 39066 |
+| `survive_ninja_mayhem.html` | none | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 1516338 |
 | `the_worm.html` | v2 | ✅ | ✅ | ✅ | — | ✅ | ✅ | ✅ | 34279 |
 | `torre_de_hanoi.html` | v2 | — | ✅ | ✅ | — | ✅ | ✅ | ✅ | 31009 |
 
 ## Automated findings
 
-- Platform layer not v2: `alien_threat.html`, `alien_threat_3d.html`, `atomic_raid.html`, `brain_matrix.html`, `campo_minado.html`, `corrida_de_cavalos.html`, `dropworks.html`, `hover_heroes_25d.html`, `hover_heroes_2d.html`, `hover_heroes_3d.html`, `idle_trader.html`, `kombo_blocks.html`, `pixel_joust.html`, `pong.html`, `rift_run.html`, `snowball_avalanche.html`
+- Platform layer not v2: `alien_threat.html`, `alien_threat_3d.html`, `atomic_raid.html`, `brain_matrix.html`, `campo_minado.html`, `corrida_de_cavalos.html`, `dropworks.html`, `hover_heroes_25d.html`, `hover_heroes_2d.html`, `hover_heroes_3d.html`, `idle_trader.html`, `kombo_blocks.html`, `pixel_joust.html`, `pong.html`, `psycho_worms.html`, `rift_run.html`, `snowball_avalanche.html`, `survive_ninja_mayhem.html`
 - No native pause signal: `advinhe_o_numero.html`, `corrida_de_cavalos.html`, `foguetinho.html`, `jogo_da_velha.html`, `reef_runner.html`, `salve_os_gatinhos.html`, `sudoku.html`, `torre_de_hanoi.html`
 - No native restart/new-game signal: `foguetinho.html`, `salve_os_gatinhos.html`, `sudoku.html`
 - Canvas + keyboard but no native touch signal: `advinhe_o_numero.html`
@@ -958,6 +960,50 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 - `L69: function mult(side){return Math.min(5,1+Math.floor(Math.max(0,combo[side]-1)/2)*.5)}function score(side,pts,why=''){const m=fx[side].glass>0?2:1;tech[side]+=Math.round(pts*m);if(why&&pts>=150)announce('${side==='p1'?'P1':'P2'} +${Math.round(pts*m)}',why,side==='p1'?'#63edff':'#ffd34d',.7)}`
 - `L81: function reflectBounds(b){const top=arenaTop()+b.r,bot=arenaBottom()-b.r;if(b.y<top&&b.vy<0){b.y=top;b.vy*=-1;osc(150+clamp((b.base-BASE)/(MAX-BASE),0,1)*280,.035,'triangle',.07)}if(b.y>bot&&b.vy>0){b.y=bot;b.vy*=-1;osc(150+clamp((b.base-BASE)/(MAX-BASE),0,1)*280,.035,'triangle',.07)}}`
 
+### `psycho_worms.html`
+**Control flow signals**
+- `L9677: input.addEventListener("keydown", (e) => {`
+- `L10290: function startRun() {`
+- `L11349: function resetGrowth(s) {`
+- `L11795: function resetNameBag() {`
+- `L11916: function resetNames() {`
+- `L12439: function resetReplay() {`
+- `L12594: const state = {`
+- `L12756: function startStage(n, score) {`
+- `L13808: function startBanquet() {`
+- `L14343: function showStartupSplash(returning = false) {`
+- `L14437: el.addEventListener("click", (e) => {`
+- `L14532: function resumeGameplay() {`
+**Gameplay tuning signals**
+- `L9341: MINIMAP_W = 176,`
+- `L9342: MINIMAP_H = 110,`
+- `L9385: let saveTimer = 0;`
+- `L9388: if (!saveTimer) saveTimer = setTimeout(flushSaves, 500);`
+- `L9392: saveTimer = 0;`
+- `L9402: // v1.0.0: RNG decorativo independente de spawns, roubo, IA, drop e economia.`
+- `L9411: // Psycho Worms v1.0.2: velocidade neutra igual para jogador, bots, elos e chefes.`
+- `L9412: const NORMAL_SPEED = 142,`
+- `L9414: MAX_SPEED_DECAY = 0.15;`
+- `L9416: return Math.max(0, Math.log10(Math.max(10, Number.isFinite(score) ? score : 10) / 10));`
+- `L9421: (1 - Math.min(MAX_SPEED_DECAY, metamorphosisProgress(score) * METAMORPHOSIS_SLOWDOWN))`
+- `L9426: maxBots: 15,`
+- `L9427: maxLinks: 2,`
+- `L9436: return score <= 200 ? 1 : score <= 1000 ? 0.9 : score <= 5000 ? 0.8 : 0.75;`
+- `L9439: return Math.max(50, Math.floor(score * 0.03));`
+- `L9563: bestCombo: 0,`
+- `L9564: bestScore: 96,`
+- `L9620: playerProfile.counts[sanitizeName(k)] = Math.max(1, Math.floor(v));`
+- `L9661: enemyNames[0] = currentPlayerName;`
+- `L9771: task: "Alcance um combo de 4 roubos",`
+- `L9781: task: "Alcance 1.000 pontos",`
+- `L9846: task: "3 fichas sazonais · " + x.window,`
+- `L9855: score: 96,`
+- `L9868: if (Number.isSafeInteger(p.score) && p.score >= 17) journey.score = p.score;`
+- `L9888: return { level: n, xp: left, next: 100 + (n - 1) * 40 };`
+- `L9895: unlockToasts.push({ text: "⭐ Jornada nível " + journeyLevel().level, until: clock + 5 });`
+- `L9921: { metric: "seconds", goal: 120, label: "Jogue 2 minutos (tempo ativo)" },`
+- `L9922: { metric: "combo", goal: 3, label: "Alcance combo de 3 roubos" },`
+
 ### `reef_runner.html`
 **Control flow signals**
 - `L107: modal.addEventListener('click',e=>{if(e.target===modal||e.target.closest('.close'))closeModal()});`
@@ -1197,6 +1243,36 @@ Generated from the repository contents. Heuristics are intentionally conservativ
 - `L825: else if (level === 'medium') cellsToRemove = 40;`
 - `L826: else cellsToRemove = 60;`
 - `L828: while (cellsToRemove > 0) {`
+
+### `survive_ninja_mayhem.html`
+**Control flow signals**
+- `L469: function button(text,handler,cls=''){const b=el('button',cls,text);b.type='button';b.addEventListener('click',handler);return b}`
+- `L474: function startGame(){const api=window.__SURVIVE_API;if(!api)return;runSeen=false;runSaved=false;applySettings();appState.panel=null;appState.screen='game';shell.hidden=true;window.__SURVIVE_MENU_BLOCK_KEYS=false;api.startGame();}`
+- `L508: if(isSplash){shell.appendChild(el('div','survive-splash-label','✦ '+tr('start')+' ✦'));shell.addEventListener('click',skipSplash,{once:true});return}`
+- `L528: const state=api.getState();if(state==='PLAY')runSeen=true;`
+- `L529: if(runSeen&&!runSaved&&(state==='GAMEOVER'||state==='VICTORY')){`
+**Gameplay tuning signals**
+- `L66: ',t)),t!==-1)e=e.slice(0,t);else return'';return e}function Ae(e){if(lh===void 0)try{throw Error()}catch(e){var t=e.stack.trim().match(/\n( *(at )?)/);lh=t&&t[1]||'',uh=-1<e.stack.indexOf('`
+- `L70: ');for(o=a=0;a<l.length&&!l[a].includes('DetermineComponentFrameRoot');)a++;for(;o<u.length&&!u[o].includes('DetermineComponentFrameRoot');)o++;if(a===l.length||o===u.length)for(a=l.length-1,o=u.length-1;1<=a&&0<=o&&l[a]!==u[o];)o--;for(;1<=a&&0<=o;a--,o--)if(l[a]!==u[o]){if(a!==1||o!==1)do if(a--,o--,0>o||l[a]!==u[o]){var d='`
+- `L115: See this log for the ancestor stack trace.',r,o)})),!1}function tn(e,t,n){if(n||Zt('#text',t,!1))return!0;if(n='#text|'+t,Sg[n])return!1;Sg[n]=!0;var r=(n=ph)?$t(n,t):null;return n=n!==null&&r!==null?Yt(r,n,n.tag===6?null:{children:null}):'',/\S/.test(e)?console.error('In HTML, text nodes cannot be a child of <%s>.`
+- `L148: <%s>{%s}</%s>',t,t,n,t,n))}function ca(e,t){var n=ta();n===null?sa(e,t):n.run(sa.bind(null,e,t))}function la(e,t){var n=C(e)||'Component';rx[n]||(rx[n]=!0,t=String(t),e.tag===3?console.error('Symbols are not valid as a React child.`
+- `L174: ',e,t,n].slice(0),typeof e[0]=='string'?e.splice(0,1,eE+' '+e[0],tE,rE+r+rE,nE):e.splice(0,0,eE,tE,rE+r+rE,nE),e.unshift(console),r=iE.apply(console.error,e),r()}else console.error('%o`
+- `L241: Please update the following components: %s',o)}0<r.size&&(o=h(r),console.error('Using UNSAFE_componentWillReceiveProps in strict mode is not recommended and may indicate bugs in your code. See https://react.dev/link/unsafe-component-lifecycles for details.`
+- `L246: Please update the following components: %s',o)),0<a.size&&(o=h(a),console.error('Using UNSAFE_componentWillUpdate in strict mode is not recommended and may indicate bugs in your code. See https://react.dev/link/unsafe-component-lifecycles for details.`
+- `L293: w-full max-w-3xl max-h-[92%] flex flex-col`
+- `L442: else if(t.startsWith('NINJA MAYHEM · 15 FASES'))output='NINJA MAYHEM · 15 APOCALYPTIC STAGES';`
+- `L491: const wrap=el('div');wrap.appendChild(el('h2','',tr('scores')));`
+- `L493: const legacy=Math.max(0,Number(localStorage.getItem('survive_v12_hi')||0));`
+- `L494: if(!runs.length&&legacy)runs=[{score:legacy,mode:'RUNNER',distance:0,date:'—'}];`
+- `L498: runs.slice(0,10).forEach((run,i)=>{const r=el('div','survive-score-row');for(const text of [String(i+1),Number(run.score).toLocaleString(locale),Math.round(run.distance||0)+'m',run.mode==='WALKING'?tr('walking'):tr('runner')])r.appendChild(el('span','',text));top.appendChild(r)});`
+- `L499: wrap.appendChild(top);wrap.appendChild(el('p','survive-small',tr('highscore')+': '+Math.max(legacy,...runs.map(x=>x.score||0)).toLocaleString(locale)));`
+- `L506: const painted=locale==='pt-BR'&&matchMedia('(min-aspect-ratio: 4/3) and (min-width: 751px)').matches;`
+- `L531: const run={score:api.getScore?.()||0,distance:api.getDistance?.()||0,mode:api.getMode?.()||'RUNNER',date:new Date().toISOString()};`
+- `L533: best.push(run);best.sort((a,b)=>b.score-a.score);best=best.slice(0,10);`
+- `L537: setInterval(()=>{if(appState.screen!=='game')applySettings();if(window.__SURVIVE_API&&appState.screen==='game'){ /* keep controls owned by original game */ }},1600);`
+- `L552: const GAME_ID='survive_ninja_mayhem',KEY='ppg_minigames_stats_v1',preview=new URLSearchParams(location.search).get('preview')==='1';`
+- `L555: function time(){const now=Date.now(),delta=Math.min(30,Math.max(0,(now-lastTick)/1000));lastTick=now;if(preview||document.hidden||delta<.2)return;const db=read(),s=db[GAME_ID]||{};s.totalSeconds=Math.round((s.totalSeconds||0)+delta);s.lastPlayed=now;db[GAME_ID]=s;write(db)}`
+- `L556: if(preview){document.getElementById('quickplay-bar')?.remove()}else{start();setInterval(time,10000);addEventListener('pagehide',time);document.addEventListener('visibilitychange',time)}`
 
 ### `the_worm.html`
 **Control flow signals**
