@@ -40,3 +40,11 @@ ATUALIZAÇÃO V15 — 01/11/2026
 - PSYCHO WORMS inclui mouse padrão com pointer lock restrito à arena, rankings, loja, progresso e pausa refinados.
 - SURVIVE inclui campanha apocalíptica de 15 fases, sistema de vida e recuperação, meteoros/crateras e áudio psytrance responsivo.
 - O catálogo passa a conter 36 jogos oficiais.
+
+ATUALIZAÇÃO V16 — 01/11/2026
+- Guerra das Facções: Tower Defense V7 integrado ao Tier A como guerra_das_faccoes.html.
+- Catálogo atualizado para 37 jogos, com 18 no Tier A.
+- Campanha, saves, Top 10 local, áudio procedural e arte da versão enviada preservados.
+- Retorno ao Quickplay, Sobre com instruções/dica e crédito Projeto Primata Games em 2026.
+- Partidas iniciadas, tempo ativo e sequência diária integrados às estatísticas locais do hub.
+- Preview silencioso com gravações isoladas em memória: não altera saves, recordes ou estatísticas.

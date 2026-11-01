@@ -44,6 +44,7 @@ footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin
 @media(max-width:900px){.tierGrid{grid-template-columns:1fr}.tierIntro{align-items:start;flex-direction:column}.tierIntro p{text-align:left}.tierCard{min-height:235px}.tierNav{grid-template-columns:auto 1fr}.tierCount{grid-column:1/-1;text-align:left;padding-left:2px}}
 @media(max-width:760px){.wrap{width:min(100% - 14px,1480px);padding-top:12px}header{grid-template-columns:1fr}.topBtns{justify-content:flex-start;position:static}.summary{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr}.game-card{grid-template-rows:150px auto}.thumb-live iframe{transform:scale(.25)}.tierNames{padding-right:0}.tierCard{padding:17px;border-radius:20px}.tierLetter{font-size:64px}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+.game-card[data-game="guerra_das_faccoes"]{border-color:#d7a06077;box-shadow:0 18px 54px #190f09aa}.game-card[data-game="guerra_das_faccoes"]:hover{border-color:#ffd58f}.game-card[data-game="guerra_das_faccoes"] .thumb-art{background:radial-gradient(ellipse at 24% 24%,#f6b44d55,transparent 35%),radial-gradient(circle at 78% 33%,#63d3d144,transparent 25%),repeating-linear-gradient(130deg,transparent 0 26px,#e9c5950c 27px 28px),linear-gradient(150deg,#302015,#5c3d29 55%,#131d27)}.game-card[data-game="guerra_das_faccoes"] .thumb-art::after{border-radius:16% 16% 42% 42%;border-color:#e9be7b88;transform:rotate(-5deg);box-shadow:0 0 0 18px #f2ae4e0c,0 0 38px #69dadb22}.game-card[data-game="guerra_das_faccoes"] .glyph{filter:drop-shadow(0 12px 18px #000b) drop-shadow(0 0 16px #ffc87066)}.game-card[data-game="guerra_das_faccoes"] .launch{color:#ecc385}body.light .game-card[data-game="guerra_das_faccoes"] .launch{color:#785120}
 </style>
 </head>
 <body>
@@ -74,7 +75,7 @@ footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin
 <section class="tierHome" id="tierHome">
   <div class="tierIntro">
     <h2>Escolha seu território</h2>
-    <p>Quatro divisões, trinta e seis jogos. Nenhum carrossel infinito para ficar procurando o que você já sabe que quer jogar.</p>
+    <p>Quatro divisões, trinta e sete jogos. Nenhum carrossel infinito para ficar procurando o que você já sabe que quer jogar.</p>
   </div>
   <div class="tierGrid" id="tierGrid"></div>
 </section>
@@ -100,6 +101,7 @@ footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin
 <script>
 (()=>{'use strict';
 const GAMES=[
+{file:'guerra_das_faccoes.html',id:'guerra_das_faccoes',name:'Guerra das Facções',emoji:'🛡️',desc:'Tower defense pós-apocalíptico: construa torres de sucata, enfrente comboios e ataques alienígenas e proteja o gato companheiro.',new:true},
 {file:'snowball_avalanche.html',id:'snowball_avalanche',name:'Snowball Avalanche',emoji:'❄️',desc:'Avalanche procedural em mundo contínuo: cresça e destrua o cenário.'},
 {file:'brain_matrix.html',id:'brain_matrix',name:'BRAIN MATRIX',emoji:'🧠',desc:'Busca visual em alta velocidade: números, letras, Mastermind, maratona e telemetria local.',new:true},
 {file:'alien_threat.html',id:'alien_threat',name:'ALIEN THREAT',emoji:'🛸',desc:'Pilote um disco voador sobre uma cidade procedural, abduza alvos com o raio teleport e sobreviva ao contra-ataque.',new:true},
@@ -138,7 +140,7 @@ const GAMES=[
   {id:'atomic_raid',name:'ATOMIC RAID',emoji:'☢️',file:'atomic_raid.html',desc:'Arcade shooter procedural autocontido: pilote, combata, gerencie combustível e evolua sua nave.',new:true}
 ];
 const TIERS=[
-{id:'A',title:'Tier A',games:['psycho_worms','survive_ninja_mayhem','snowball_avalanche','brain_matrix','alien_threat','alien_threat_3d','hover_heroes_2d','hover_heroes_25d','hover_heroes_3d','gatinhos','arqueiro','reef_runner','nebula_duel','iron_delta','iron_delta_25d','skate_or_die','atomic_raid']},
+{id:'A',title:'Tier A',games:['guerra_das_faccoes','psycho_worms','survive_ninja_mayhem','snowball_avalanche','brain_matrix','alien_threat','alien_threat_3d','hover_heroes_2d','hover_heroes_25d','hover_heroes_3d','gatinhos','arqueiro','reef_runner','nebula_duel','iron_delta','iron_delta_25d','skate_or_die','atomic_raid']},
 {id:'B',title:'Tier B',games:['toxic_stench','kombo_blocks','neon_pong','domination_wars','dropworks','pixel_bomber','rift_run','pixel_joust']},
 {id:'C',title:'Tier C',games:['corrida','crystal_xplorer','idle_trader','velha_quantica','pulso_genius','the_worm']},
 {id:'D',title:'Tier D',games:['zen_sudoku','hanoi','adivinhe','click_speed','forca_neon']}
